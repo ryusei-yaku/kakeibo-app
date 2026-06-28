@@ -1,22 +1,18 @@
 import AddIcon from "@mui/icons-material/Add";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import CategoryIcon from "@mui/icons-material/Category";
+import PieChartIcon from "@mui/icons-material/PieChart";
 import {
     Box,
     Button,
     Card,
     CardContent,
     Container,
-    Divider,
-    List,
-    ListItemButton,
-    ListItemText,
     Stack,
-    Typography,
+    Typography
 } from "@mui/material";
+import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import type { Expense } from "../../types/expense";
-import dayjs from "dayjs";
 
 type HomePageProps = {
     expenses: Expense[];
@@ -67,9 +63,6 @@ function HomePage({ expenses }: HomePageProps) {
                             家計簿アプリ
                         </Typography>
 
-                        <Typography color="text.secondary" sx={{ mt: 1 }}>
-                            毎日の支出をかんたんに記録します。
-                        </Typography>
                     </Box>
 
                     {/* 一時的に表示 */}
@@ -108,57 +101,27 @@ function HomePage({ expenses }: HomePageProps) {
                         onClick={() => navigate("/expenses/new")}
                         startIcon={<AddIcon />}
                         sx={{
-                            py: 2,
-                            borderRadius: 4,
-                            fontSize: 20,
+                            py: 1.8,
+                            borderRadius: 3,
+                            fontSize: 18,
                             fontWeight: "bold",
                         }}
                     >
                         支出を入力する
                     </Button>
 
-                    <Card sx={{ borderRadius: 4 }}>
-                        <CardContent>
-                            <Typography
-                                variant="h6"
-                                sx={{ mb: 2, fontWeight: "bold" }}
-                            >
-                                今月の内訳
-                            </Typography>
-
-                            <List disablePadding>
-                                {monthlyCategorySummaries.map((category, index) => (
-                                    <Box key={category.id}>
-                                        <ListItemButton
-                                            onClick={() => handleCategoryClick(category.name, category.amount)}
-                                            sx={{
-                                                borderRadius: 2,
-                                                px: 1,
-                                            }}
-                                        >
-                                            <ListItemText
-                                                primary={category.name}
-                                                secondary="今月の合計"
-                                            />
-
-                                            <Typography sx={{ fontWeight: "bold" }}>
-                                                {formatYen(category.amount)}
-                                            </Typography>
-                                        </ListItemButton>
-
-                                        {index < monthlyCategorySummaries.length - 1 && <Divider />}
-                                    </Box>
-                                ))}
-                            </List>
-                        </CardContent>
-                    </Card>
-
-                    <Stack spacing={1.5}>
+                    <Stack spacing={1.5} sx={{ mt: 3 }}>
                         <Button
                             variant="outlined"
                             size="large"
+                            fullWidth
                             startIcon={<CalendarMonthIcon />}
-                            sx={{ borderRadius: 3 }}
+                            onClick={() => navigate("/calender")}
+                            sx={{
+                                py: 1.5,
+                                borderRadius: 3,
+                                fontWeight: "bold",
+                            }}
                         >
                             カレンダーで見る
                         </Button>
@@ -166,10 +129,16 @@ function HomePage({ expenses }: HomePageProps) {
                         <Button
                             variant="outlined"
                             size="large"
-                            startIcon={<CategoryIcon />}
-                            sx={{ borderRadius: 3 }}
+                            fullWidth
+                            startIcon={<PieChartIcon />}
+                            onClick={() => navigate("/categories/monthly")}
+                            sx={{
+                                py: 1.5,
+                                borderRadius: 3,
+                                fontWeight: "bold",
+                            }}
                         >
-                            カテゴリ管理
+                            今月の内訳をカテゴリー別で見る
                         </Button>
                     </Stack>
                 </Stack>
