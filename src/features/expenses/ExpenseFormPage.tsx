@@ -6,6 +6,7 @@ import "dayjs/locale/ja";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { Category } from "@mui/icons-material";
 
 const categories = [
     { id: "food", name: "食費" },
@@ -16,7 +17,15 @@ const categories = [
     { id: "other", name: "その他" },
 ];
 
-const today = new Date();
+type Expense = {
+    id: string;
+    amount: number;
+    categoryId: string;
+    categoryName: string;
+    date: string;
+    shopName: string;
+    memo: string;
+};
 
 function formatDateLabel(date: Dayjs) {
     return date.locale("ja").format("YYYY年M月D日(ddd)")
@@ -42,6 +51,8 @@ function ExpenseFormPage() {
     const [shopName, setShopName] = useState("");
     //メモを保持する
     const [memo, setMemo] = useState("");
+    //登録された支出データを保持する
+    const [expenses, setExpenses] = useState<Expense[]>([]);
 
     function goToPreviousDate() {
         setSelectedDate((currentDate) => currentDate.subtract(1, "day"));
@@ -51,22 +62,37 @@ function ExpenseFormPage() {
         setSelectedDate((currentDate) => currentDate.add(1, "day"));
     }
 
+    //登録されるデータのチェック
     function handleSubmit() {
         if (amount === "") {
             alert("金額を入力してください");
             return;
         }
 
-        const newExpense = {
+        const selectedCategory = categories.find(
+            (category) => category.id === selectedCategoryId
+        );
+
+        if (selectedCategory === undefined) {
+            alert("カテゴリーを選択してください");
+            return;
+        }
+
+        const newExpense: Expense = {
+            id: crypto.randomUUID(),
             amount: Number(amount),
-            categoryId: selectedCategoryId,
+            categoryId: selectedCategory.id,
+            categoryName: selectedCategory.name,
             date: selectedDate.format("YYYY-MM-DD"),
             shopName,
             memo,
         };
 
-        console.log(newExpense)
-        alert("入力内容を確認しました");
+        setExpenses((currentExpenses) => [newExpense, ...currentExpenses]);
+
+        setAmount("");
+        setShopName("");
+        setMemo("");
     }
 
     return (
@@ -327,6 +353,65 @@ function ExpenseFormPage() {
                 >
                     登録する
                 </Button>
+                <Box sx={{ mt: 4 }}>
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mb: 1, fontWeight: "bold" }}
+                    >
+                        登録済みの支出
+                    </Typography>
+
+                    {expenses.length === 0 ? (
+                        <Typography color="text.secondary">
+                            まだ支出は登録されていません。
+                        </Typography>
+                    ) : (
+                        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                            {expenses.map((expense) => (
+                                <Box
+                                    key={expense.id}
+                                    sx={{
+                                        backgroundColor: "#ffffff",
+                                        borderRadius: 3,
+                                        p: 2,
+                                        boxShadow: "0 2px 10px rgba(0, 0, 0, 0.04)",
+                                    }}
+                                >
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            gap: 2,
+                                        }}
+                                    >
+                                        <Typography sx={{ fontWeight: "bold" }}>
+                                            {expense.categoryName}
+                                        </Typography>
+
+                                        <Typography sx={{ fontWeight: "bold" }}>
+                                            {expense.amount.toLocaleString()}円
+                                        </Typography>
+                                    </Box>
+
+                                    <Typography color="text.secondary" sx={{ mt: 0.5 }}>
+                                        {expense.date}
+                                    </Typography>
+
+                                    {expense.shopName !== "" && (
+                                        <Typography sx={{ mt: 1 }}>{expense.shopName}</Typography>
+                                    )}
+
+                                    {expense.memo !== "" && (
+                                        <Typography color="text.secondary" sx={{ mt: 0.5 }}>
+                                            {expense.memo}
+                                        </Typography>
+                                    )}
+                                </Box>
+                            ))}
+                        </Box>
+                    )}
+                </Box>
             </Container>
 
             <Dialog open={isDateDialogOpen} onClose={() => setIsDateDialogOpen(false)}>
