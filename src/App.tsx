@@ -22,7 +22,7 @@ function App() {
         />
         <Route
           path="/categories/monthly"
-          element={<MonthlyCategorySummaryPage />}
+          element={<MonthlyCategorySummaryPage expenses={expenses}/>}
         />
       </Routes>
     </BrowserRouter>

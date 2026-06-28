@@ -8,6 +8,7 @@ import "dayjs/locale/ja";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Expense } from "../../types/expense";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 type ExpenseFormPageProps = {
     expenses: Expense[];
@@ -96,13 +97,14 @@ function ExpenseFormPage({ expenses, onAddExpense }: ExpenseFormPageProps) {
             <Container maxWidth="sm">
                 <Button
                     onClick={() => navigate("/")}
+                    startIcon={<ArrowBackIcon />}
                     sx={{
                         mb: 1,
                         color: "text.secondary",
                         fontWeight: "bold"
                     }}
                 >
-                    ←戻る
+                    ホームへ戻る
                 </Button>
 
                 <Box
