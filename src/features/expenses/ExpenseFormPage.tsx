@@ -6,7 +6,6 @@ import "dayjs/locale/ja";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { ResetTvRounded } from "@mui/icons-material";
 
 const categories = [
     { id: "food", name: "食費" },
@@ -22,12 +21,27 @@ const today = new Date();
 function formatDateLabel(date: Dayjs) {
     return date.locale("ja").format("YYYY年M月D日(ddd)")
 }
+//金額をカンマ付きにする。
+function formatAmount(value: string) {
+    if (value === "") {
+        return "";
+    }
+    return Number(value).toLocaleString();
+}
 
 function ExpenseFormPage() {
+    //現在選ばれている日付を保持する。
     const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
+    //カレンダーのダイアログが開いているかを保持する。
     const [isDateDialogOpen, setIsDateDialogOpen] = useState(false);
-
+    //選択しているカテゴリのIDを保持する。
     const [selectedCategoryId, setSelectedCategoryId] = useState("food");
+    //今入力されている金額を保持する。
+    const [amount, setAmount] = useState("");
+    //店名を保持する
+    const [shopName, setShopName] = useState("");
+    //メモを保持する
+    const [memo, setMemo] = useState("");
 
     function goToPreviousDate() {
         setSelectedDate((currentDate) => currentDate.subtract(1, "day"));
@@ -37,22 +51,27 @@ function ExpenseFormPage() {
         setSelectedDate((currentDate) => currentDate.add(1, "day"));
     }
 
-    return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef", py: 3 }}>
-            <Container maxWidth="sm">
-                <Box
-                    sx={{
-                        backgroundColor: "#ffffff",
-                        borderRadius: 4,
-                        p: 3,
-                        mb: 3,
-                        boxShadow: "0 6px 20px rgba(0, 0, 0, 0.06)"
-                    }}>
-                    <Typography variant="h4" component="h1" sx={{ fontWeight: "bold" }}>
-                        支出を入力
-                    </Typography>
+    function handleSubmit() {
+        if (amount === "") {
+            alert("金額を入力してください");
+            return;
+        }
 
-                </Box>
+        const newExpense = {
+            amount: Number(amount),
+            categoryId: selectedCategoryId,
+            date: selectedDate.format("YYYY-MM-DD"),
+            shopName,
+            memo,
+        };
+
+        console.log(newExpense)
+        alert("入力内容を確認しました");
+    }
+
+    return (
+        <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef", py: 5 }}>
+            <Container maxWidth="sm">
 
                 <Box
                     sx={{
@@ -103,13 +122,61 @@ function ExpenseFormPage() {
                 </Box>
 
 
-                <TextField
-                    label="金額"
-                    type="number"
-                    placeholder="金額を数字で入力"
-                    fullWidth
-                    sx={{ mt: 3 }}
-                />
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        borderBottom: "1px solid #e0e0e0",
+                        py: 2,
+                    }}
+                >
+                    <Typography
+                        sx={{
+                            width: 56,
+                            fontWeight: "bold",
+                            color: "text.secondary",
+                            flexShrink: 0,
+                        }}
+                    >
+                        支出
+                    </Typography>
+
+                    <TextField
+                        value={formatAmount(amount)}
+                        onChange={(event) => {
+                            const onlyNumbers = event.target.value.replace(/\D/g, "");
+                            setAmount(onlyNumbers)
+                        }}
+                        inputMode="numeric"
+                        placeholder="0"
+                        variant="standard"
+                        fullWidth
+                        //TextFieldの中にある実際の入力部分の調整
+                        slotProps={{
+                            input: {
+                                disableUnderline: true,
+                            },
+                        }}
+                        // TextFieldの中にあるinput要素に対してcssを充てるという意味
+                        sx={{
+                            "& input": {
+                                fontSize: 36,
+                                fontWeight: "bold",
+                                textAlign: "right",
+                            },
+                        }}
+                    />
+
+                    <Typography
+                        sx={{
+                            ml: 1,
+                            fontSize: 24,
+                            fontWeight: "bold",
+                        }}
+                    >
+                        円
+                    </Typography>
+                </Box>
 
                 <Box sx={{ mt: 3 }}>
                     <Typography
@@ -159,38 +226,97 @@ function ExpenseFormPage() {
                     </Box>
                 </Box>
 
-                <TextField
-                    label="店名"
-                    type="string"
-                    placeholder="店名を入力"
-                    fullWidth
-                    sx={{ mt: 2 }}
-                    slotProps={{
-                        inputLabel: {
-                            shrink: true,
-                        }
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        borderBottom: "1px solid #e0e0e0",
+                        py: 1.5,
                     }}
-                />
+                >
+                    <Typography
+                        sx={{
+                            width: 56,
+                            fontWeight: "bold",
+                            color: "text.secondary",
+                            flexShrink: 0,
+                            pt: 0.8,
+                        }}
+                    >
+                        店名
+                    </Typography>
 
-                <TextField
-                    label="メモ"
-                    placeholder="夕食の買い物"
-                    multiline
-                    minRows={4}
-                    fullWidth
-                    sx={{ mt: 2 }}
-                    slotProps={{
-                        inputLabel: {
-                            shrink: true,
-                        }
+                    <TextField
+                        value={shopName}
+                        onChange={(event) => setShopName(event.target.value)}
+                        placeholder="未入力"
+                        variant="standard"
+                        multiline
+                        minRows={1}
+                        fullWidth
+                        slotProps={{
+                            input: {
+                                disableUnderline: true,
+                            },
+                        }}
+                        sx={{
+                            "& textarea": {
+                                fontSize: 18,
+                                lineHeight: 1.6,
+                                overflowWrap: "break-word",
+                            },
+                        }}
+                    />
+                </Box>
+
+                <Box
+                    sx={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        borderBottom: "1px solid #e0e0e0",
+                        py: 1.5,
                     }}
-                />
+                >
+                    <Typography
+                        sx={{
+                            width: 56,
+                            fontWeight: "bold",
+                            color: "text.secondary",
+                            flexShrink: 0,
+                            pt: 0.8,
+                        }}
+                    >
+                        メモ
+                    </Typography>
+
+                    <TextField
+                        value={memo}
+                        onChange={(event) => setMemo(event.target.value)}
+                        placeholder="未入力"
+                        variant="standard"
+                        multiline
+                        minRows={1}
+                        fullWidth
+                        slotProps={{
+                            input: {
+                                disableUnderline: true,
+                            },
+                        }}
+                        sx={{
+                            "& textarea": {
+                                lineHeight: 1.6,
+                                textAlign: "break-word",
+                            },
+                        }}
+                    />
+                </Box>
 
                 <Button
                     variant="contained"
                     size="large"
                     startIcon={<AddIcon />}
                     fullWidth
+                    onClick={handleSubmit}
                     sx={{
                         mt: 3,
                         py: 1.8,
