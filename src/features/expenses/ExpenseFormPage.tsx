@@ -7,6 +7,7 @@ import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Category } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
 const categories = [
     { id: "food", name: "食費" },
@@ -54,6 +55,8 @@ function ExpenseFormPage() {
     //登録された支出データを保持する
     const [expenses, setExpenses] = useState<Expense[]>([]);
 
+    const navigate = useNavigate();
+
     function goToPreviousDate() {
         setSelectedDate((currentDate) => currentDate.subtract(1, "day"));
     }
@@ -96,8 +99,18 @@ function ExpenseFormPage() {
     }
 
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef", py: 5 }}>
+        <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef", py: 2 }}>
             <Container maxWidth="sm">
+                <Button
+                    onClick={() => navigate("/")}
+                    sx={{
+                        mb: 1,
+                        color: "text.secondary",
+                        fontWeight: "bold"
+                    }}
+                >
+                    ←戻る
+                </Button>
 
                 <Box
                     sx={{

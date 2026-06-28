@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import CategoryIcon from "@mui/icons-material/Category";
@@ -27,6 +28,8 @@ function formatYen(amount: number) {
 }
 
 function HomePage() {
+    const navigate = useNavigate();
+
     function handleCategoryClick(categoryName: string, amount: number) {
         alert(`${categoryName}：${formatYen(amount)}の詳細を開きます`);
     }
@@ -76,6 +79,8 @@ function HomePage() {
                     <Button
                         variant="contained"
                         size="large"
+                        fullWidth
+                        onClick={() => navigate("/expenses/new")}
                         startIcon={<AddIcon />}
                         sx={{
                             py: 2,
