@@ -1,13 +1,18 @@
-import { useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button, Container, Dialog, TextField, Typography } from "@mui/material";
-import dayjs, { type Dayjs } from "dayjs";
-import "dayjs/locale/ja";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Category } from "@mui/icons-material";
+import dayjs, { type Dayjs } from "dayjs";
+import "dayjs/locale/ja";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import type { Expense } from "../../types/expense";
+
+type ExpenseFormPageProps = {
+    expenses: Expense[];
+    onAddExpense: (expense: Expense) => void;
+}
 
 const categories = [
     { id: "food", name: "食費" },
@@ -17,16 +22,6 @@ const categories = [
     { id: "entertainment", name: "娯楽" },
     { id: "other", name: "その他" },
 ];
-
-type Expense = {
-    id: string;
-    amount: number;
-    categoryId: string;
-    categoryName: string;
-    date: string;
-    shopName: string;
-    memo: string;
-};
 
 function formatDateLabel(date: Dayjs) {
     return date.locale("ja").format("YYYY年M月D日(ddd)")
@@ -39,7 +34,7 @@ function formatAmount(value: string) {
     return Number(value).toLocaleString();
 }
 
-function ExpenseFormPage() {
+function ExpenseFormPage({ expenses, onAddExpense }: ExpenseFormPageProps) {
     //現在選ばれている日付を保持する。
     const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
     //カレンダーのダイアログが開いているかを保持する。
@@ -52,8 +47,6 @@ function ExpenseFormPage() {
     const [shopName, setShopName] = useState("");
     //メモを保持する
     const [memo, setMemo] = useState("");
-    //登録された支出データを保持する
-    const [expenses, setExpenses] = useState<Expense[]>([]);
 
     const navigate = useNavigate();
 
@@ -65,7 +58,7 @@ function ExpenseFormPage() {
         setSelectedDate((currentDate) => currentDate.add(1, "day"));
     }
 
-    //登録されるデータのチェック
+    //支出を登録する
     function handleSubmit() {
         if (amount === "") {
             alert("金額を入力してください");
@@ -91,7 +84,7 @@ function ExpenseFormPage() {
             memo,
         };
 
-        setExpenses((currentExpenses) => [newExpense, ...currentExpenses]);
+        onAddExpense(newExpense);
 
         setAmount("");
         setShopName("");

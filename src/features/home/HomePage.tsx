@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import CategoryIcon from "@mui/icons-material/Category";
@@ -15,6 +14,13 @@ import {
     Stack,
     Typography,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import type { Expense } from "../../types/expense";
+import dayjs from "dayjs";
+
+type HomePageProps = {
+    expenses: Expense[];
+}
 
 const monthlyCategorySummaries = [
     { id: "food", name: "食費", amount: 18400 },
@@ -27,8 +33,22 @@ function formatYen(amount: number) {
     return `${amount.toLocaleString()}円`;
 }
 
-function HomePage() {
+function HomePage({ expenses }: HomePageProps) {
     const navigate = useNavigate();
+
+    //今日の日付作成
+    const today = dayjs().format("YYYY-MM-DD");
+    const currentMonth = dayjs().format("YYYY-MM");
+
+    const todayTotal = expenses
+        //今日の支出だけを取り出す
+        .filter((expense) => expense.date == today)
+        //取り出した支出の金額を合計する
+        .reduce((sum, expense) => sum + expense.amount, 0);
+
+    const monthTotal = expenses
+        .filter((expense) => expense.date.startsWith(currentMonth))
+        .reduce((sum, expense) => sum + expense.amount, 0);
 
     function handleCategoryClick(categoryName: string, amount: number) {
         alert(`${categoryName}：${formatYen(amount)}の詳細を開きます`);
@@ -52,6 +72,11 @@ function HomePage() {
                         </Typography>
                     </Box>
 
+                    {/* 一時的に表示 */}
+                    <Typography color="text.secondary">
+                        登録件数：{expenses.length}件
+                    </Typography>
+
                     <Card sx={{ borderRadius: 4 }}>
                         <CardContent>
                             <Typography color="text.secondary">今月使った金額</Typography>
@@ -59,7 +84,7 @@ function HomePage() {
                                 variant="h4"
                                 sx={{ mt: 1, fontWeight: "bold" }}
                             >
-                                45,200円
+                                {formatYen(monthTotal)}
                             </Typography>
                         </CardContent>
                     </Card>
@@ -71,7 +96,7 @@ function HomePage() {
                                 variant="h4"
                                 sx={{ mt: 1, fontWeight: "bold" }}
                             >
-                                1,280円
+                                {formatYen(todayTotal)}
                             </Typography>
                         </CardContent>
                     </Card>
