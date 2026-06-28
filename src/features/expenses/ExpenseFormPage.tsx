@@ -1,11 +1,12 @@
 import { useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Button, Container, Dialog, MenuItem, TextField, Typography } from "@mui/material";
+import { Box, Button, Container, Dialog, TextField, Typography } from "@mui/material";
 import dayjs, { type Dayjs } from "dayjs";
 import "dayjs/locale/ja";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { ResetTvRounded } from "@mui/icons-material";
 
 const categories = [
     { id: "food", name: "食費" },
@@ -25,6 +26,8 @@ function formatDateLabel(date: Dayjs) {
 function ExpenseFormPage() {
     const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
     const [isDateDialogOpen, setIsDateDialogOpen] = useState(false);
+
+    const [selectedCategoryId, setSelectedCategoryId] = useState("food");
 
     function goToPreviousDate() {
         setSelectedDate((currentDate) => currentDate.subtract(1, "day"));
@@ -108,19 +111,53 @@ function ExpenseFormPage() {
                     sx={{ mt: 3 }}
                 />
 
-                <TextField
-                    select
-                    label="カテゴリー"
-                    defaultValue="food"
-                    fullWidth
-                    sx={{ mt: 2 }}
-                >
-                    {categories.map((category) => (
-                        <MenuItem key={category.id} value={category.id}>
-                            {category.name}
-                        </MenuItem>
-                    ))}
-                </TextField>
+                <Box sx={{ mt: 3 }}>
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mb: 1, fontWeight: "bold" }}
+                    >
+                        カテゴリー
+                    </Typography>
+
+                    <Box
+                        sx={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(3, 1fr)",
+                            gap: 1,
+                        }}
+                    >
+                        {categories.map((category) => {
+                            const isSelected = selectedCategoryId === category.id;
+
+                            return (
+                                <Button
+                                    key={category.id}
+                                    variant={isSelected ? "contained" : "outlined"}
+                                    onClick={() => setSelectedCategoryId(category.id)}
+                                    sx={{
+                                        borderRadius: 3,
+                                        py: 1.5,
+                                        fontWeight: "bold",
+                                    }}
+                                >
+                                    {category.name}
+                                </Button>
+                            );
+                        })}
+
+                        <Button
+                            variant="outlined"
+                            sx={{
+                                borderRadius: 3,
+                                py: 1.5,
+                                fontWeight: "bold",
+                            }}
+                        >
+                            編集・追加＞
+                        </Button>
+                    </Box>
+                </Box>
 
                 <TextField
                     label="店名"
