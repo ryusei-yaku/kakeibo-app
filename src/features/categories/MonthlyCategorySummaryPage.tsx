@@ -112,7 +112,11 @@ function MonthlyCategorySummaryPage({
                             //今月の支出がある場合は、カテゴリー別の合計を一覧表示する
                             <Stack spacing={1.5}>
                                 {sortedMonthlyCategorySummaries.map((summary) => (
-                                    <Card key={summary.id} sx={{ borderRadius: 3 }}>
+                                    <Card 
+                                        key={summary.id} 
+                                        //カテゴリーカードを押したら、そのカテゴリーカードの今月詳細ページへ移動する。
+                                        onClick={()=>navigate(`/categories/monthly/${summary.id}`)}
+                                        sx={{ borderRadius: 3 }}>
                                         <CardContent>
                                             <Box
                                                 sx={{
