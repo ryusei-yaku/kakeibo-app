@@ -8,8 +8,9 @@ import {
     Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import type { Expense } from "../../types/expense";
 import dayjs from "../../lib/dayjs";
+import type { Expense } from "../../types/expense";
+import { isHoliday } from "@holiday-jp/holiday_jp"
 
 // CalendarPageがApp.tsxから受け取るデータの型
 type CalendarPageProps = {
@@ -17,25 +18,49 @@ type CalendarPageProps = {
 };
 
 //カレンダーに表示する1日分の情報
-//月初めの前に入れる空白マスも扱うため、dateとdayはnullも許可する
+//前月・今月・翌月の日付を表示するため、isCurrentMonthで今月かどうかを区別する
 type CalendarDay = {
-    date: string | null;
-    day: number | null;
+    date: string;
+    day: number;
     isCurrentMonth: boolean;
 }
 
 //曜日に応じて文字色を返す
-//土曜日は青色、日曜日は赤色、それ以外は通常色にする
-function getDayColor(dayOfWeek: number) {
+//土曜日は青色、祝日と日曜日は赤色、それ以外は通常色にする
+function getDayColor(date: string) {
+    const dayOfWeek = dayjs(date).day();
+
+    //祝日判定ライブラリに渡すため、"YYYY-MM-DD"をDateに変換する
+    const dateObject = dayjs(date).toDate();
+
+    if (isHoliday(dateObject) || dayOfWeek === 0) {
+        return "#dc2626"
+    }
+
     if (dayOfWeek === 6) {
         return "#2563eb";
     }
 
-    if (dayOfWeek === 0) {
-        return "#dc2626";
+    return "#555555";
+}
+
+//今月以外の日付に使う文字色を返す
+//土曜日は薄い青、日曜日・祝日は薄い赤色、それ以外は薄いグレーにする
+function getOutsideMonthDayColor(date:string){
+    const dayOfWeek = dayjs(date).day();
+
+    //祝日判定ライブラリに渡すため、"YYYY-MM-DD"をDateに変換する
+    const dateObject = dayjs(date).toDate();
+
+    if (isHoliday(dateObject) || dayOfWeek === 0){
+        return "#fca5a5";
     }
 
-    return "text.primary";
+    if (dayOfWeek === 6){
+        return "#93c5fd";
+    }
+
+    return "#999999";
 }
 
 function CalendarPage({ expenses }: CalendarPageProps) {
@@ -66,14 +91,20 @@ function CalendarPage({ expenses }: CalendarPageProps) {
     //月曜なら0個、日曜なら6個
     const blankDaysBeforeMonth = (firstDayOfWeek + 6) % 7;
 
-    //月初めの前に表示する空白マスを作る
-    const blankCalendarDays: CalendarDay[] = Array.from(
+    //今月の1日の前に表示する、前月の日付マスを作る
+    const previousMonthCalendarDays: CalendarDay[] = Array.from(
         { length: blankDaysBeforeMonth },
-        () => ({
-            date: null,
-            day: null,
-            isCurrentMonth: false
-        })
+        (_, index) => {
+            //前月の何日を表示するかを計算する
+            const date = startOfMonth
+                .subtract(blankDaysBeforeMonth - index, "day");
+
+            return {
+                date: date.format("YYYY-MM-DD"),
+                day: date.date(),
+                isCurrentMonth: false,
+            };
+        }
     );
 
     //今月の日付マスを作る
@@ -93,10 +124,35 @@ function CalendarPage({ expenses }: CalendarPageProps) {
         }
     );
 
+    //カレンダーを5週間分にそろえる
+    const totalCalendarCellCount = 35;
+
+    //今月の日付と前月の日付を入れたあと、残り何マス必要か計算する
+    const nextMonthDaysCount =
+        totalCalendarCellCount -
+        previousMonthCalendarDays.length -
+        currentMonthCalendarDays.length;
+
+        //今月の最後の日の後に表示する、翌日の日付マスを作る
+        const nextMonthCalendarDays: CalendarDay[] = Array.from(
+            {length:nextMonthDaysCount},
+            (_, index) => {
+                //翌日の1日、2日、3日...を作る
+                const date = endOfMonth.add(index + 1, "day");
+
+                return {
+                    date: date.format("YYYY-MM-DD"),
+                    day:date.date(),
+                    isCurrentMonth:false,
+                };
+            }
+        );
+
     //空白マスと今月の日付マスを結合して、カレンダーに表示する配列を作る
     const calendarDays: CalendarDay[] = [
-        ...blankCalendarDays,
+        ...previousMonthCalendarDays,
         ...currentMonthCalendarDays,
+        ...nextMonthCalendarDays,
     ];
 
     //カレンダー上部に表示する曜日
@@ -143,7 +199,8 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                         sx={{
                             backgroundColor: "#ffffff",
                             borderRadius: 3,
-                            p: 2,
+                            overflow: "hidden",
+                            border: "1px solid #d9d9d9",
                         }}
                     >
                         {/* 曜日の見出し */}
@@ -151,6 +208,8 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                             sx={{
                                 display: "grid",
                                 gridTemplateColumns: "repeat(7, 1fr)",
+                                backgroundColor: "#f59e0b",
+                                borderBottom: "1px solid #d9d9d9",
                             }}>
                             {weekdays.map((weekday) => {
                                 //曜日の見出しの文字色を決める
@@ -159,16 +218,18 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                         ? "#2563eb"
                                         : weekday === "日"
                                             ? "#dc2626"
-                                            : "text.secondary";
+                                            : "#ffffff";
 
                                 return (
                                     <Typography
                                         key={weekday}
                                         sx={{
                                             textAlign: "center",
-                                            fontWeight: "bold",
                                             fontSize: 14,
                                             color,
+                                            py: 1,
+                                            borderRight:
+                                                weekday === "日" ? "none" : "1px solid rgba(255,255,255,0.35)",
                                         }}
                                     >
                                         {weekday}
@@ -182,25 +243,30 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                             sx={{
                                 display: "grid",
                                 gridTemplateColumns: "repeat(7, 1fr)",
-                                gap: 1,
+
                             }}
                         >
                             {calendarDays.map((calendarDay, index) => {
-                                //空白マスの場合は、日付の計算をしない
-                                const dayColor =
-                                    calendarDay.date === null
-                                        ? "transparent"
-                                        : getDayColor(dayjs(calendarDay.date).day());
+                                //日付の文字色を決める
+                                //今月以外の日付は薄い色にする
+                                const dayColor = calendarDay.isCurrentMonth
+                                ? getDayColor(calendarDay.date)
+                                : getOutsideMonthDayColor(calendarDay.date);
 
                                 return (
                                     <Box
                                         key={calendarDay.date ?? `blank-${index}`}
                                         sx={{
-                                            minHeight: 56,
-                                            borderRadius: 2,
-                                            backgroundColor: calendarDay.date === null ? "transparent" : "#f6f4ef",
+                                            minHeight: 88,
+                                            backgroundColor: calendarDay.isCurrentMonth ? "#ffffff" : "#f3f3f3",
                                             p: 1,
-                                            textAlign: "center",
+                                            textAlign: "left",
+
+                                            //右端の列以外に右線を引く
+                                            borderRight: index % 7 === 6 ? "none" : "1px solid #d9d9d9",
+
+                                            //各行の下に線を引く
+                                            borderBottom: "1px solid #d9d9d9",
                                         }}
                                     >
                                         {/* 空白マスではない場合だけ日付を表示する */}
