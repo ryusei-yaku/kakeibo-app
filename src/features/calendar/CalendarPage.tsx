@@ -92,6 +92,10 @@ function CalendarPage({ expenses }: CalendarPageProps) {
     //初期値は今日が含まれる月にする
     const [displayMonth, setDisplayMonth] = useState(dayjs().startOf("month"));
 
+    //カレンダー上で選択中の日付を管理する
+    //初期値は今日の日付
+    const [selectedDate, setSelectedDate] = useState(dayjs().format("YYYY-MM-DD"));
+
     //月を切り替えた後にスクロールしたい日付を一時的に保存する
     const [pendingScrollDate, setPendingScrollDate] = useState<string | null>(null);
 
@@ -113,6 +117,9 @@ function CalendarPage({ expenses }: CalendarPageProps) {
 
     //カレンダーの日付マスを押したときの処理
     function handleCalendarDayClick(calendarDay: CalendarDay) {
+        //押した日付を選択中の日付として保存する
+        setSelectedDate(calendarDay.date);
+
         //今月の日付なら、そのまま下の支出一覧へスクロールする
         if (calendarDay.isCurrentMonth) {
             scrollToExpenseDate(calendarDay.date);
@@ -446,8 +453,8 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                     //合計がない日付の場合はundefinedになる
                                     const dailyTotal = dailyExpenseTotals[calendarDay.date];
 
-                                    //このマスの日付が今日かどうかを判定する
-                                    const isToday = calendarDay.date === dayjs().format("YYYY-MM-DD");
+                                    // このマスの日付が選択中の日付かどうかを判定する
+                                    const isSelectedDate = calendarDay.date === selectedDate;
 
                                     return (
                                         <Box
@@ -456,29 +463,24 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                             sx={{
                                                 // 縦幅固定
                                                 height: 58,
-
                                                 // 中身が長くてもマスの横幅を広げない
                                                 minWidth: 0,
-
-                                                //今日のマスは薄いオレンジにする
+                                                //選択中のマスは薄いオレンジにする
                                                 //今月以外の日付は薄いグレー、それ以外は白にする
-                                                backgroundColor: isToday
+                                                backgroundColor: isSelectedDate
                                                     ? "#fde7cd"
                                                     : calendarDay.isCurrentMonth
                                                         ? "#ffffff"
                                                         : "#f3f3f3",
                                                 p: 0.75,
                                                 textAlign: "left",
-
                                                 //右端の列以外に右線を引く
                                                 borderRight: index % 7 === 6 ? "none" : "1px solid #d9d9d9",
-
                                                 //各行の下に線を引く
                                                 borderBottom: "1px solid #d9d9d9",
                                                 cursor: "pointer",
                                                 //マスからはみ出した内容は表示しない
                                                 overflow: "hidden",
-
                                                 //padding込みでheightに収める
                                                 boxSizing: "border-box",
                                             }}
