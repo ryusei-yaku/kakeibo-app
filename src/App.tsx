@@ -30,7 +30,7 @@ function App() {
           path="/categories/monthly/:categoryId"
           element={<MonthlyCategoryDetailPage expenses={expenses}/>}
         />
-        <Route path="/calendar" element={<CalendarPage />}/>
+        <Route path="/calendar" element={<CalendarPage expenses={expenses}/>}/>
       </Routes>
     </BrowserRouter>
   );

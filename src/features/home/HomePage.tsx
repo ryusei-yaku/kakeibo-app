@@ -10,7 +10,7 @@ import {
     Stack,
     Typography
 } from "@mui/material";
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs"
 import { useNavigate } from "react-router-dom";
 import type { Expense } from "../../types/expense";
 

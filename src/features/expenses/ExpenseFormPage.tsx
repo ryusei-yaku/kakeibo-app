@@ -3,8 +3,8 @@ import { Box, Button, Container, Dialog, TextField, Typography } from "@mui/mate
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import dayjs, { type Dayjs } from "dayjs";
-import "dayjs/locale/ja";
+import type {Dayjs } from "dayjs";
+import dayjs from "../../lib/dayjs";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Expense } from "../../types/expense";

@@ -1,12 +1,8 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Box, Button, Container, Stack, Typography } from "@mui/material";
-import dayjs from "dayjs";
-import "dayjs/locale/ja";
+import dayjs from "../../lib/dayjs";
 import { useNavigate, useParams } from "react-router-dom";
 import type { Expense } from "../../types/expense";
-
-
-dayjs.locale("ja");
 
 type MonthlyCategoryDetailPageProps = {
     expenses: Expense[];

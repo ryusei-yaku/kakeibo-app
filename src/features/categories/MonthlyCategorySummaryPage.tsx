@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import type { Expense } from "../../types/expense";
-import dayjs from "dayjs";
+import dayjs from "../../lib/dayjs";
 import CategoryIcon from "@mui/icons-material/Category"
 
 type MonthlyCategorySummaryPageProps = {
