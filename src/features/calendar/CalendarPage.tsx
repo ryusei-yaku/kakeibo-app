@@ -66,18 +66,13 @@ function getOutsideMonthDayColor(date: string) {
 function CalendarPage({ expenses }: CalendarPageProps) {
     // ページ移動をするための関数を用意する
     const navigate = useNavigate();
-    //今日が含まれる年月日を"2026-06"のような形式で取得する
-    const currentMonth = dayjs().format("YYYY-MM");
 
-    //全支出の中から、今月の日付の支出だけを取り出す
-    const monthlyExpenses = expenses.filter((expense) =>
-        expense.date.startsWith(currentMonth)
-    );
-
-    //日付ごとの支出合計を作る
-    const dailyExpenseTotals = monthlyExpenses.reduce<Record<string, number>>(
+    // 日付ごとの支出合計を作る
+    // カレンダーには前月・今月・翌月の日付も表示するため、
+    // 今月の支出だけではなく、全支出から日付ごとの合計を作る
+    const dailyExpenseTotals = expenses.reduce<Record<string, number>>(
         (totals, expense) => {
-            //まだその日付の合計がない場合は0として扱う
+            // まだその日付の合計がない場合は0として扱う
             const currentTotal = totals[expense.date] ?? 0;
 
             return {
@@ -121,13 +116,13 @@ function CalendarPage({ expenses }: CalendarPageProps) {
         }
     );
 
-    //今月の日付マスを作る
+    // 今月の日付マスを作る
     const currentMonthCalendarDays: CalendarDay[] = Array.from(
         { length: daysInMonth },
         (_, index) => {
             const day = index + 1;
 
-            //比較や表示に使う日付文字列を作る
+            // 比較や表示に使う日付文字列を作る
             const date = startOfMonth.date(day).format("YYYY-MM-DD");
 
             return {
@@ -138,20 +133,24 @@ function CalendarPage({ expenses }: CalendarPageProps) {
         }
     );
 
-    //カレンダーを5週間分にそろえる
-    const totalCalendarCellCount = 35;
+    // 前月分のマス + 今月の日数の合計を計算する
+    const usedCalendarCellCount =
+        previousMonthCalendarDays.length + currentMonthCalendarDays.length;
 
-    //今月の日付と前月の日付を入れたあと、残り何マス必要か計算する
+    // 35マスで収まる月は5週間分、収まらない月は6週間分で表示する
+    const totalCalendarCellCount = usedCalendarCellCount <= 35 ? 35 : 42;
+
+    // 今月の日付と前月の日付を入れたあと、残り何マス必要か計算する
     const nextMonthDaysCount =
         totalCalendarCellCount -
         previousMonthCalendarDays.length -
         currentMonthCalendarDays.length;
 
-    //今月の最後の日の後に表示する、翌日の日付マスを作る
+    // 今月の最後の日の後に表示する、翌月の日付マスを作る
     const nextMonthCalendarDays: CalendarDay[] = Array.from(
         { length: nextMonthDaysCount },
         (_, index) => {
-            //翌日の1日、2日、3日...を作る
+            // 翌月の1日、2日、3日...を作る
             const date = endOfMonth.add(index + 1, "day");
 
             return {
@@ -295,14 +294,14 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                         )}
                                         {/* その日に支出がある場合だけ、日付マスの中に合計金額を表示する */}
                                         {dailyTotal !== undefined && (
-                                            <Typography 
-                                            sx={{
-                                                mt:1,
-                                                fontSize:12,
-                                                fontWeight:"bold",
-                                                color:calendarDay.isCurrentMonth ? "#dc2626" : "#fca5a5",
-                                                textAlign:"right",
-                                            }}>
+                                            <Typography
+                                                sx={{
+                                                    mt: 1,
+                                                    fontSize: 12,
+                                                    fontWeight: "bold",
+                                                    color: calendarDay.isCurrentMonth ? "#dc2626" : "#fca5a5",
+                                                    textAlign: "right",
+                                                }}>
                                                 {dailyTotal.toLocaleString()}円
                                             </Typography>
                                         )}
