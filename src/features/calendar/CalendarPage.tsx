@@ -1,4 +1,3 @@
-import { isHoliday } from "@holiday-jp/holiday_jp";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -14,6 +13,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "../../lib/dayjs";
 import type { Expense } from "../../types/expense";
+import { getDayColor, getOutsideMonthDayColor } from "./utils/calendarColors";
 
 // CalendarPageがApp.tsxから受け取るデータの型
 type CalendarPageProps = {
@@ -26,44 +26,6 @@ type CalendarDay = {
     date: string;
     day: number;
     isCurrentMonth: boolean;
-}
-
-//曜日に応じて文字色を返す
-//土曜日は青色、祝日と日曜日は赤色、それ以外は通常色にする
-function getDayColor(date: string) {
-    const dayOfWeek = dayjs(date).day();
-
-    //祝日判定ライブラリに渡すため、"YYYY-MM-DD"をDateに変換する
-    const dateObject = dayjs(date).toDate();
-
-    if (isHoliday(dateObject) || dayOfWeek === 0) {
-        return "#dc2626"
-    }
-
-    if (dayOfWeek === 6) {
-        return "#2563eb";
-    }
-
-    return "#555555";
-}
-
-//今月以外の日付に使う文字色を返す
-//土曜日は薄い青、日曜日・祝日は薄い赤色、それ以外は薄いグレーにする
-function getOutsideMonthDayColor(date: string) {
-    const dayOfWeek = dayjs(date).day();
-
-    //祝日判定ライブラリに渡すため、"YYYY-MM-DD"をDateに変換する
-    const dateObject = dayjs(date).toDate();
-
-    if (isHoliday(dateObject) || dayOfWeek === 0) {
-        return "#fca5a5";
-    }
-
-    if (dayOfWeek === 6) {
-        return "#93c5fd";
-    }
-
-    return "#999999";
 }
 
 // 支出一覧に表示する詳細テキストを作る
