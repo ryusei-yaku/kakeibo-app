@@ -1,11 +1,8 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import {
     Box,
     Button,
     Container,
-    IconButton,
     Stack,
     Typography,
 } from "@mui/material";
@@ -13,7 +10,8 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "../../lib/dayjs";
 import type { Expense } from "../../types/expense";
-import { getDayColor, getOutsideMonthDayColor } from "./utils/calendarColors";
+import CalendarGrid from "./components/CalendarGrid";
+import DailyExpenseList from "./components/DailyExpenseList";
 import {
     createCalendarDays,
     type CalendarDay,
@@ -25,7 +23,7 @@ import {
     groupExpensesByDate,
     sortExpensesByDateDesc
 } from "./utils/expenseGrouping";
-import DailyExpenseList from "./components/DailyExpenseList";
+import CalendarMonthHeader from "./components/CalendarMonthHeader";
 
 // CalendarPageがApp.tsxから受け取るデータの型
 type CalendarPageProps = {
@@ -162,178 +160,18 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                             ホームへ戻る
                         </Button>
 
-                        {/* 表示中の月を切り替えるエリア */}
-                        <Box
-                            sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                            }}
-                        >
-                            {/* 前月へ移動するボタン */}
-                            <IconButton
-                                onClick={goToPreviousMonth}
-                                aria-label="前月へ移動"
-                                sx={{ color: "text.secondary" }}
-                            >
-                                <ChevronLeftIcon />
-                            </IconButton>
+                        <CalendarMonthHeader 
+                        displayMonthText={displayMonth.format("YYYY年M月")}
+                        onPreviousMonth={goToPreviousMonth}
+                        onNextMonth={goToNextMonth}
+                        />
 
-                            {/* 現在表示している年月 */}
-                            <Box
-                                sx={{
-                                    flex: 1,
-                                    backgroundColor: "#fde7cd",
-                                    borderRadius: 2,
-                                    py: 0,
-                                    textAlign: "center",
-                                }}
-                            >
-                                <Typography sx={{ fontWeight: "bold", fontSize: 22, color: "#666666" }}>
-                                    {displayMonth.format("YYYY年M月")}
-                                </Typography>
-                            </Box>
-
-                            {/* 次月へ移動するボタン */}
-                            <IconButton
-                                onClick={goToNextMonth}
-                                aria-label="次月へ移動"
-                                sx={{ color: "text.secondary" }}
-                            >
-                                <ChevronRightIcon />
-                            </IconButton>
-                        </Box>
-
-                        {/* カレンダー全体の箱 */}
-                        <Box
-                            sx={{
-                                backgroundColor: "#ffffff",
-                                borderRadius: 3,
-                                overflow: "hidden",
-                                border: "1px solid #d9d9d9",
-                            }}
-                        >
-                            {/* 曜日の見出し */}
-                            <Box
-                                sx={{
-                                    display: "grid",
-                                    gridTemplateColumns: "repeat(7, 1fr)",
-                                    backgroundColor: "#f59e0b",
-                                    borderBottom: "1px solid #d9d9d9",
-                                }}>
-                                {weekdays.map((weekday) => {
-                                    //曜日の見出しの文字色を決める
-                                    const color =
-                                        weekday === "土"
-                                            ? "#2563eb"
-                                            : weekday === "日"
-                                                ? "#dc2626"
-                                                : "#ffffff";
-
-                                    return (
-                                        <Typography
-                                            key={weekday}
-                                            sx={{
-                                                textAlign: "center",
-                                                fontSize: 14,
-                                                color,
-                                                py: 1,
-                                                borderRight:
-                                                    weekday === "日" ? "none" : "1px solid rgba(255,255,255,0.35)",
-                                            }}
-                                        >
-                                            {weekday}
-                                        </Typography>
-                                    );
-                                })}
-                            </Box>
-
-                            {/* 日付のマス目 */}
-                            <Box
-                                sx={{
-                                    display: "grid",
-                                    gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
-
-                                }}
-                            >
-                                {calendarDays.map((calendarDay, index) => {
-                                    //日付の文字色を決める
-                                    //今月以外の日付は薄い色にする
-                                    const dayColor = calendarDay.isCurrentMonth
-                                        ? getDayColor(calendarDay.date)
-                                        : getOutsideMonthDayColor(calendarDay.date);
-
-                                    //この日付に登録された支出合計を取得する
-                                    //合計がない日付の場合はundefinedになる
-                                    const dailyTotal = dailyExpenseTotals[calendarDay.date];
-
-                                    // このマスの日付が選択中の日付かどうかを判定する
-                                    const isSelectedDate = calendarDay.date === selectedDate;
-
-                                    return (
-                                        <Box
-                                            key={calendarDay.date}
-                                            onClick={() => handleCalendarDayClick(calendarDay)}
-                                            sx={{
-                                                // 縦幅固定
-                                                height: 58,
-                                                // 中身が長くてもマスの横幅を広げない
-                                                minWidth: 0,
-                                                //選択中のマスは薄いオレンジにする
-                                                //今月以外の日付は薄いグレー、それ以外は白にする
-                                                backgroundColor: isSelectedDate
-                                                    ? "#fde7cd"
-                                                    : calendarDay.isCurrentMonth
-                                                        ? "#ffffff"
-                                                        : "#f3f3f3",
-                                                p: 0.75,
-                                                textAlign: "left",
-                                                //右端の列以外に右線を引く
-                                                borderRight: index % 7 === 6 ? "none" : "1px solid #d9d9d9",
-                                                //各行の下に線を引く
-                                                borderBottom: "1px solid #d9d9d9",
-                                                cursor: "pointer",
-                                                //マスからはみ出した内容は表示しない
-                                                overflow: "hidden",
-                                                //padding込みでheightに収める
-                                                boxSizing: "border-box",
-                                            }}
-                                        >
-                                            {/* 日付を表示する */}
-                                            <Typography sx={{ color: dayColor }}>
-                                                {calendarDay.day}
-                                            </Typography>
-                                            {/* その日に支出がある場合だけ、日付マスの中に合計金額を表示する */}
-                                            {dailyTotal !== undefined && (
-                                                <Typography
-                                                    sx={{
-                                                        mt: 0.5,
-                                                        fontSize: 10,
-                                                        fontWeight: "bold",
-                                                        color: calendarDay.isCurrentMonth ? "#dc2626" : "#fca5a5",
-                                                        textAlign: "right",
-
-                                                        //親の幅を超えない
-                                                        maxWidth: "100%",
-                                                        minWidth: 0,
-
-                                                        //金額が長い場合は折り返さず、「1,234...」のように省略する
-                                                        whiteSpace: "nowrap",
-                                                        overflow: "hidden",
-                                                        textOverflow: "ellipsis",
-
-                                                        // Typographyを横幅制御しやすい表示にする
-                                                        display: "block",
-                                                    }}
-                                                >
-                                                    {dailyTotal.toLocaleString()}
-                                                </Typography>
-                                            )}
-                                        </Box>
-                                    );
-                                })}
-                            </Box>
-                        </Box>
+                        <CalendarGrid
+                            calendarDays={calendarDays}
+                            dailyExpenseTotals={dailyExpenseTotals}
+                            selectedDate={selectedDate}
+                            onDayClick={handleCalendarDayClick}
+                        />
                     </Box>
 
                     <DailyExpenseList
