@@ -1,16 +1,20 @@
+import { isHoliday } from "@holiday-jp/holiday_jp";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import {
     Box,
     Button,
     Container,
+    IconButton,
     Stack,
     Typography,
 } from "@mui/material";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "../../lib/dayjs";
 import type { Expense } from "../../types/expense";
-import { isHoliday } from "@holiday-jp/holiday_jp"
 
 // CalendarPageがApp.tsxから受け取るデータの型
 type CalendarPageProps = {
@@ -67,6 +71,10 @@ function CalendarPage({ expenses }: CalendarPageProps) {
     // ページ移動をするための関数を用意する
     const navigate = useNavigate();
 
+    //表示中の月を管理する
+    //初期値は今日が含まれる月にする
+    const [displayMonth, setDisplayMonth] = useState(dayjs().startOf("month"));
+
     // 日付ごとの支出合計を作る
     // カレンダーには前月・今月・翌月の日付も表示するため、
     // 今月の支出だけではなく、全支出から日付ごとの合計を作る
@@ -83,11 +91,21 @@ function CalendarPage({ expenses }: CalendarPageProps) {
         {}
     );
 
-    //今月の最初の日を取得する
-    const startOfMonth = dayjs().startOf("month");
+    //表示中の月の最初の日を取得する
+    const startOfMonth = displayMonth.startOf("month");
 
-    //今月の最終日を取得する
-    const endOfMonth = dayjs().endOf("month");
+    //表示中の月の最終日を取得する
+    const endOfMonth = displayMonth.endOf("month");
+
+    // 前月へ移動する
+    function goToPreviousMonth() {
+        setDisplayMonth((currentMonth) => currentMonth.subtract(1, "month"));
+    }
+
+    //翌月へ移動する
+    function goToNextMonth() {
+        setDisplayMonth((currentMont) => currentMont.add(1, "month"));
+    }
 
     //今月が何日まであるかを取得する
     const daysInMonth = endOfMonth.date();
@@ -206,6 +224,32 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                     <Typography color="text.secondary">
                         今月の支出を日付ごとに確認します。
                     </Typography>
+
+                    {/* 表示中の月を切り替えるエリア */}
+                    <Box
+                        sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            backgroundColor: "#fddbba",
+                            borderRadius: 2,
+                            p: 1,
+                            py: 0.5,
+                            border: "1px solid #e0e0e0",
+                        }}
+                    >
+                        {/* 前月へ移動するボタン */}
+                        <IconButton onClick={goToPreviousMonth} aria-label="前月へ移動">
+                            <ChevronLeftIcon />
+                        </IconButton>
+
+                        <Typography sx={{ fontWeight: "bold" }}>
+                            {displayMonth.format("YYYY年M月")}
+                        </Typography>
+                        <IconButton onClick={goToNextMonth} aria-label="次月へ移動">
+                            <ChevronRightIcon />
+                        </IconButton>
+                    </Box>
 
                     {/* カレンダー全体の箱 */}
                     <Box
