@@ -4,7 +4,6 @@ import {
     Button,
     Container,
     Stack,
-    Typography,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
