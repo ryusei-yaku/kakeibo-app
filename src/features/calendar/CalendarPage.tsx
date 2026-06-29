@@ -547,13 +547,13 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                 px: 2,
                                 py: 1.5,
                                 borderBottom: "1px solid #eeeeee",
-                                backgroundColor: "#fff8ef",
+                                backgroundColor: "#ffffff",
                             }}
                         >
 
                             <Typography
                                 sx={{
-                                    fontSize: 22,
+                                    fontSize: 18,
                                     fontWeight: "bold",
                                     color: "#dc2626",
                                     whiteSpace: "nowrap",
@@ -588,8 +588,9 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                             justifyContent: "space-between",
                                             backgroundColor: "#eeeeee",
                                             px: 2,
-                                            py: 0.75,
+                                            py: 0.3,
                                             minWidth: 0,
+                                            borderBottom:"1px solid #e5e0d8",
                                         }}
                                     >
                                         {/* 日付は全文表示する */}
@@ -598,6 +599,7 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                                 flexShrink: 0,
                                                 fontWeight: "bold",
                                                 color: "#555555",
+                                                fontSize:14,
                                                 white: "nowrap",
                                                 overflow: "visible",
                                                 textOverflow: "clip",
@@ -613,6 +615,7 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                                 minWidth: 0,
                                                 fontWeight: "bold",
                                                 color: "#555555",
+                                                fontSize:14,
                                                 whiteSpace: "nowrap",
                                                 overflow: "hidden",
                                                 textOverflow: "ellipsis",
@@ -636,9 +639,10 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                                     justifyContent: "space-between",
                                                     alignItems: "center",
                                                     px: 2,
-                                                    py: 1.5,
+                                                    py: 1.25,
                                                     borderBottom: "1px solid #eeeeee",
                                                     minWidth: 0,
+                                                    backgroundColor:"#ffffff",
                                                 }}
                                             >
                                                 <Box
