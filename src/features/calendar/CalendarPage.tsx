@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import dayjs from "../../lib/dayjs";
 import type { Expense } from "../../types/expense";
 import CalendarGrid from "./components/CalendarGrid";
+import CalendarMonthHeader from "./components/CalendarMonthHeader";
 import DailyExpenseList from "./components/DailyExpenseList";
 import {
     createCalendarDays,
@@ -22,7 +23,6 @@ import {
     groupExpensesByDate,
     sortExpensesByDateDesc
 } from "./utils/expenseGrouping";
-import CalendarMonthHeader from "./components/CalendarMonthHeader";
 
 // CalendarPageがApp.tsxから受け取るデータの型
 type CalendarPageProps = {
@@ -128,9 +128,6 @@ function CalendarPage({ expenses }: CalendarPageProps) {
     //表示中の月に対応するカレンダー日付マスを作る
     const calendarDays = createCalendarDays(displayMonth);
 
-    //カレンダー上部に表示する曜日
-    const weekdays = ["月", "火", "水", "木", "金", "土", "日"]
-
     return (
         // 画面全体の背景と高さを設定する
         <Box
@@ -159,10 +156,10 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                             ホームへ戻る
                         </Button>
 
-                        <CalendarMonthHeader 
-                        displayMonthText={displayMonth.format("YYYY年M月")}
-                        onPreviousMonth={goToPreviousMonth}
-                        onNextMonth={goToNextMonth}
+                        <CalendarMonthHeader
+                            displayMonthText={displayMonth.format("YYYY年M月")}
+                            onPreviousMonth={goToPreviousMonth}
+                            onNextMonth={goToNextMonth}
                         />
 
                         <CalendarGrid
