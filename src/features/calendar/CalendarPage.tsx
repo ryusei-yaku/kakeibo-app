@@ -230,23 +230,39 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                         sx={{
                             display: "flex",
                             alignItems: "center",
-                            justifyContent: "space-between",
-                            backgroundColor: "#fddbba",
-                            borderRadius: 2,
-                            p: 1,
-                            py: 0.5,
-                            border: "1px solid #e0e0e0",
+                            gap: 1,
                         }}
                     >
                         {/* 前月へ移動するボタン */}
-                        <IconButton onClick={goToPreviousMonth} aria-label="前月へ移動">
+                        <IconButton
+                            onClick={goToPreviousMonth}
+                            aria-label="前月へ移動"
+                            sx={{ color: "text.secondary" }}
+                        >
                             <ChevronLeftIcon />
                         </IconButton>
 
-                        <Typography sx={{ fontWeight: "bold" }}>
-                            {displayMonth.format("YYYY年M月")}
-                        </Typography>
-                        <IconButton onClick={goToNextMonth} aria-label="次月へ移動">
+                        {/* 現在表示している年月 */}
+                        <Box
+                            sx={{
+                                flex: 1,
+                                backgroundColor: "#fde7cd",
+                                borderRadius: 2,
+                                py: 1,
+                                textAlign: "center",
+                            }}
+                        >
+                            <Typography sx={{ fontWeight: "bold", fontSize: 22, color: "#666666" }}>
+                                {displayMonth.format("YYYY年M月")}
+                            </Typography>
+                        </Box>
+
+                        {/* 次月へ移動するボタン */}
+                        <IconButton
+                            onClick={goToNextMonth}
+                            aria-label="次月へ移動"
+                            sx={{ color: "text.secondary" }}
+                        >
                             <ChevronRightIcon />
                         </IconButton>
                     </Box>
@@ -314,12 +330,22 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                 //合計がない日付の場合はundefinedになる
                                 const dailyTotal = dailyExpenseTotals[calendarDay.date];
 
+                                //このマスの日付が今日かどうかを判定する
+                                const isToday = calendarDay.date === dayjs().format("YYYY-MM-DD");
+
                                 return (
                                     <Box
-                                        key={calendarDay.date ?? `blank-${index}`}
+                                        key={calendarDay.date}
                                         sx={{
                                             minHeight: 88,
-                                            backgroundColor: calendarDay.isCurrentMonth ? "#ffffff" : "#f3f3f3",
+
+                                            //今日のマスは薄いオレンジにする
+                                            //今月以外の日付は薄いグレー、それ以外は白にする
+                                            backgroundColor: isToday
+                                                ? "#fde7cd"
+                                                : calendarDay.isCurrentMonth
+                                                    ? "#ffffff"
+                                                    : "#f3f3f3",
                                             p: 1,
                                             textAlign: "left",
 
@@ -330,9 +356,9 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                             borderBottom: "1px solid #d9d9d9",
                                         }}
                                     >
-                                        {/* 空白マスではない場合だけ日付を表示する */}
+                                        {/* 日付を表示する */}
                                         {calendarDay.day !== null && (
-                                            <Typography sx={{ fontWeight: "bold", color: dayColor }}>
+                                            <Typography sx={{ color: dayColor }}>
                                                 {calendarDay.day}
                                             </Typography>
                                         )}
