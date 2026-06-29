@@ -159,6 +159,12 @@ function CalendarPage({ expenses }: CalendarPageProps) {
         (a, b) => dayjs(b.date).valueOf() - dayjs(a.date).valueOf()
     );
 
+    //表示中の月の支出合計を計算する
+    const displayMonthTotalAmount = displayMonthExpenses.reduce(
+        (total, expense) => total + expense.amount,
+        0
+    );
+
     //日付ごとに支出をまとめる
     const groupedExpensesByDate = sortedDisplayMonthExpenses.reduce<
         {
@@ -535,6 +541,31 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                             border: "1px solid #e0e0e0"
                         }}
                     >
+                        {/* 表示中の月の合計支出 */}
+                        <Box
+                            sx={{
+                                px: 2,
+                                py: 1.5,
+                                borderBottom: "1px solid #eeeeee",
+                                backgroundColor: "#fff8ef",
+                            }}
+                        >
+
+                            <Typography
+                                sx={{
+                                    fontSize: 22,
+                                    fontWeight: "bold",
+                                    color: "#dc2626",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    textAlign: "right",
+                                }}
+                            >
+                                支出合計{displayMonthTotalAmount.toLocaleString()}円
+                            </Typography>
+                        </Box>
+
                         {groupedExpensesByDate.length === 0 ? (
                             <Typography sx={{ p: 2, color: "text.secondary" }}>
                                 この月の支出はまだありません。
