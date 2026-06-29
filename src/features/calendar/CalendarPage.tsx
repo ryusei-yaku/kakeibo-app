@@ -14,6 +14,13 @@ import { useNavigate } from "react-router-dom";
 import dayjs from "../../lib/dayjs";
 import type { Expense } from "../../types/expense";
 import { getDayColor, getOutsideMonthDayColor } from "./utils/calendarColors";
+import {
+    calculateTotalAmount,
+    createDailyExpenseTotals,
+    filterExpensesByMonth,
+    groupExpensesByDate,
+    sortExpensesByDateDesc
+} from "./utils/expenseGrouping";
 
 // CalendarPageがApp.tsxから受け取るデータの型
 type CalendarPageProps = {
@@ -96,62 +103,22 @@ function CalendarPage({ expenses }: CalendarPageProps) {
     }
 
     // 日付ごとの支出合計を作る
-    // カレンダーには前月・今月・翌月の日付も表示するため、
-    // 今月の支出だけではなく、全支出から日付ごとの合計を作る
-    const dailyExpenseTotals = expenses.reduce<Record<string, number>>(
-        (totals, expense) => {
-            // まだその日付の合計がない場合は0として扱う
-            const currentTotal = totals[expense.date] ?? 0;
-
-            return {
-                ...totals,
-                [expense.date]: currentTotal + expense.amount,
-            };
-        },
-        {}
-    );
+    const dailyExpenseTotals = createDailyExpenseTotals(expenses);
 
     // 表示中の月に登録された支出だけを取り出す
-    const displayMonthExpenses = expenses.filter((expense) =>
-        expense.date.startsWith(displayMonth.format("YYYY-MM"))
+    const displayMonthExpenses = filterExpensesByMonth(
+        expenses,
+        displayMonth.format("YYYY-MM")
     );
 
     //表示中の月の支出を、日付の新しい順に並べる
-    const sortedDisplayMonthExpenses = [...displayMonthExpenses].sort(
-        (a, b) => dayjs(b.date).valueOf() - dayjs(a.date).valueOf()
-    );
+    const sortedDisplayMonthExpenses = sortExpensesByDateDesc(displayMonthExpenses);
 
     //表示中の月の支出合計を計算する
-    const displayMonthTotalAmount = displayMonthExpenses.reduce(
-        (total, expense) => total + expense.amount,
-        0
-    );
+    const displayMonthTotalAmount = calculateTotalAmount(displayMonthExpenses);
 
-    //日付ごとに支出をまとめる
-    const groupedExpensesByDate = sortedDisplayMonthExpenses.reduce<
-        {
-            date: string;
-            totalAmount: number;
-            items: Expense[];
-        }[]
-    >((groups, expense) => {
-        const existingGroup = groups.find((group) => group.date === expense.date);
-
-        if (existingGroup) {
-            existingGroup.items.push(expense);
-            existingGroup.totalAmount += expense.amount;
-            return groups;
-        }
-
-        return [
-            ...groups,
-            {
-                date: expense.date,
-                totalAmount: expense.amount,
-                items: [expense],
-            },
-        ];
-    }, []);
+    //表示中の月の支出を、日付ごとにまとめる
+    const groupedExpensesByDate = groupExpensesByDate(sortedDisplayMonthExpenses);
 
     //前月・翌月の日付を押して月を切り替えた後、該当日付支出一覧へスクロールする
     useEffect(() => {
