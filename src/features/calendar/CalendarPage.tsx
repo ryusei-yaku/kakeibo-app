@@ -46,17 +46,17 @@ function getDayColor(date: string) {
 
 //今月以外の日付に使う文字色を返す
 //土曜日は薄い青、日曜日・祝日は薄い赤色、それ以外は薄いグレーにする
-function getOutsideMonthDayColor(date:string){
+function getOutsideMonthDayColor(date: string) {
     const dayOfWeek = dayjs(date).day();
 
     //祝日判定ライブラリに渡すため、"YYYY-MM-DD"をDateに変換する
     const dateObject = dayjs(date).toDate();
 
-    if (isHoliday(dateObject) || dayOfWeek === 0){
+    if (isHoliday(dateObject) || dayOfWeek === 0) {
         return "#fca5a5";
     }
 
-    if (dayOfWeek === 6){
+    if (dayOfWeek === 6) {
         return "#93c5fd";
     }
 
@@ -72,6 +72,20 @@ function CalendarPage({ expenses }: CalendarPageProps) {
     //全支出の中から、今月の日付の支出だけを取り出す
     const monthlyExpenses = expenses.filter((expense) =>
         expense.date.startsWith(currentMonth)
+    );
+
+    //日付ごとの支出合計を作る
+    const dailyExpenseTotals = monthlyExpenses.reduce<Record<string, number>>(
+        (totals, expense) => {
+            //まだその日付の合計がない場合は0として扱う
+            const currentTotal = totals[expense.date] ?? 0;
+
+            return {
+                ...totals,
+                [expense.date]: currentTotal + expense.amount,
+            };
+        },
+        {}
     );
 
     //今月の最初の日を取得する
@@ -133,20 +147,20 @@ function CalendarPage({ expenses }: CalendarPageProps) {
         previousMonthCalendarDays.length -
         currentMonthCalendarDays.length;
 
-        //今月の最後の日の後に表示する、翌日の日付マスを作る
-        const nextMonthCalendarDays: CalendarDay[] = Array.from(
-            {length:nextMonthDaysCount},
-            (_, index) => {
-                //翌日の1日、2日、3日...を作る
-                const date = endOfMonth.add(index + 1, "day");
+    //今月の最後の日の後に表示する、翌日の日付マスを作る
+    const nextMonthCalendarDays: CalendarDay[] = Array.from(
+        { length: nextMonthDaysCount },
+        (_, index) => {
+            //翌日の1日、2日、3日...を作る
+            const date = endOfMonth.add(index + 1, "day");
 
-                return {
-                    date: date.format("YYYY-MM-DD"),
-                    day:date.date(),
-                    isCurrentMonth:false,
-                };
-            }
-        );
+            return {
+                date: date.format("YYYY-MM-DD"),
+                day: date.date(),
+                isCurrentMonth: false,
+            };
+        }
+    );
 
     //空白マスと今月の日付マスを結合して、カレンダーに表示する配列を作る
     const calendarDays: CalendarDay[] = [
@@ -250,8 +264,12 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                 //日付の文字色を決める
                                 //今月以外の日付は薄い色にする
                                 const dayColor = calendarDay.isCurrentMonth
-                                ? getDayColor(calendarDay.date)
-                                : getOutsideMonthDayColor(calendarDay.date);
+                                    ? getDayColor(calendarDay.date)
+                                    : getOutsideMonthDayColor(calendarDay.date);
+
+                                //この日付に登録された支出合計を取得する
+                                //合計がない日付の場合はundefinedになる
+                                const dailyTotal = dailyExpenseTotals[calendarDay.date];
 
                                 return (
                                     <Box
@@ -273,6 +291,19 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                         {calendarDay.day !== null && (
                                             <Typography sx={{ fontWeight: "bold", color: dayColor }}>
                                                 {calendarDay.day}
+                                            </Typography>
+                                        )}
+                                        {/* その日に支出がある場合だけ、日付マスの中に合計金額を表示する */}
+                                        {dailyTotal !== undefined && (
+                                            <Typography 
+                                            sx={{
+                                                mt:1,
+                                                fontSize:12,
+                                                fontWeight:"bold",
+                                                color:calendarDay.isCurrentMonth ? "#dc2626" : "#fca5a5",
+                                                textAlign:"right",
+                                            }}>
+                                                {dailyTotal.toLocaleString()}円
                                             </Typography>
                                         )}
                                     </Box>
