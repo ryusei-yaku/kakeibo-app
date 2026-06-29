@@ -126,7 +126,7 @@ function CalendarPage({ expenses }: CalendarPageProps) {
             return;
         }
 
-        //前月・翌日の日付なら、その日付が属する月へカレンダーを切り替える
+        //前月・翌月の日付なら、その日付が属する月へカレンダーを切り替える
         setDisplayMonth(dayjs(calendarDay.date).startOf("month"));
 
         //月の切り替え後に、その日付の支出一覧へスクロールするため予約しておく
@@ -223,7 +223,7 @@ function CalendarPage({ expenses }: CalendarPageProps) {
 
     //翌月へ移動する
     function goToNextMonth() {
-        setDisplayMonth((currentMont) => currentMont.add(1, "month"));
+        setDisplayMonth((currentMonth) => currentMonth.add(1, "month"));
     }
 
     //今月が何日まであるかを取得する
@@ -335,24 +335,6 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                         >
                             ホームへ戻る
                         </Button>
-
-                        {/* ページタイトル行 */}
-                        <Box
-                            sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                gap: 1,
-                            }}
-                        >
-                            {/* カレンダー画面であることを分かりやすくするアイコン */}
-                            {/* <CalendarMonthIcon sx={{ color: "#f59e0b" }} /> */}
-
-                            {/* ページタイトル */}
-                            {/* <Typography variant="h5" component="h1" sx={{ fontWeight: "bold" }}>
-                                カレンダー
-                            </Typography> */}
-                        </Box>
 
                         {/* 表示中の月を切り替えるエリア */}
                         <Box
@@ -492,11 +474,9 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                             }}
                                         >
                                             {/* 日付を表示する */}
-                                            {calendarDay.day !== null && (
-                                                <Typography sx={{ color: dayColor }}>
-                                                    {calendarDay.day}
-                                                </Typography>
-                                            )}
+                                            <Typography sx={{ color: dayColor }}>
+                                                {calendarDay.day}
+                                            </Typography>
                                             {/* その日に支出がある場合だけ、日付マスの中に合計金額を表示する */}
                                             {dailyTotal !== undefined && (
                                                 <Typography
@@ -553,6 +533,20 @@ function CalendarPage({ expenses }: CalendarPageProps) {
 
                             <Typography
                                 sx={{
+                                    fontSize: 14,
+                                    fontWeight: "bold",
+                                    color: "text.secondary",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    textAlign: "right",
+                                }}
+                            >
+                                支出合計
+                            </Typography>
+
+                            <Typography
+                                sx={{
                                     fontSize: 18,
                                     fontWeight: "bold",
                                     color: "#dc2626",
@@ -562,7 +556,7 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                     textAlign: "right",
                                 }}
                             >
-                                支出合計{displayMonthTotalAmount.toLocaleString()}円
+                                {displayMonthTotalAmount.toLocaleString()}円
                             </Typography>
                         </Box>
 
@@ -590,7 +584,7 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                             px: 2,
                                             py: 0.3,
                                             minWidth: 0,
-                                            borderBottom:"1px solid #e5e0d8",
+                                            borderBottom: "1px solid #e5e0d8",
                                         }}
                                     >
                                         {/* 日付は全文表示する */}
@@ -599,8 +593,8 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                                 flexShrink: 0,
                                                 fontWeight: "bold",
                                                 color: "#555555",
-                                                fontSize:14,
-                                                white: "nowrap",
+                                                fontSize: 14,
+                                                whiteSpace: "nowrap",
                                                 overflow: "visible",
                                                 textOverflow: "clip",
                                             }}
@@ -615,7 +609,7 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                                 minWidth: 0,
                                                 fontWeight: "bold",
                                                 color: "#555555",
-                                                fontSize:14,
+                                                fontSize: 14,
                                                 whiteSpace: "nowrap",
                                                 overflow: "hidden",
                                                 textOverflow: "ellipsis",
@@ -642,7 +636,7 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                                                     py: 1.25,
                                                     borderBottom: "1px solid #eeeeee",
                                                     minWidth: 0,
-                                                    backgroundColor:"#ffffff",
+                                                    backgroundColor: "#ffffff",
                                                 }}
                                             >
                                                 <Box
