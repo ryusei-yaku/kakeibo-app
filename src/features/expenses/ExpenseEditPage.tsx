@@ -42,6 +42,32 @@ function ExpenseEditForm({
     //削除確認ダイアログを開いているかどうかを管理
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
+    // 1項目分の横並びレイアウト
+    const inputRowSx = {
+        display: "flex",
+        alignItems: "center",
+        gap: 1.5,
+    };
+
+    // 項目名はBoxの外に置き、ページ背景の上に表示する
+    const inputLabelSx = {
+        width: 88,
+        flexShrink: 0,
+        fontSize: 16,
+        fontWeight: "bold",
+        color: "#555555",
+    };
+
+    //入力値を入れるBox
+    const inputValueBoxSx = {
+        flex: 1,
+        minWidth: 0,
+        backgroundColor: "#fde7cd",
+        borderRadius: 2,
+        px: 2,
+        py: 1.25,
+    };
+
     function handleSubmit() {
         // 金額が未入力の場合は保存しない
         if (amount === "") {
@@ -93,94 +119,189 @@ function ExpenseEditForm({
                     </Typography>
 
                     {/* 日付 */}
-                    <TextField
-                        label="日付"
-                        type="date"
-                        value={date}
-                        onChange={(event) => setDate(event.target.value)}
-                        fullWidth
-                        slotProps={{
-                            inputLabel: {
-                                shrink: true,
-                            }
-                        }}
-                    />
+                    <Box sx={inputRowSx}>
+                        <Typography sx={inputLabelSx}>
+                            日付
+                        </Typography>
+
+                        <Box sx={inputValueBoxSx}>
+                            <TextField
+                                type="date"
+                                value={date}
+                                onChange={(event) => setDate(event.target.value)}
+                                variant="standard"
+                                fullWidth
+                                slotProps={{
+                                    input: {
+                                        disableUnderline: true,
+                                    },
+                                    htmlInput: {
+                                        style: {
+                                            fontSize: 18,
+                                            fontWeight: "bold",
+                                            textAlign: "right",
+                                        },
+                                    },
+                                }}
+                            />
+                        </Box>
+                    </Box>
 
                     {/* 金額 */}
-                    <TextField
-                        label="金額"
-                        value={amount === "" ? "" : Number(amount).toLocaleString()}
-                        onChange={(event) => {
-                            // 数字以外を取り除いて、内部ではカンマなしで管理する
-                            const onlyNumber = event.target.value.replace(/\D/g, "")
-                            setAmount(onlyNumber);
-                        }}
-                        fullWidth
-                        slotProps={{
-                            inputLabel: {
-                                shrink: true,
-                            },
-                            htmlInput: {
-                                inputMode: "numeric",
-                            },
-                        }}
-                    />
-                    {/* カテゴリー */}
                     <Box
-                        sx={{
-                            backgroundColor: "#ffffff",
-                            border: "1px solid #d9d9d9",
-                            borderRadius: 1,
-                            px: 1.5,
-                            py: 1.25,
-                        }}
+                        sx={inputRowSx}
                     >
-                        <Typography sx={{ fontSize: 12, color: "text.secondary", mb: 0.5 }}>
+                        <Typography sx={inputLabelSx}>
+                            金額
+                        </Typography>
+                        <Box sx={inputValueBoxSx}>
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "flex-end",
+                                    gap: 0.5,
+                                    minWidth: 0,
+                                }}
+                            >
+                                <TextField
+                                    value={amount === "" ? "" : Number(amount).toLocaleString()}
+                                    onChange={(event) => {
+                                        // 数字以外を取り除いて、内部ではカンマなしで管理する
+                                        const onlyNumber = event.target.value.replace(/\D/g, "");
+                                        setAmount(onlyNumber);
+                                    }}
+                                    variant="standard"
+                                    fullWidth
+                                    slotProps={{
+                                        input: {
+                                            disableUnderline: true,
+                                        },
+                                        htmlInput: {
+                                            inputMode: "numeric",
+                                            style: {
+                                                textAlign: "right",
+                                                fontSize: 18,
+                                                fontWeight: "bold",
+                                            },
+                                        },
+                                    }}
+                                />
+                                <Typography
+                                    sx={{
+                                        fontSize: 18,
+                                        fontWeight: "bold",
+                                        color: "#333333",
+                                        flexShrink: 0,
+                                    }}
+                                >
+                                    円
+                                </Typography>
+                            </Box>
+                        </Box>
+                    </Box>
+                    {/* カテゴリー */}
+                    <Box sx={inputRowSx}>
+                        <Typography sx={inputLabelSx}>
                             カテゴリー
                         </Typography>
 
-                        <Typography sx={{ fontWeight: "bold", color: "#333333" }}>
-                            {expense.categoryName}
-                        </Typography>
-
-                        <Typography sx={{ fontSize: 12, color: "text.secondary", mt: 0.5 }}>
-                            カテゴリー編集は後で対応します
-                        </Typography>
+                        <Box sx={inputValueBoxSx}>
+                            <Typography
+                                sx={{
+                                    fontSize: 18,
+                                    fontWeight: "bold",
+                                    color: "#333333",
+                                    textAlign: "right",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                }}
+                            >
+                                {expense.categoryName}
+                            </Typography>
+                        </Box>
                     </Box>
 
                     {/* 店名 */}
-                    <TextField
-                        label="店名"
-                        value={shopName}
-                        onChange={(event) => setShopName(event.target.value)}
-                        fullWidth
-                        slotProps={{
-                            inputLabel: {
-                                shrink: true,
-                            }
-                        }}
-                    />
+                    <Box sx={inputRowSx}>
+                        <Typography sx={inputLabelSx}>
+                            店名
+                        </Typography>
+
+                        <Box sx={inputValueBoxSx}>
+                            <TextField
+                                value={shopName}
+                                onChange={(event) => setShopName(event.target.value)}
+                                variant="standard"
+                                fullWidth
+                                placeholder="未入力"
+                                slotProps={{
+                                    input: {
+                                        disableUnderline: true,
+                                    },
+                                    htmlInput: {
+                                        style: {
+                                            fontSize: 18,
+                                            fontWeight: "bold",
+                                            textAlign: "right",
+                                        },
+                                    },
+                                }}
+                            />
+                        </Box>
+                    </Box>
 
                     {/* メモ */}
-                    <TextField
-                        label="メモ"
-                        value={memo}
-                        onChange={(event) => setMemo(event.target.value)}
-                        fullWidth
-                        multiline
-                        minRows={2}
-                        slotProps={{
-                            inputLabel: {
-                                shrink: true,
-                            }
-                        }}
-                    />
+                    <Box>
+                        {/* メモだけは項目名を左上に表示する */}
+                        <Typography
+                            sx={{
+                                fontSize: 16,
+                                fontWeight: "bold",
+                                color: "#555555",
+                                mb: 1,
+                            }}
+                        >
+                            メモ
+                        </Typography>
+
+                        <Box
+                            sx={{
+                                backgroundColor: "#fde7cd",
+                                borderRadius: 2,
+                                px: 2,
+                                py: 1.25,
+                            }}
+                        >
+                            <TextField
+                                value={memo}
+                                onChange={(event) => setMemo(event.target.value)}
+                                variant="standard"
+                                fullWidth
+                                multiline
+                                minRows={3}
+                                placeholder="未入力"
+                                slotProps={{
+                                    input: {
+                                        disableUnderline: true,
+                                    },
+                                    htmlInput: {
+                                        style: {
+                                            fontSize: 18,
+                                            fontWeight: "bold",
+                                        },
+                                    },
+                                }}
+                            />
+                        </Box>
+                    </Box>
 
                     <Box
                         sx={{
                             display: "flex",
                             gap: 1,
-                            pt:1,
+                            pt: 1,
                         }}
                     >
                         <Button
@@ -190,9 +311,9 @@ function ExpenseEditForm({
                             sx={{
                                 flex: 1,
                                 fontWeight: "bold",
-                                backgroundColor:"#f59e0b",
-                                "&:hover":{
-                                    backgroundColor:"#d97706"
+                                backgroundColor: "#f59e0b",
+                                "&:hover": {
+                                    backgroundColor: "#d97706"
                                 }
                             }}
                         >
@@ -263,7 +384,7 @@ function ExpenseEditForm({
                     </Dialog>
                 </Stack>
             </Container>
-        </Box>
+        </Box >
     );
 }
 
