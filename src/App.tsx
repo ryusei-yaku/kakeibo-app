@@ -16,9 +16,28 @@ function App() {
   const [categories, setCategories] = useState<Category[]>(initialCategories);
 
   function addCategory(categoryName: string) {
+    const deletedCategory = categories.find(
+      (category) =>
+        category.name === categoryName &&
+        category.isDeleted
+    );
+
+    if (deletedCategory) {
+      setCategories((currentCategories) =>
+        currentCategories.map((category) =>
+          category.id === deletedCategory.id
+            ? { ...category, isDeleted: false }
+            : category
+        )
+      );
+
+      return;
+    }
+
     const newCategory: Category = {
       id: crypto.randomUUID(),
       name: categoryName,
+      isDeleted: false,
     };
 
     setCategories((currentCategories) => [
@@ -63,6 +82,20 @@ function App() {
     );
   }
 
+  function deleteCategory(categoryId: string) {
+    setCategories((currentCategories) =>
+      currentCategories.map((category) =>
+        category.id === categoryId
+          ? { ...category, isDeleted: true }
+          : category
+      )
+    );
+  }
+
+  const activeCategories = categories.filter(
+    (category) => !category.isDeleted
+  );
+
   return (
     <BrowserRouter>
       <Routes>
@@ -73,7 +106,7 @@ function App() {
           element={
             <ExpenseFormPage
               expenses={expenses}
-              categories={categories}
+              categories={activeCategories}
               onAddExpense={addExpense}
             />
           }
@@ -93,7 +126,7 @@ function App() {
           element={
             <ExpenseEditPage
               expenses={expenses}
-              categories={categories}
+              categories={activeCategories}
               onUpdateExpense={updateExpense}
               onDeleteExpense={deleteExpense}
             />
@@ -107,6 +140,7 @@ function App() {
               categories={categories}
               onAddCategory={addCategory}
               onUpdateCategory={updateCategory}
+              onDeleteCategory={deleteCategory}
             />
           }
         />

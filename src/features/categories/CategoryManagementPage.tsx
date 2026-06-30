@@ -4,6 +4,9 @@ import {
     Box,
     Button,
     Container,
+    Dialog,
+    DialogActions,
+    DialogTitle,
     Stack,
     TextField,
     Typography,
@@ -16,12 +19,14 @@ type CategoryManagementPageProps = {
     categories: Category[];
     onAddCategory: (categoryName: string) => void;
     onUpdateCategory: (categoryId: string, categoryName: string) => void;
+    onDeleteCategory: (categoryId: string) => void;
 };
 
 function CategoryManagementPage({
     categories,
     onAddCategory,
     onUpdateCategory,
+    onDeleteCategory,
 }: CategoryManagementPageProps) {
     const navigate = useNavigate();
 
@@ -30,6 +35,12 @@ function CategoryManagementPage({
     const [errorMessage, setErrorMessage] = useState("");
 
     const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+
+    const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+
+    const activeCategories = categories.filter(
+        (category) => !category.isDeleted
+    );
 
     function handleSubmitCategory() {
         const trimmedCategoryName = categoryName.trim();
@@ -52,13 +63,27 @@ function CategoryManagementPage({
 
         if (editingCategoryId === null) {
             onAddCategory(trimmedCategoryName);
-        } else {
-            onUpdateCategory(editingCategoryId, trimmedCategoryName);
+            setCategoryName("");
+            setErrorMessage("");
+            return;
         }
+
+        setIsUpdateDialogOpen(true);
+    }
+
+    function handleConfirmUpdateCategory() {
+        if (editingCategoryId === null) {
+            return;
+        }
+
+        const trimmedCategoryName = categoryName.trim();
+
+        onUpdateCategory(editingCategoryId, trimmedCategoryName);
 
         setCategoryName("");
         setEditingCategoryId(null);
         setErrorMessage("");
+        setIsUpdateDialogOpen(false);
     }
 
     function startEditCategory(category: Category) {
@@ -213,7 +238,7 @@ function CategoryManagementPage({
                         </Typography>
 
                         <Stack spacing={1}>
-                            {categories.map((category) => {
+                            {activeCategories.map((category) => {
                                 const isEditing = editingCategoryId === category.id;
 
                                 return (
@@ -253,7 +278,7 @@ function CategoryManagementPage({
                                                 flexShrink: 0,
                                                 fontWeight: "bold",
                                                 color: "#f59e0b",
-                                                fontSize:15
+                                                fontSize: 15
                                             }}
                                         >
                                             編集
@@ -261,6 +286,59 @@ function CategoryManagementPage({
                                     </Box>
                                 );
                             })}
+                            {/* カテゴリー名変更確認ダイアログ */}
+                            <Dialog
+                                open={isUpdateDialogOpen}
+                                onClose={() => setIsUpdateDialogOpen(false)}
+                                maxWidth="xs"
+                            >
+                                <DialogTitle
+                                    sx={{
+                                        textAlign: "center",
+                                        borderBottom: "1px solid #e0e0e0",
+                                        fontWeight: "bold",
+                                        fontSize:18,
+                                    }}
+                                >
+                                    過去の支出データのカテゴリー名も変更されます。
+                                    <br />
+                                    よろしいですか？
+                                </DialogTitle>
+
+                                <DialogActions
+                                    sx={{
+                                        p: 0,
+                                        display: "flex",
+                                    }}
+                                >
+                                    <Button
+                                        onClick={() => setIsUpdateDialogOpen(false)}
+                                        sx={{
+                                            flex: 1,
+                                            py: 1.5,
+                                            borderRadius: 0,
+                                            fontWeight: "bold",
+                                            color: "text.secondary",
+                                        }}
+                                    >
+                                        キャンセル
+                                    </Button>
+
+                                    <Button
+                                        onClick={handleConfirmUpdateCategory}
+                                        sx={{
+                                            flex: 1,
+                                            py: 1.5,
+                                            borderRadius: 0,
+                                            fontWeight: "bold",
+                                            color: "#f59e0b",
+                                            borderLeft: "1px solid #e0e0e0",
+                                        }}
+                                    >
+                                        変更する
+                                    </Button>
+                                </DialogActions>
+                            </Dialog>
                         </Stack>
                     </Box>
                 </Stack>
