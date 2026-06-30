@@ -24,14 +24,14 @@ import CategorySelector from "../categories/CategorySelector";
 
 type ExpenseEditPageProps = {
     expenses: Expense[];
-    categories:Category[];
+    categories: Category[];
     onUpdateExpense: (expense: Expense) => void;
     onDeleteExpense: (expenseId: string) => void;
 };
 
 type ExpenseEditFormProps = {
     expense: Expense;
-    categories:Category[];
+    categories: Category[];
     onUpdateExpense: (expense: Expense) => void;
     onDeleteExpense: (expenseId: string) => void;
 };
@@ -54,6 +54,11 @@ function ExpenseEditForm({
     const [isDateDialogOpen, setIsDateDialogOpen] = useState(false);
     //削除確認ダイアログを開いているかどうかを管理
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+    const selectableCategories = categories.filter(
+        (category) =>
+            !category.isDeleted || category.id === expense.categoryId
+    );
 
     // 1項目分の横並びレイアウト
     // 入力画面と同じように、左に項目名、右に入力欄を置く
@@ -251,10 +256,10 @@ function ExpenseEditForm({
                             カテゴリー
                         </Typography>
 
-                        <CategorySelector 
-                        categories={categories}
-                        selectedCategoryId={selectedCategoryId}
-                        onSelectCategory={setSelectedCategoryId}
+                        <CategorySelector
+                            categories={selectableCategories}
+                            selectedCategoryId={selectedCategoryId}
+                            onSelectCategory={setSelectedCategoryId}
                         />
                     </Box>
 

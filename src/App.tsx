@@ -126,7 +126,7 @@ function App() {
           element={
             <ExpenseEditPage
               expenses={expenses}
-              categories={activeCategories}
+              categories={categories}
               onUpdateExpense={updateExpense}
               onDeleteExpense={deleteExpense}
             />
