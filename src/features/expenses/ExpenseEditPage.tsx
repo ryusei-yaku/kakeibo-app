@@ -20,6 +20,7 @@ import type { Expense } from "../../types/expense";
 import { formatAmount } from "../../utils/formatAmount";
 import { categories } from "../categories/categories";
 import { formatDateLabel } from "../../utils/formatDateLabel";
+import CategorySelector from "../categories/CategorySelector";
 
 type ExpenseEditPageProps = {
     expenses: Expense[];
@@ -247,39 +248,10 @@ function ExpenseEditForm({
                             カテゴリー
                         </Typography>
 
-                        <Box
-                            sx={{
-                                display: "grid",
-                                gridTemplateColumns: "repeat(3, 1fr)",
-                                gap: 1,
-                            }}
-                        >
-                            {categories.map((category => {
-                                const isSelected = selectedCategoryId === category.id;
-
-                                return (
-                                    <Button
-                                        key={category.id}
-                                        variant={isSelected ? "contained" : "outlined"}
-                                        onClick={() => setSelectedCategoryId(category.id)}
-                                        sx={{
-                                            fontWeight: "bold",
-                                            py: 1.5,
-                                            borderRadius: 3,
-                                            backgroundColor: isSelected ? "#f59e0b" : "#f6f4ef",
-                                            color: isSelected ? "#ffffff" : "#555555",
-                                            borderColor: "#f59e0b",
-                                            "&:hover": {
-                                                backgroundColor: isSelected ? "#d97706" : "#fbd4a7",
-                                                borderColor: "#d97706"
-                                            },
-                                        }}
-                                    >
-                                        {category.name}
-                                    </Button>
-                                );
-                            }))}
-                        </Box>
+                        <CategorySelector 
+                        selectedCategoryId={selectedCategoryId}
+                        onSelectCategory={setSelectedCategoryId}
+                        />
                     </Box>
 
                     {/* 店名 */}

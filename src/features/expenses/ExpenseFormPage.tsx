@@ -12,6 +12,7 @@ import type { Expense } from "../../types/expense";
 import { formatAmount } from "../../utils/formatAmount";
 import { categories } from "../categories/categories";
 import { formatDateLabel } from "../../utils/formatDateLabel";
+import CategorySelector from "../categories/CategorySelector";
 
 type ExpenseFormPageProps = {
     expenses: Expense[];
@@ -226,60 +227,11 @@ function ExpenseFormPage({ expenses, onAddExpense }: ExpenseFormPageProps) {
                         カテゴリー
                     </Typography>
 
-                    <Box
-                        sx={{
-                            display: "grid",
-                            gridTemplateColumns: "repeat(3, 1fr)",
-                            gap: 1,
-                        }}
-                    >
-                        {categories.map((category) => {
-                            const isSelected = selectedCategoryId === category.id;
-
-                            return (
-                                <Button
-                                    key={category.id}
-                                    variant={isSelected ? "contained" : "outlined"}
-                                    onClick={() => setSelectedCategoryId(category.id)}
-                                    sx={{
-                                        borderRadius: 3,
-                                        py: 1.5,
-                                        fontWeight: "bold",
-                                        backgroundColor: isSelected ? "#f59e0b" : "#f6f4ef",
-                                        color: isSelected ? "#ffffff" : "#555555",
-                                        borderColor: "#f59e0b",
-                                        "&:hover": {
-                                            backgroundColor: isSelected ? "#d97706" : "#fbd4a7",
-                                            borderColor: "#d97706",
-                                        },
-                                    }}
-                                >
-                                    {category.name}
-                                </Button>
-                            );
-                        })}
-
-                        <Button
-                            variant="outlined"
-                            sx={{
-                                borderRadius: 3,
-                                py: 1.5,
-                                fontWeight: "bold",
-                                backgroundColor: "#f6f4ef",
-                                color: "#555555",
-                                borderColor: "#f59e0b",
-                                whiteSpace: "nowrap",
-                                minWidth: "fit-content",
-                                px: 1.5,
-                                "&:hover": {
-                                    backgroundColor: "#fbd4a7",
-                                    borderColor: "#d97706",
-                                },
-                            }}
-                        >
-                            編集・追加＞
-                        </Button>
-                    </Box>
+                    <CategorySelector 
+                    selectedCategoryId={selectedCategoryId}
+                    onSelectCategory={setSelectedCategoryId}
+                    showEditButton
+                    />
                 </Box>
 
                 <Box
