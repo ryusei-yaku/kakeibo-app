@@ -3,6 +3,7 @@ import { Box, Button, Container, Stack, Typography } from "@mui/material";
 import dayjs from "../../lib/dayjs";
 import { useNavigate, useParams } from "react-router-dom";
 import type { Expense } from "../../types/expense";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 type MonthlyCategoryDetailPageProps = {
     expenses: Expense[];
@@ -37,6 +38,8 @@ function formatExpenseLabel(shopName: string, memo: string) {
     if (memo !== "") {
         return `(${memo})`;
     }
+
+    return "詳細未入力";
 }
 
 function MonthlyCategoryDetailPage({
@@ -163,6 +166,7 @@ function MonthlyCategoryDetailPage({
                                         {group.items.map((expense, index) => (
                                             <Box
                                                 key={expense.id}
+                                                onClick={() => navigate(`/expenses/edit/${expense.id}`)}
                                                 sx={{
                                                     display: "flex",
                                                     justifyContent: "space-between",
@@ -171,22 +175,47 @@ function MonthlyCategoryDetailPage({
                                                     px: 2,
                                                     py: 1.5,
                                                     borderTop: index === 0 ? "none" : "1px solid #eeeeee",
+                                                    cursor: "pointer",
+                                                    "&hover": {
+                                                        backgroundColor: "#fff8ef"
+                                                    }
                                                 }}
                                             >
                                                 {/* 左側：店名。メモがあれば店名の横に（）で表示 */}
-                                                <Typography sx={{ pr: 2 }}>
+                                                <Typography sx={{
+                                                    flex: 1,
+                                                    minWidth: 0,
+                                                    pr: 2,
+                                                    whiteSpace: "nowrap",
+                                                    overflow: "hidden",
+                                                    textOverflow: "ellipsis",
+                                                }}
+                                                >
                                                     {formatExpenseLabel(expense.shopName, expense.memo)}
                                                 </Typography>
 
                                                 {/* 右側：金額 */}
-                                                <Typography
+                                                <Box sx={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 0.5,
+                                                    flexShrink: 0,
+                                                }}>
+                                                    <Typography
+                                                        sx={{
+                                                            fontWeight: "bold",
+                                                            flexShrink: 0,
+                                                        }}
+                                                    >
+                                                        {formatYen(expense.amount)}
+                                                    </Typography>
+
+                                                    <ChevronRightIcon 
                                                     sx={{
-                                                        fontWeight: "bold",
-                                                        flexShrink: 0,
-                                                    }}
-                                                >
-                                                    {formatYen(expense.amount)}
-                                                </Typography>
+                                                        color:"text.secondary",
+                                                        flexShrink:0,
+                                                    }}/>
+                                                </Box>
                                             </Box>
                                         ))}
                                     </Box>
