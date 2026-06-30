@@ -14,28 +14,36 @@ import CategoryManagementPage from "./features/categories/CategoryManagementPage
 const EXPENSES_STORAGE_KEY = "kakeibo-expenses";
 const CATEGORIES_STORAGE_KEY = "kakeibo-categories";
 
+// localStorageから支出データを読み込む
 function loadExpensesFromStorage() {
   try {
+    // localStorageに保存されている支出データを取得する
     const savedExpenses = localStorage.getItem(EXPENSES_STORAGE_KEY);
 
+    // まだ一度も保存されていない場合
     if (savedExpenses === null) {
       return [];
     }
 
+    // localStorageには文字列として保存されているため、配列に戻す
     return JSON.parse(savedExpenses) as Expense[];
   } catch {
     return [];
   }
 }
 
+// localStorageからカテゴリーデータを読み込む
 function loadCategoriesFromStorage() {
   try {
+    //localStorageに保存されているカテゴリーデータを取得する
     const savedCategories = localStorage.getItem(CATEGORIES_STORAGE_KEY);
 
+    // まだ一度も保存されていない場合は、初期カテゴリーを使う
     if (savedCategories === null) {
       return initialCategories;
     }
 
+    // localStorageには文字列として保尊されているため、配列に戻す
     return JSON.parse(savedCategories) as Category[];
   } catch {
     return initialCategories;
@@ -123,10 +131,12 @@ function App() {
     );
   }
 
+  // 支出データが変更されるたびにlocalStorageへ保存する
   useEffect(() => {
     localStorage.setItem(EXPENSES_STORAGE_KEY, JSON.stringify(expenses));
   }, [expenses]);
 
+  // カテゴリーデータが変更されるたびにlocalStorageへ保存する
   useEffect(() => {
     localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(categories));
   }, [categories]);
