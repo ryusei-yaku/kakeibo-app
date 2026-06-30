@@ -68,7 +68,7 @@ function DailyExpenseList({
                         textAlign: "right",
                     }}
                 >
-                    支出合計
+                    {displayMonthText}の支出合計
                 </Typography>
 
                 <Typography

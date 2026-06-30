@@ -1,17 +1,22 @@
 import { Box, Button } from "@mui/material";
-import { categories } from "./categories";
+import type { Category } from "../../types/category";
+import { useNavigate } from "react-router-dom";
 
 type CategorySelectorProps = {
+    categories: Category[];
     selectedCategoryId: string;
     onSelectCategory: (categoryId: string) => void;
     showEditButton?: boolean;
 };
 
 function CategorySelector({
+    categories,
     selectedCategoryId,
     onSelectCategory,
     showEditButton = false,
 }: CategorySelectorProps) {
+    const navigate = useNavigate();
+
     return (
         <Box
             sx={{
@@ -49,6 +54,7 @@ function CategorySelector({
             {showEditButton && (
                 <Button
                     variant="outlined"
+                    onClick={()=>navigate("/categories/manage")}
                     sx={{
                         borderRadius: 3,
                         py: 1.5,

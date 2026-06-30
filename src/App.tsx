@@ -7,9 +7,25 @@ import type { Expense } from "./types/expense";
 import MonthlyCategoryDetailPage from "./features/categories/MonthlyCategoryDetailPage";
 import CalendarPage from "./features/calendar/CalendarPage";
 import ExpenseEditPage from "./features/expenses/ExpenseEditPage";
+import type { Category } from "./types/category";
+import { initialCategories } from "./features/categories/categories";
+import CategoryManagementPage from "./features/categories/CategoryManagementPage"
 
 function App() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
+
+  function addCategory(categoryName: string) {
+    const newCategory: Category = {
+      id: crypto.randomUUID(),
+      name: categoryName,
+    };
+
+    setCategories((currentCategories) => [
+      ...currentCategories,
+      newCategory,
+    ]);
+  }
 
   function addExpense(expense: Expense) {
     setExpenses((currentExpenses) => [expense, ...currentExpenses]);
@@ -33,9 +49,16 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage expenses={expenses} />} />
+        {/* 支出入力画面 */}
         <Route
           path="/expenses/new"
-          element={<ExpenseFormPage expenses={expenses} onAddExpense={addExpense} />}
+          element={
+            <ExpenseFormPage
+              expenses={expenses}
+              categories={categories}
+              onAddExpense={addExpense}
+            />
+          }
         />
         <Route
           path="/categories/monthly"
@@ -46,13 +69,25 @@ function App() {
           element={<MonthlyCategoryDetailPage expenses={expenses} />}
         />
         <Route path="/calendar" element={<CalendarPage expenses={expenses} />} />
+        {/* 支出編集画面 */}
         <Route
           path="/expenses/edit/:expenseId"
           element={
             <ExpenseEditPage
               expenses={expenses}
+              categories={categories}
               onUpdateExpense={updateExpense}
               onDeleteExpense={deleteExpense}
+            />
+          }
+        />
+        {/* カテゴリー管理画面 */}
+        <Route
+          path="/categories/manage"
+          element={
+            <CategoryManagementPage
+              categories={categories}
+              onAddCategory={addCategory}
             />
           }
         />

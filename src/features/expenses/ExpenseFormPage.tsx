@@ -8,18 +8,21 @@ import type { Dayjs } from "dayjs";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "../../lib/dayjs";
+import type { Category } from "../../types/category";
 import type { Expense } from "../../types/expense";
 import { formatAmount } from "../../utils/formatAmount";
-import { categories } from "../categories/categories";
 import { formatDateLabel } from "../../utils/formatDateLabel";
 import CategorySelector from "../categories/CategorySelector";
 
 type ExpenseFormPageProps = {
     expenses: Expense[];
+    categories: Category[];
     onAddExpense: (expense: Expense) => void;
 }
 
-function ExpenseFormPage({ expenses, onAddExpense }: ExpenseFormPageProps) {
+function ExpenseFormPage({
+    categories,
+    onAddExpense }: ExpenseFormPageProps) {
     //現在選ばれている日付を保持する。
     const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
     //カレンダーのダイアログが開いているかを保持する。
@@ -227,10 +230,11 @@ function ExpenseFormPage({ expenses, onAddExpense }: ExpenseFormPageProps) {
                         カテゴリー
                     </Typography>
 
-                    <CategorySelector 
-                    selectedCategoryId={selectedCategoryId}
-                    onSelectCategory={setSelectedCategoryId}
-                    showEditButton
+                    <CategorySelector
+                        categories={categories}
+                        selectedCategoryId={selectedCategoryId}
+                        onSelectCategory={setSelectedCategoryId}
+                        showEditButton
                     />
                 </Box>
 

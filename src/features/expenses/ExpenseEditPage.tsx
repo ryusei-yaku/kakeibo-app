@@ -18,24 +18,27 @@ import { useNavigate, useParams } from "react-router-dom";
 import dayjs from "../../lib/dayjs";
 import type { Expense } from "../../types/expense";
 import { formatAmount } from "../../utils/formatAmount";
-import { categories } from "../categories/categories";
+import type { Category } from "../../types/category";
 import { formatDateLabel } from "../../utils/formatDateLabel";
 import CategorySelector from "../categories/CategorySelector";
 
 type ExpenseEditPageProps = {
     expenses: Expense[];
+    categories:Category[];
     onUpdateExpense: (expense: Expense) => void;
     onDeleteExpense: (expenseId: string) => void;
 };
 
 type ExpenseEditFormProps = {
     expense: Expense;
+    categories:Category[];
     onUpdateExpense: (expense: Expense) => void;
     onDeleteExpense: (expenseId: string) => void;
 };
 
 function ExpenseEditForm({
     expense,
+    categories,
     onUpdateExpense,
     onDeleteExpense
 }: ExpenseEditFormProps) {
@@ -249,6 +252,7 @@ function ExpenseEditForm({
                         </Typography>
 
                         <CategorySelector 
+                        categories={categories}
                         selectedCategoryId={selectedCategoryId}
                         onSelectCategory={setSelectedCategoryId}
                         />
@@ -429,6 +433,7 @@ function ExpenseEditForm({
 
 function ExpenseEditPage({
     expenses,
+    categories,
     onUpdateExpense,
     onDeleteExpense,
 }: ExpenseEditPageProps) {
@@ -451,6 +456,7 @@ function ExpenseEditPage({
     return (
         <ExpenseEditForm
             expense={expense}
+            categories={categories}
             onUpdateExpense={onUpdateExpense}
             onDeleteExpense={onDeleteExpense}
         />
