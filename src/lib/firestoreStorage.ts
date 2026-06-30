@@ -11,6 +11,7 @@ import {
 import { db } from "./firebase";
 import type { Expense } from "../types/expense";
 import type { Category } from "../types/category";
+import { initialCategories } from "../features/categories/categories";
 
 // Firestore上で支出データを保存するコレクション名
 // 今はログイン機能がないため、仮のユーザーID配下に保存する
@@ -176,7 +177,11 @@ export async function loadCategoriesFromFirestore() {
         };
     });
 
-    // Firestoreにカテゴリーが1件もない場合は、空配列を返す
-    // App.tsx側で「Firestoreが空ならlocalStorageのデータを残す」と判断するため
+    // Firestoreにカテゴリーが1件もない場合は、初期カテゴリーを表示する
+    // 初回利用時にカテゴリー選択が空にならないようにするため
+    if (categories.length === 0) {
+        return initialCategories;
+    }
+
     return categories;
 }

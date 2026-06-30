@@ -45,6 +45,12 @@ export function loadCategoriesFromStorage() {
         // localStorageには文字列として保存されているため、配列に戻す
         const parsedCategories = JSON.parse(savedCategories) as Category[];
 
+        // 何らかの理由で空配列が保存されていた場合は、初期カテゴリーを使う
+        // 初回表示でカテゴリーが何も出なくなるのを防ぐため
+        if (parsedCategories.length === 0) {
+            return initialCategories;
+        }
+
         // 古い保存データには isDeleted が存在しない可能性がある
         // その場合は、削除されていないカテゴリーとして扱う
         return parsedCategories.map((category) => ({

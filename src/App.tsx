@@ -26,10 +26,22 @@ import {
   updateExpenseCategoryNameToFirestore,
   updateExpenseToFirestore,
 } from "./lib/firestoreStorage";
+import { initialCategories } from "./features/categories/categories";
 
 function App() {
   const [expenses, setExpenses] = useState<Expense[]>(loadExpensesFromStorage);
-  const [categories, setCategories] = useState<Category[]>(loadCategoriesFromStorage);
+  const [categories, setCategories] = useState<Category[]>(() => {
+    // localStorageからカテゴリーデータを読み込む
+    const storageCategories = loadCategoriesFromStorage();
+
+    // localStorageに空配列が保存されている場合は、初期カテゴリーを使う
+    // これにより、初回表示でカテゴリーが何も出なくなるのを防ぐ
+    if (storageCategories.length === 0) {
+      return initialCategories;
+    }
+
+    return storageCategories;
+  });
 
   // アプリ起動時にFirestoreから支出データとカテゴリーデータを読み込む
   // ただし、Firestoreが空の場合は、今までのlocalStorageデータをそのまま使う
@@ -49,7 +61,7 @@ function App() {
         }
 
         // Firestoreにカテゴリーデータがある場合だけ、画面上のカテゴリーデータを置き換える
-        // 空の場合は、localStorageまたは初期カテゴリーをそのまま使う
+        // 空の場合は、useStateの初期値で設定したlocalStorageまたは初期カテゴリーをそのまま使う
         if (firestoreCategories.length > 0) {
           setCategories(firestoreCategories);
         }
