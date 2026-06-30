@@ -10,10 +10,14 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { Expense } from "../../types/expense";
 import { categories } from "../categories/categories";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import dayjs from "../../lib/dayjs";
 
 type ExpenseEditPageProps = {
     expenses: Expense[];
@@ -41,27 +45,9 @@ function ExpenseEditForm({
     const [shopName, setShopName] = useState(expense.shopName);
     const [memo, setMemo] = useState(expense.memo);
     const [selectedCategoryId, setSelectedCategoryId] = useState(expense.categoryId);
+    const [isDateDialogOpen, setIsDateDialogOpen] = useState(false);
     //削除確認ダイアログを開いているかどうかを管理
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
-    const dateInputRef = useRef<HTMLInputElement | null>(null);
-
-    function openDatePicker() {
-        const dateInput = dateInputRef.current;
-
-        if (dateInput === null) {
-            return;
-        }
-
-        // ブラウザがshowPickerに対応していれば、日付選択UIを開く
-        if (typeof dateInput.showPicker === "function") {
-            dateInput.showPicker();
-            return;
-        }
-
-        // showPickerに対応していない場合の処理
-        dateInput.focus();
-    }
 
     // 1項目分の横並びレイアウト
     // 入力画面と同じように、左に項目名、右に入力欄を置く
@@ -146,6 +132,10 @@ function ExpenseEditForm({
         navigate(-1);
     }
 
+    function formatDateLabel(date: string) {
+        return dayjs(date).locale("ja").format("YYYY年M月D日(ddd)");
+    }
+
     return (
         <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef", py: 3 }}>
             <Container maxWidth="sm">
@@ -173,38 +163,25 @@ function ExpenseEditForm({
                             日付
                         </Typography>
 
-                        <Box
+                        <Button
+                            onClick={() => setIsDateDialogOpen(true)}
+                            fullWidth
                             sx={{
-                                ...inputValueBoxSx,
-                                cursor: "pointer",
+                                flex: 1,
+                                backgroundColor: "#fde7cd",
+                                borderRadius: 2,
+                                py: 1,
+                                textAlign: "center",
+                                color: "text.primary",
+                                fontSize: 18,
+                                fontWeight: "bold",
+                                "&:hover": {
+                                    backgroundColor: "#fbd4a7",
+                                },
                             }}
-                            onClick={openDatePicker}
                         >
-                            <TextField
-                                inputRef={dateInputRef}
-                                type="date"
-                                value={date}
-                                onChange={(event) => setDate(event.target.value)}
-                                variant="standard"
-                                fullWidth
-                                sx={{
-                                    "& .MuiInputBase-root": {
-                                        cursor: "pointer",
-                                    },
-                                    "& input": {
-                                        fontSize: 18,
-                                        fontWeight: "bold",
-                                        textAlign: "right",
-                                        cursor: "pointer",
-                                    },
-                                }}
-                                slotProps={{
-                                    input: {
-                                        disableUnderline: true,
-                                    },
-                                }}
-                            />
-                        </Box>
+                            {formatDateLabel(date)}
+                        </Button>
                     </Box>
 
                     {/* 金額 */}
@@ -453,6 +430,26 @@ function ExpenseEditForm({
                                 削除する
                             </Button>
                         </DialogActions>
+                    </Dialog>
+
+                    {/* 日付選択ダイアログ */}
+                    <Dialog
+                        open={isDateDialogOpen}
+                        onClose={() => setIsDateDialogOpen(false)}
+                    >
+                        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ja">
+                            <DateCalendar
+                                value={dayjs(date)}
+                                onChange={(newDate) => {
+                                    if (newDate === null) {
+                                        return;
+                                    }
+
+                                    setDate(newDate.format("YYYY-MM-DD"));
+                                    setIsDateDialogOpen(false);
+                                }}
+                            />
+                        </LocalizationProvider>
                     </Dialog>
                 </Stack>
             </Container>

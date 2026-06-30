@@ -119,7 +119,17 @@ function ExpenseFormPage({ expenses, onAddExpense }: ExpenseFormPageProps) {
                         日付
                     </Typography>
 
-                    <Button onClick={goToPreviousDate} sx={{ minWidth: 40, fontSize: 24 }}>
+                    <Button
+                        onClick={goToPreviousDate}
+                        sx={{
+                            minWidth: 40,
+                            fontSize: 24,
+                            color: "#f59e0b",
+                            "&:hover": {
+                                backgroundColor: "#fbd4a7",
+                            }
+                        }}
+                    >
                         ＜
                     </Button>
 
@@ -128,7 +138,7 @@ function ExpenseFormPage({ expenses, onAddExpense }: ExpenseFormPageProps) {
                         fullWidth
                         sx={{
                             flex: 1,
-                            background: "#eaf6fd",
+                            backgroundColor: "#fde7cd",
                             borderRadius: 2,
                             py: 1,
                             textAlign: "center",
@@ -136,14 +146,26 @@ function ExpenseFormPage({ expenses, onAddExpense }: ExpenseFormPageProps) {
                             fontSize: 18,
                             fontWeight: "bold",
                             "&:hover": {
-                                backgroundColor: "#dff1fb",
+                                backgroundColor: "#fbd4a7",
                             },
                         }}
                     >
                         {formatDateLabel(selectedDate)}
                     </Button>
 
-                    <Button onClick={goToNextDate} sx={{ minWidth: 40, fontSize: 24 }}>＞</Button>
+                    <Button
+                        onClick={goToNextDate}
+                        sx={{
+                            minWidth: 40,
+                            fontSize: 24,
+                            color: "#f59e0b",
+                            "&:hover": {
+                                backgroundColor: "#fbd4a7",
+                            }
+                        }}
+                    >
+                        ＞
+                    </Button>
 
                 </Box>
 
@@ -164,7 +186,7 @@ function ExpenseFormPage({ expenses, onAddExpense }: ExpenseFormPageProps) {
                             flexShrink: 0,
                         }}
                     >
-                        支出
+                        支出額
                     </Typography>
 
                     <TextField
@@ -208,7 +230,7 @@ function ExpenseFormPage({ expenses, onAddExpense }: ExpenseFormPageProps) {
                     <Typography
                         variant="body2"
                         color="text.secondary"
-                        sx={{ mb: 1, fontWeight: "bold" }}
+                        sx={{ mb: 1, fontWeight: "bold", color: "text.secondary" }}
                     >
                         カテゴリー
                     </Typography>
@@ -232,6 +254,13 @@ function ExpenseFormPage({ expenses, onAddExpense }: ExpenseFormPageProps) {
                                         borderRadius: 3,
                                         py: 1.5,
                                         fontWeight: "bold",
+                                        backgroundColor: isSelected ? "#f59e0b" : "#f6f4ef",
+                                        color: isSelected ? "#ffffff" : "#555555",
+                                        borderColor: "#f59e0b",
+                                        "&:hover": {
+                                            backgroundColor: isSelected ? "#d97706" : "#fbd4a7",
+                                            borderColor: "#d97706",
+                                        },
                                     }}
                                 >
                                     {category.name}
@@ -245,6 +274,16 @@ function ExpenseFormPage({ expenses, onAddExpense }: ExpenseFormPageProps) {
                                 borderRadius: 3,
                                 py: 1.5,
                                 fontWeight: "bold",
+                                backgroundColor: "#f6f4ef",
+                                color: "#555555",
+                                borderColor: "#f59e0b",
+                                whiteSpace: "nowrap",
+                                minWidth: "fit-content",
+                                px: 1.5,
+                                "&:hover": {
+                                    backgroundColor: "#fbd4a7",
+                                    borderColor: "#d97706",
+                                },
                             }}
                         >
                             編集・追加＞
@@ -348,70 +387,15 @@ function ExpenseFormPage({ expenses, onAddExpense }: ExpenseFormPageProps) {
                         py: 1.8,
                         borderRadius: 3,
                         fontSize: 18,
-                        fontWeight: "bold"
+                        fontWeight: "bold",
+                        backgroundColor: "#f59e0b",
+                        "&:hover": {
+                            backgroundColor: "#d97706",
+                        },
                     }}
                 >
                     登録する
                 </Button>
-                <Box sx={{ mt: 4 }}>
-                    <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ mb: 1, fontWeight: "bold" }}
-                    >
-                        登録済みの支出
-                    </Typography>
-
-                    {expenses.length === 0 ? (
-                        <Typography color="text.secondary">
-                            まだ支出は登録されていません。
-                        </Typography>
-                    ) : (
-                        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                            {expenses.map((expense) => (
-                                <Box
-                                    key={expense.id}
-                                    sx={{
-                                        backgroundColor: "#ffffff",
-                                        borderRadius: 3,
-                                        p: 2,
-                                        boxShadow: "0 2px 10px rgba(0, 0, 0, 0.04)",
-                                    }}
-                                >
-                                    <Box
-                                        sx={{
-                                            display: "flex",
-                                            justifyContent: "space-between",
-                                            gap: 2,
-                                        }}
-                                    >
-                                        <Typography sx={{ fontWeight: "bold" }}>
-                                            {expense.categoryName}
-                                        </Typography>
-
-                                        <Typography sx={{ fontWeight: "bold" }}>
-                                            {expense.amount.toLocaleString()}円
-                                        </Typography>
-                                    </Box>
-
-                                    <Typography color="text.secondary" sx={{ mt: 0.5 }}>
-                                        {expense.date}
-                                    </Typography>
-
-                                    {expense.shopName !== "" && (
-                                        <Typography sx={{ mt: 1 }}>{expense.shopName}</Typography>
-                                    )}
-
-                                    {expense.memo !== "" && (
-                                        <Typography color="text.secondary" sx={{ mt: 0.5 }}>
-                                            {expense.memo}
-                                        </Typography>
-                                    )}
-                                </Box>
-                            ))}
-                        </Box>
-                    )}
-                </Box>
             </Container>
 
             <Dialog open={isDateDialogOpen} onClose={() => setIsDateDialogOpen(false)}>
