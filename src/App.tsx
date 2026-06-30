@@ -28,6 +28,7 @@ import {
   updateExpenseToFirestore,
 } from "./lib/firestoreStorage";
 import { initialCategories } from "./features/categories/categories";
+import { sortCategories } from "./utils/sortCategories";
 
 function App() {
   const [expenses, setExpenses] = useState<Expense[]>(loadExpensesFromStorage);
@@ -293,9 +294,13 @@ function App() {
     saveCategoriesToStorage(categories);
   }, [categories]);
 
-  const activeCategories = categories.filter(
-    (category) => !category.isDeleted
+  const activeCategories = sortCategories(
+    categories.filter((category) => !category.isDeleted)
   );
+
+  // 画面表示用にカテゴリーを並び替える
+  // 「その他」は最後に表示する
+  const sortedCategories = sortCategories(categories);
 
   return (
     <BrowserRouter>
@@ -338,7 +343,7 @@ function App() {
           path="/categories/manage"
           element={
             <CategoryManagementPage
-              categories={categories}
+              categories={sortedCategories}
               onAddCategory={addCategory}
               onUpdateCategory={updateCategory}
               onDeleteCategory={deleteCategory}
