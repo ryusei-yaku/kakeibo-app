@@ -33,9 +33,10 @@ function loadExpensesFromStorage() {
 }
 
 // localStorageからカテゴリーデータを読み込む
+// 保存データがない場合や、読み込みに失敗した場合は初期カテゴリーを返す
 function loadCategoriesFromStorage() {
   try {
-    //localStorageに保存されているカテゴリーデータを取得する
+    // localStorageに保存されているカテゴリーデータを取得する
     const savedCategories = localStorage.getItem(CATEGORIES_STORAGE_KEY);
 
     // まだ一度も保存されていない場合は、初期カテゴリーを使う
@@ -43,13 +44,20 @@ function loadCategoriesFromStorage() {
       return initialCategories;
     }
 
-    // localStorageには文字列として保尊されているため、配列に戻す
-    return JSON.parse(savedCategories) as Category[];
+    // localStorageには文字列として保存されているため、配列に戻す
+    const parsedCategories = JSON.parse(savedCategories) as Category[];
+
+    // 古い保存データには isDeleted が存在しない可能性がある
+    // その場合は、削除されていないカテゴリーとして扱う
+    return parsedCategories.map((category) => ({
+      ...category,
+      isDeleted: category.isDeleted ?? false,
+    }));
   } catch {
+    // JSONの形式が壊れている場合など、読み込みに失敗したら初期カテゴリーを使う
     return initialCategories;
   }
 }
-
 function App() {
   const [expenses, setExpenses] = useState<Expense[]>(loadExpensesFromStorage);
   const [categories, setCategories] = useState<Category[]>(loadCategoriesFromStorage);
