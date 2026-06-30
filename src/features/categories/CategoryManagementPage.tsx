@@ -25,15 +25,28 @@ function CategoryManagementPage({
 
     const [categoryName, setCategoryName] = useState("");
 
+    const [errorMessage, setErrorMessage] = useState("");
+
     function handleAddCategory() {
         const trimmedCategoryName = categoryName.trim();
 
         if (trimmedCategoryName === "") {
+            setErrorMessage("カテゴリー名を入力してください。")
+            return;
+        }
+
+        const isDuplicateCategory = categories.some( //配列の中に「条件に当てはまるものが1つでもあるか」を確認する関数
+            (category) => category.name === trimmedCategoryName
+        );
+
+        if (isDuplicateCategory) {
+            setErrorMessage("すでに存在するカテゴリー名です。");
             return;
         }
 
         onAddCategory(trimmedCategoryName);
         setCategoryName("");
+        setErrorMessage("");
     }
 
     return (
@@ -91,7 +104,10 @@ function CategoryManagementPage({
 
                             <TextField
                                 value={categoryName}
-                                onChange={(event) => setCategoryName(event.target.value)}
+                                onChange={(event) => {
+                                    setCategoryName(event.target.value)
+                                    setErrorMessage("");
+                                }}
                                 placeholder="例：美容"
                                 variant="standard"
                                 fullWidth
@@ -111,7 +127,17 @@ function CategoryManagementPage({
                                     },
                                 }}
                             />
-
+                            {errorMessage !== "" && (
+                                <Typography
+                                    sx={{
+                                        color: "#dc2626",
+                                        fontSize: 14,
+                                        fontWeight: "bold",
+                                    }}
+                                >
+                                    ※{errorMessage}
+                                </Typography>
+                            )}
                             <Button
                                 variant="contained"
                                 size="large"
