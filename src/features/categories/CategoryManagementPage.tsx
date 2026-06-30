@@ -38,6 +38,8 @@ function CategoryManagementPage({
 
     const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
 
+    const [deleteTargetCategory, setDeleteTargetCategory] = useState<Category | null>(null);
+
     const activeCategories = categories.filter(
         (category) => !category.isDeleted
     );
@@ -52,6 +54,7 @@ function CategoryManagementPage({
 
         const isDuplicateCategory = categories.some(
             (category) =>
+                !category.isDeleted &&
                 category.name === trimmedCategoryName &&
                 category.id !== editingCategoryId
         );
@@ -101,6 +104,22 @@ function CategoryManagementPage({
         setEditingCategoryId(null);
         setErrorMessage("");
         setIsUpdateDialogOpen(false);
+    }
+
+    function handleConfirmDeleteCategory() {
+        if (deleteTargetCategory === null) {
+            return;
+        }
+
+        onDeleteCategory(deleteTargetCategory.id);
+
+        if (editingCategoryId === deleteTargetCategory.id) {
+            setEditingCategoryId(null);
+            setCategoryName("");
+            setErrorMessage("");
+        }
+
+        setDeleteTargetCategory(null);
     }
 
     function startEditCategory(category: Category) {
@@ -288,18 +307,38 @@ function CategoryManagementPage({
                                             {category.name}
                                         </Typography>
 
-                                        <Button
-                                            size="medium"
-                                            onClick={() => startEditCategory(category)}
+                                        <Box
                                             sx={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: 0.5,
                                                 flexShrink: 0,
-                                                fontWeight: "bold",
-                                                color: "#f59e0b",
-                                                fontSize: 15
                                             }}
                                         >
-                                            編集
-                                        </Button>
+                                            <Button
+                                                size="small"
+                                                onClick={() => startEditCategory(category)}
+                                                sx={{
+                                                    fontWeight: "bold",
+                                                    color: "#f59e0b",
+                                                    fontSize: 15,
+                                                }}
+                                            >
+                                                編集
+                                            </Button>
+
+                                            <Button
+                                                size="small"
+                                                color="error"
+                                                onClick={() => setDeleteTargetCategory(category)}
+                                                sx={{
+                                                    fontWeight: "bold",
+                                                    fontSize: 15,
+                                                }}
+                                            >
+                                                削除
+                                            </Button>
+                                        </Box>
                                     </Box>
                                 );
                             })}
@@ -353,6 +392,59 @@ function CategoryManagementPage({
                                         }}
                                     >
                                         変更する
+                                    </Button>
+                                </DialogActions>
+                            </Dialog>
+
+                            {/* カテゴリー削除確認ダイアログ */}
+                            <Dialog
+                                open={deleteTargetCategory !== null}
+                                onClose={() => setDeleteTargetCategory(null)}
+                                maxWidth="xs"
+                            >
+                                <DialogTitle
+                                    sx={{
+                                        textAlign: "center",
+                                        borderBottom: "1px solid #e0e0e0",
+                                        fontWeight: "bold",
+                                    }}
+                                >
+                                    {deleteTargetCategory?.name}を削除しますか？
+                                    <br />
+                                    過去の支出データは変更されません。
+                                </DialogTitle>
+
+                                <DialogActions
+                                    sx={{
+                                        p: 0,
+                                        display: "flex",
+                                    }}
+                                >
+                                    <Button
+                                        onClick={() => setDeleteTargetCategory(null)}
+                                        sx={{
+                                            flex: 1,
+                                            py: 1.5,
+                                            borderRadius: 0,
+                                            fontWeight: "bold",
+                                            color: "text.secondary",
+                                        }}
+                                    >
+                                        キャンセル
+                                    </Button>
+
+                                    <Button
+                                        color="error"
+                                        onClick={handleConfirmDeleteCategory}
+                                        sx={{
+                                            flex: 1,
+                                            py: 1.5,
+                                            borderRadius: 0,
+                                            fontWeight: "bold",
+                                            borderLeft: "1px solid #e0e0e0",
+                                        }}
+                                    >
+                                        削除する
                                     </Button>
                                 </DialogActions>
                             </Dialog>
