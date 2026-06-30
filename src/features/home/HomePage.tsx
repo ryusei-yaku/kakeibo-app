@@ -53,17 +53,7 @@ function HomePage({ expenses }: HomePageProps) {
                             color: "#333333",
                         }}
                     >
-                        家計簿
-                    </Typography>
-
-                    <Typography
-                        sx={{
-                            mt: 0.5,
-                            color: "text.secondary",
-                            fontWeight: "bold",
-                        }}
-                    >
-                        今日も無理なく記録しましょう
+                        家計簿アプリ
                     </Typography>
                 </Box>
 

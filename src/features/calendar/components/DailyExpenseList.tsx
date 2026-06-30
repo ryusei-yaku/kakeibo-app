@@ -1,3 +1,4 @@
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { Box, Typography } from "@mui/material";
 import dayjs from "../../../lib/dayjs";
 import type { DailyExpenseGroup } from "../utils/expenseGrouping";
@@ -158,7 +159,7 @@ function DailyExpenseList({
                             return (
                                 <Box
                                     key={expense.id}
-                                    onClick={()=>onExpenseClick(expense.id)}
+                                    onClick={() => onExpenseClick(expense.id)}
                                     sx={{
                                         display: "flex",
                                         justifyContent: "space-between",
@@ -168,7 +169,11 @@ function DailyExpenseList({
                                         borderBottom: "1px solid #eeeeee",
                                         minWidth: 0,
                                         backgroundColor: "#ffffff",
-                                        cursor:"pointer",
+                                        cursor: "pointer",
+                                        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
+                                        "&:hover": {
+                                            backgroundColor: "#fff8ef",
+                                        },
                                     }}
                                 >
                                     <Box
@@ -206,23 +211,40 @@ function DailyExpenseList({
                                         )}
                                     </Box>
 
-                                    {/* 金額は長い場合、省略表示する */}
-                                    <Typography
+                                    <Box
                                         sx={{
-                                            fontWeight: "bold",
-                                            fontSize: 18,
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 0.5,
                                             maxWidth: "45%",
                                             minWidth: 0,
-                                            flexShrink: 1,
-                                            whiteSpace: "nowrap",
-                                            overflow: "hidden",
-                                            textOverflow: "ellipsis",
-                                            textAlign: "right",
+                                            flexShrink: 0,
                                         }}
                                     >
-                                        {expense.amount.toLocaleString()}円
-                                    </Typography>
+                                        <Typography
+                                            sx={{
+                                                fontWeight: "bold",
+                                                fontSize: 18,
+                                                minWidth: 0,
+                                                whiteSpace: "nowrap",
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis",
+                                                textAlign: "right",
+                                            }}
+                                        >
+                                            {expense.amount.toLocaleString()}円
+                                        </Typography>
+
+                                        <ChevronRightIcon
+                                            sx={{
+                                                color: "text.secondary",
+                                                flexShrink: 0,
+                                            }}
+                                        />
+                                    </Box>
                                 </Box>
+
+
                             );
                         })}
                     </Box>
