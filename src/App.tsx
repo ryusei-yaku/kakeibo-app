@@ -15,6 +15,7 @@ import {
 } from "./lib/localStorage";
 import type { Category } from "./types/category";
 import type { Expense } from "./types/expense";
+import { saveExpenseToFirestore } from "./lib/firestoreStorage";
 
 function App() {
   const [expenses, setExpenses] = useState<Expense[]>(loadExpensesFromStorage);
@@ -51,8 +52,20 @@ function App() {
     ]);
   }
 
-  function addExpense(expense: Expense) {
+  async function addExpense(expense: Expense) {
+    //先に画面上の支出一覧を更新する
+    //これにより、Firestore保存を待たずに画面へすぐ反映できる
     setExpenses((currentExpenses) => [expense, ...currentExpenses]);
+
+    try {
+      // localStorageとは別に、Firestoreにも支出データを保存する
+      // まだ完全移行ではなく、Firestore保存の動作確認用
+      await saveExpenseToFirestore(expense);
+    } catch (error) {
+      // Firestore保存に失敗しても、今はlocalStorage側にはデータが残る
+      // まずは開発中に原因を確認できるよう、コンソールに出す
+      console.error("Firestoreへの支出保存に失敗しました", error);
+    }
   }
 
   function updateExpense(updateExpense: Expense) {
