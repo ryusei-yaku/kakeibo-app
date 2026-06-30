@@ -1,4 +1,4 @@
-import { collection, doc, setDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, setDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Expense } from "../types/expense";
 
@@ -19,4 +19,31 @@ export async function saveExpenseToFirestore(expense: Expense) {
     // Firestoreに支出データを保存する
     // setDoc は、指定したIDのドキュメントを作成または上書きする
     await setDoc(expenseRef, expense);
+}
+
+// Firestore上の支出データを更新する
+// 今回は追加と同じく setDoc を使い、同じIDのドキュメントを上書きする
+export async function updateExpenseToFirestore(expense: Expense) {
+    // 更新先のパスを作る
+    // 例: users / test-user / expenses / 支出ID
+    const expenseRef = doc(
+        collection(db, "users", TEST_USER_ID, "expenses"),
+        expense.id
+    );
+
+    // Firestoreの支出データを上書き保存する
+    await setDoc(expenseRef, expense);
+}
+
+// Firestore上の支出データを削除する
+export async function deleteExpenseFromFirestore(expenseId: string) {
+    // 削除対象のパスを作る
+    // 例: users / test-user / expenses / 支出ID
+    const expenseRef = doc(
+        collection(db, "users", TEST_USER_ID, "expenses"),
+        expenseId
+    );
+
+    // Firestoreから支出データを削除する
+    await deleteDoc(expenseRef);
 }

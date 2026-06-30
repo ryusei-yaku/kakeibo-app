@@ -15,7 +15,11 @@ import {
 } from "./lib/localStorage";
 import type { Category } from "./types/category";
 import type { Expense } from "./types/expense";
-import { saveExpenseToFirestore } from "./lib/firestoreStorage";
+import {
+  deleteExpenseFromFirestore,
+  saveExpenseToFirestore,
+  updateExpenseToFirestore,
+} from "./lib/firestoreStorage";
 
 function App() {
   const [expenses, setExpenses] = useState<Expense[]>(loadExpensesFromStorage);
@@ -68,18 +72,40 @@ function App() {
     }
   }
 
-  function updateExpense(updateExpense: Expense) {
+  async function updateExpense(updatedExpense: Expense) {
+    // 先に画面上の支出データを更新する
+    // これにより、Firestore保存を待たずに編集結果をすぐ反映できる
     setExpenses((currentExpenses) =>
       currentExpenses.map((expense) =>
-        expense.id === updateExpense.id ? updateExpense : expense
+        expense.id === updatedExpense.id ? updatedExpense : expense
       )
     );
+
+    try {
+      // localStorageとは別に、Firestore上の支出データも更新する
+      await updateExpenseToFirestore(updatedExpense);
+    } catch (error) {
+      // Firestore更新に失敗しても、今はlocalStorage側には編集内容が残る
+      // まずは開発中に原因を確認できるよう、コンソールに出す
+      console.error("Firestoreへの支出更新に失敗しました", error);
+    }
   }
 
-  function deleteExpense(expenseId: string) {
+  async function deleteExpense(expenseId: string) {
+    // 先に画面上の支出データを削除する
+    // これにより、Firestore削除を待たずに画面へすぐ反映できる
     setExpenses((currentExpenses) =>
       currentExpenses.filter((expense) => expense.id !== expenseId)
     );
+
+    try {
+      // localStorageとは別に、Firestore上の支出データも削除する
+      await deleteExpenseFromFirestore(expenseId);
+    } catch (error) {
+      // Firestore削除に失敗しても、今はlocalStorage側では削除済みになる
+      // まずは開発中に原因を確認できるよう、コンソールに出す
+      console.error("Firestoreからの支出削除に失敗しました", error);
+    }
   }
 
   function updateCategory(categoryId: string, categoryName: string) {
