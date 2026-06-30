@@ -189,7 +189,7 @@ function ExpenseEditForm({
                         sx={inputRowSx}
                     >
                         <Typography sx={inputLabelSx}>
-                            金額
+                            支出額
                         </Typography>
                         <Box sx={inputValueBoxSx}>
                             <Box
