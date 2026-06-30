@@ -15,6 +15,14 @@ function App() {
     setExpenses((currentExpenses) => [expense, ...currentExpenses]);
   }
 
+  function updateExpense(updateExpense: Expense) {
+    setExpenses((currentExpenses) =>
+      currentExpenses.map((expense) =>
+        expense.id === updateExpense.id ? updateExpense : expense
+      )
+    );
+  }
+
   return (
     <BrowserRouter>
       <Routes>
@@ -34,7 +42,13 @@ function App() {
         <Route path="/calendar" element={<CalendarPage expenses={expenses} />} />
         <Route
           path="/expenses/edit/:expenseId"
-          element={<ExpenseEditPage expenses={expenses} />} />
+          element={
+            <ExpenseEditPage
+              expenses={expenses}
+              onUpdateExpense={updateExpense}
+            />
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

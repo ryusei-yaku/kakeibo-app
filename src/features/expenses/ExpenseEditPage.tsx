@@ -13,29 +13,17 @@ import { useState } from "react";
 
 type ExpenseEditPageProps = {
     expenses: Expense[];
-}
+    onUpdateExpense: (expense: Expense) => void;
+};
 
-function ExpenseEditPage({ expenses }: ExpenseEditPageProps) {
+type ExpenseEditFormProps = {
+    expense: Expense;
+    onUpdateExpense: (expense: Expense) => void;
+};
+
+function ExpenseEditForm({ expense, onUpdateExpense }: ExpenseEditFormProps) {
     //ページを移動するための関数
     const navigate = useNavigate();
-
-    //URLの:expenseIdに入っている支出IDを取得する
-    const { expenseId } = useParams();
-
-    //URLの支出IDと一致する支出データを探す
-    const expense = expenses.find((expense) => expense.id === expenseId);
-
-
-    if (expense === undefined) {
-        return (
-            <Container maxWidth="sm" sx={{ px: 3 }}>
-                <Typography>
-                    支出が見つかりませんでした。
-                </Typography>
-            </Container>
-        );
-    }
-
     //編集フォーム用のstate
     //既存の支出データを初期値として入れる
     const [amount, setAmount] = useState(String(expense.amount));
@@ -43,7 +31,27 @@ function ExpenseEditPage({ expenses }: ExpenseEditPageProps) {
     const [shopName, setShopName] = useState(expense.shopName);
     const [memo, setMemo] = useState(expense.memo);
 
+    function handleSubmit() {
+        // 金額が未入力の場合は保存しない
+        if (amount === "") {
+            return;
+        }
 
+        // 編集後の支出データを作る
+        const updatedExpense: Expense = {
+            ...expense,
+            amount: Number(amount),
+            date,
+            shopName,
+            memo,
+        };
+
+        // App.tsxのexpensesを更新する
+        onUpdateExpense(updatedExpense);
+
+        // 保存後は前の画面に戻る
+        navigate(-1);
+    }
 
     return (
         <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef", py: 3 }}>
@@ -83,7 +91,7 @@ function ExpenseEditPage({ expenses }: ExpenseEditPageProps) {
                     {/* 金額 */}
                     <TextField
                         label="金額"
-                        value={Number(amount || 0).toLocaleString()}
+                        value={amount === "" ? "" : Number(amount).toLocaleString()}
                         onChange={(event) => {
                             // 数字以外を取り除いて、内部ではカンマなしで管理する
                             const onlyNumber = event.target.value.replace(/\D/g, "")
@@ -117,7 +125,7 @@ function ExpenseEditPage({ expenses }: ExpenseEditPageProps) {
                     {/* 店名 */}
                     <TextField
                         label="店名"
-                        value={expense.shopName}
+                        value={shopName}
                         onChange={(event) => setShopName(event.target.value)}
                         fullWidth
                         slotProps={{
@@ -130,7 +138,7 @@ function ExpenseEditPage({ expenses }: ExpenseEditPageProps) {
                     {/* メモ */}
                     <TextField
                         label="メモ"
-                        value={expense.memo}
+                        value={memo}
                         onChange={(event) => setMemo(event.target.value)}
                         fullWidth
                         multiline
@@ -145,6 +153,7 @@ function ExpenseEditPage({ expenses }: ExpenseEditPageProps) {
                     <Button
                         variant="contained"
                         size="large"
+                        onClick={handleSubmit}
                         sx={{ fontWeight: "bold" }}
                     >
                         保存する
@@ -153,6 +162,32 @@ function ExpenseEditPage({ expenses }: ExpenseEditPageProps) {
             </Container>
         </Box>
     );
+}
+
+function ExpenseEditPage({ expenses, onUpdateExpense }: ExpenseEditPageProps) {
+    //URLの:expenseIdに入っている支出IDを取得する
+    const { expenseId } = useParams();
+
+    //URLの支出IDと一致する支出データを探す
+    const expense = expenses.find((expense) => expense.id === expenseId);
+
+    if (expense === undefined) {
+        return (
+            <Container maxWidth="sm" sx={{ px: 3 }}>
+                <Typography>
+                    支出が見つかりませんでした。
+                </Typography>
+            </Container>
+        );
+    }
+
+    return (
+        <ExpenseEditForm
+            expense={expense}
+            onUpdateExpense={onUpdateExpense}
+        />
+    )
+
 }
 
 export default ExpenseEditPage;
