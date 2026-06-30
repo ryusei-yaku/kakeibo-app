@@ -15,11 +15,13 @@ import type { Category } from "../../types/category";
 type CategoryManagementPageProps = {
     categories: Category[];
     onAddCategory: (categoryName: string) => void;
+    onUpdateCategory: (categoryId: string, categoryName: string) => void;
 };
 
 function CategoryManagementPage({
     categories,
     onAddCategory,
+    onUpdateCategory,
 }: CategoryManagementPageProps) {
     const navigate = useNavigate();
 
@@ -27,7 +29,9 @@ function CategoryManagementPage({
 
     const [errorMessage, setErrorMessage] = useState("");
 
-    function handleAddCategory() {
+    const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+
+    function handleSubmitCategory() {
         const trimmedCategoryName = categoryName.trim();
 
         if (trimmedCategoryName === "") {
@@ -36,7 +40,9 @@ function CategoryManagementPage({
         }
 
         const isDuplicateCategory = categories.some( //配列の中に「条件に当てはまるものが1つでもあるか」を確認する関数
-            (category) => category.name === trimmedCategoryName
+            (category) =>
+                category.name === trimmedCategoryName &&
+                category.id !== editingCategoryId //編集を取り消すために保存した際に同じ名前があると言われないため
         );
 
         if (isDuplicateCategory) {
@@ -44,8 +50,20 @@ function CategoryManagementPage({
             return;
         }
 
-        onAddCategory(trimmedCategoryName);
+        if (editingCategoryId === null) {
+            onAddCategory(trimmedCategoryName);
+        } else {
+            onUpdateCategory(editingCategoryId, trimmedCategoryName);
+        }
+
         setCategoryName("");
+        setEditingCategoryId(null);
+        setErrorMessage("");
+    }
+
+    function startEditCategory(category: Category) {
+        setEditingCategoryId(category.id);
+        setCategoryName(category.name);
         setErrorMessage("");
     }
 
@@ -99,7 +117,7 @@ function CategoryManagementPage({
                                     color: "text.secondary",
                                 }}
                             >
-                                新しいカテゴリー
+                                新しいカテゴリー名
                             </Typography>
 
                             <TextField
@@ -141,8 +159,8 @@ function CategoryManagementPage({
                             <Button
                                 variant="contained"
                                 size="large"
-                                startIcon={<AddIcon />}
-                                onClick={handleAddCategory}
+                                startIcon={editingCategoryId === null ? <AddIcon /> : undefined}
+                                onClick={handleSubmitCategory}
                                 sx={{
                                     py: 1.4,
                                     borderRadius: 3,
@@ -153,8 +171,32 @@ function CategoryManagementPage({
                                     },
                                 }}
                             >
-                                追加する
+                                {editingCategoryId === null ? "追加する" : "保存する"}
                             </Button>
+                            {editingCategoryId !== null && (
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => {
+                                        setEditingCategoryId(null);
+                                        setCategoryName("");
+                                        setErrorMessage("");
+                                    }}
+                                    sx={{
+                                        py: 1.2,
+                                        borderRadius: 3,
+                                        fontWeight: "bold",
+                                        color: "#555555",
+                                        borderColor: "#f59e0b",
+                                        backgroundColor: "#ffffff",
+                                        "&:hover": {
+                                            backgroundColor: "#fbd4a7",
+                                            borderColor: "#d97706",
+                                        },
+                                    }}
+                                >
+                                    キャンセル
+                                </Button>
+                            )}
                         </Stack>
                     </Box>
 
@@ -171,27 +213,54 @@ function CategoryManagementPage({
                         </Typography>
 
                         <Stack spacing={1}>
-                            {categories.map((category) => (
-                                <Box
-                                    key={category.id}
-                                    sx={{
-                                        backgroundColor: "#ffffff",
-                                        borderRadius: 3,
-                                        px: 2,
-                                        py: 1.5,
-                                        border: "1px solid #eeeeee",
-                                    }}
-                                >
-                                    <Typography
+                            {categories.map((category) => {
+                                const isEditing = editingCategoryId === category.id;
+
+                                return (
+                                    <Box
+                                        key={category.id}
                                         sx={{
-                                            fontWeight: "bold",
-                                            color: "#333333",
+                                            backgroundColor: isEditing ? "#fde7cd" : "#ffffff",
+                                            borderRadius: 3,
+                                            px: 2,
+                                            py: 1.5,
+                                            border: isEditing
+                                                ? "1px solid #f59e0b"
+                                                : "1px solid #eeeeee",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "space-between",
+                                            gap: 2,
                                         }}
                                     >
-                                        {category.name}
-                                    </Typography>
-                                </Box>
-                            ))}
+                                        <Typography
+                                            sx={{
+                                                fontWeight: "bold",
+                                                color: "#333333",
+                                                minWidth: 0,
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis",
+                                                whiteSpace: "nowrap",
+                                            }}
+                                        >
+                                            {category.name}
+                                        </Typography>
+
+                                        <Button
+                                            size="medium"
+                                            onClick={() => startEditCategory(category)}
+                                            sx={{
+                                                flexShrink: 0,
+                                                fontWeight: "bold",
+                                                color: "#f59e0b",
+                                                fontSize:15
+                                            }}
+                                        >
+                                            編集
+                                        </Button>
+                                    </Box>
+                                );
+                            })}
                         </Stack>
                     </Box>
                 </Stack>

@@ -45,6 +45,24 @@ function App() {
     );
   }
 
+  function updateCategory(categoryId: string, categoryName: string) {
+    setCategories((currentCategories) =>
+      currentCategories.map((category) =>
+        category.id === categoryId
+          ? { ...category, name: categoryName }
+          : category
+      )
+    );
+
+    setExpenses((currentExpenses) =>
+      currentExpenses.map((expense) =>
+        expense.categoryId === categoryId
+          ? { ...expense, categoryName }
+          : expense
+      )
+    );
+  }
+
   return (
     <BrowserRouter>
       <Routes>
@@ -88,6 +106,7 @@ function App() {
             <CategoryManagementPage
               categories={categories}
               onAddCategory={addCategory}
+              onUpdateCategory={updateCategory}
             />
           }
         />
