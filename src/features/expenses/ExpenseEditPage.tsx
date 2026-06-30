@@ -290,6 +290,7 @@ function ExpenseEditForm({
                                         style: {
                                             fontSize: 18,
                                             fontWeight: "bold",
+                                            textAlign: "right",
                                         },
                                     },
                                 }}
