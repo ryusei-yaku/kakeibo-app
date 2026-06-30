@@ -10,7 +10,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { Expense } from "../../types/expense";
 import { categories } from "../categories/categories";
@@ -64,22 +64,37 @@ function ExpenseEditForm({
     }
 
     // 1項目分の横並びレイアウト
+    // 入力画面と同じように、左に項目名、右に入力欄を置く
     const inputRowSx = {
         display: "flex",
         alignItems: "center",
         gap: 1.5,
+        borderBottom: "1px solid #e0e0e0",
+        py: 1.5,
     };
 
-    // 項目名はBoxの外に置き、ページ背景の上に表示する
+    // メモのように複数行になる項目用
+    const multilineInputRowSx = {
+        ...inputRowSx,
+        alignItems: "flex-start",
+    };
+
+    // 項目名
     const inputLabelSx = {
-        width: 88,
+        width: 56,
         flexShrink: 0,
-        fontSize: 18,
         fontWeight: "bold",
-        color: "#555555",
+        color: "text.secondary",
     };
 
-    //入力値を入れるBox
+    // 複数行項目のラベル位置調整
+    const multilineInputLabelSx = {
+        ...inputLabelSx,
+        pt: 0.8,
+    };
+
+    // 入力値を入れるBox
+    // 色は編集画面に合わせて #fde7cd
     const inputValueBoxSx = {
         flex: 1,
         minWidth: 0,
@@ -246,13 +261,12 @@ function ExpenseEditForm({
                         </Box>
                     </Box>
                     {/* カテゴリー */}
-                    <Box>
+                    <Box sx={{ mt: 0.5 }}>
                         <Typography
+                            variant="body2"
+                            color="text.secondary"
                             sx={{
-                                fontSize: 18,
                                 fontWeight: "bold",
-                                color: "#555555",
-                                mt: 0.5,
                                 mb: 1,
                             }}>
                             カテゴリー
@@ -276,7 +290,7 @@ function ExpenseEditForm({
                                         sx={{
                                             fontWeight: "bold",
                                             py: 1.5,
-                                            borderRadius: 2,
+                                            borderRadius: 3,
                                             backgroundColor: isSelected ? "#f59e0b" : "#f6f4ef",
                                             color: isSelected ? "#ffffff" : "#555555",
                                             borderColor: "#f59e0b",
@@ -305,17 +319,19 @@ function ExpenseEditForm({
                                 onChange={(event) => setShopName(event.target.value)}
                                 variant="standard"
                                 fullWidth
+                                multiline
+                                minRows={1}
                                 placeholder="未入力"
                                 slotProps={{
                                     input: {
                                         disableUnderline: true,
                                     },
-                                    htmlInput: {
-                                        style: {
-                                            fontSize: 18,
-                                            fontWeight: "bold",
-                                            textAlign: "right",
-                                        },
+                                }}
+                                sx={{
+                                    "& textarea": {
+                                        fontSize: 18,
+                                        lineHeight: 1.6,
+                                        overflowWrap: "break-word",
                                     },
                                 }}
                             />
@@ -323,45 +339,30 @@ function ExpenseEditForm({
                     </Box>
 
                     {/* メモ */}
-                    <Box>
-                        {/* メモだけは項目名を左上に表示する */}
-                        <Typography
-                            sx={{
-                                fontSize: 18,
-                                fontWeight: "bold",
-                                color: "#555555",
-                                mb: 1,
-                            }}
-                        >
+                    <Box sx={multilineInputRowSx}>
+                        <Typography sx={multilineInputLabelSx}>
                             メモ
                         </Typography>
 
-                        <Box
-                            sx={{
-                                backgroundColor: "#fde7cd",
-                                borderRadius: 2,
-                                px: 2,
-                                py: 1.25,
-                            }}
-                        >
+                        <Box sx={inputValueBoxSx}>
                             <TextField
                                 value={memo}
                                 onChange={(event) => setMemo(event.target.value)}
                                 variant="standard"
                                 fullWidth
                                 multiline
-                                minRows={3}
+                                minRows={2}
                                 placeholder="未入力"
                                 slotProps={{
                                     input: {
                                         disableUnderline: true,
                                     },
-                                    htmlInput: {
-                                        style: {
-                                            fontSize: 18,
-                                            fontWeight: "bold",
-                                            textAlign: "right",
-                                        },
+                                }}
+                                sx={{
+                                    "& textarea": {
+                                        fontSize: 18,
+                                        lineHeight: 1.6,
+                                        overflowWrap: "break-word",
                                     },
                                 }}
                             />
