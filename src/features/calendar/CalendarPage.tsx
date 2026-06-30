@@ -96,6 +96,9 @@ function CalendarPage({ expenses }: CalendarPageProps) {
     //表示中の月の支出を、日付ごとにまとめる
     const groupedExpensesByDate = groupExpensesByDate(sortedDisplayMonthExpenses);
 
+    //表示中の月に対応するカレンダー日付マスを作る
+    const calendarDays = createCalendarDays(displayMonth);
+
     //前月・翌月の日付を押して月を切り替えた後、該当日付支出一覧へスクロールする
     useEffect(() => {
         if (pendingScrollDate === null) {
@@ -124,9 +127,6 @@ function CalendarPage({ expenses }: CalendarPageProps) {
     function goToNextMonth() {
         setDisplayMonth((currentMonth) => currentMonth.add(1, "month"));
     }
-
-    //表示中の月に対応するカレンダー日付マスを作る
-    const calendarDays = createCalendarDays(displayMonth);
 
     return (
         // 画面全体の背景と高さを設定する
