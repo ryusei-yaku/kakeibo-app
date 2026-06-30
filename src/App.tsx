@@ -34,7 +34,7 @@ function App() {
         <Route path="/calendar" element={<CalendarPage expenses={expenses} />} />
         <Route
           path="/expenses/edit/:expenseId"
-          element={<ExpenseEditPage />} />
+          element={<ExpenseEditPage expenses={expenses} />} />
       </Routes>
     </BrowserRouter>
   );
