@@ -46,18 +46,18 @@ function CategoryManagementPage({
         const trimmedCategoryName = categoryName.trim();
 
         if (trimmedCategoryName === "") {
-            setErrorMessage("カテゴリー名を入力してください。")
+            setErrorMessage("カテゴリー名を入力してください。");
             return;
         }
 
-        const isDuplicateCategory = categories.some( //配列の中に「条件に当てはまるものが1つでもあるか」を確認する関数
+        const isDuplicateCategory = categories.some(
             (category) =>
                 category.name === trimmedCategoryName &&
-                category.id !== editingCategoryId //編集を取り消すために保存した際に同じ名前があると言われないため
+                category.id !== editingCategoryId
         );
 
         if (isDuplicateCategory) {
-            setErrorMessage("すでに存在するカテゴリー名です。");
+            setErrorMessage("同じ名前のカテゴリーがすでにあります。");
             return;
         }
 
@@ -68,6 +68,23 @@ function CategoryManagementPage({
             return;
         }
 
+        const editingCategory = categories.find(
+            (category) => category.id === editingCategoryId
+        );
+
+        if (editingCategory === undefined) {
+            return;
+        }
+
+        // カテゴリー名が変わっていない場合は、確認ダイアログを出さずに編集を終了する
+        if (editingCategory.name === trimmedCategoryName) {
+            setCategoryName("");
+            setEditingCategoryId(null);
+            setErrorMessage("");
+            return;
+        }
+
+        // カテゴリー名が変わっている場合だけ、過去データ変更の確認を出す
         setIsUpdateDialogOpen(true);
     }
 
@@ -297,7 +314,7 @@ function CategoryManagementPage({
                                         textAlign: "center",
                                         borderBottom: "1px solid #e0e0e0",
                                         fontWeight: "bold",
-                                        fontSize:18,
+                                        fontSize: 18,
                                     }}
                                 >
                                     過去の支出データのカテゴリー名も変更されます。
