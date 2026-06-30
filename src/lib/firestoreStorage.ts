@@ -9,6 +9,7 @@ import {
     where,
 } from "firebase/firestore";
 import { db } from "./firebase";
+import { initialCategories } from "../features/categories/categories";
 import type { Expense } from "../types/expense";
 import type { Category } from "../types/category";
 
@@ -132,4 +133,55 @@ export async function updateExpenseCategoryNameToFirestore(
 
     // すべての更新が終わるまで待つ
     await Promise.all(updatePromises);
+}
+
+// Firestoreから支出データをすべて読み込む
+// 今はログイン機能がないため、仮の test-user 配下の支出を読み込む
+export async function loadExpensesFromFirestore() {
+    // 支出データが入っているコレクションを指定する
+    // 例: users / test-user / expenses
+    const expensesRef = collection(db, "users", TEST_USER_ID, "expenses");
+
+    // Firestoreから支出データを取得する
+    const querySnapshot = await getDocs(expensesRef);
+
+    // Firestoreのドキュメントを、アプリで使う Expense[] の形に変換する
+    const expenses = querySnapshot.docs.map((expenseDoc) => {
+        return expenseDoc.data() as Expense;
+    });
+
+    // 日付が新しい順に並べる
+    // Firestoreから取得した順番は画面表示用に保証されていないため、ここで並び替える
+    return expenses.sort((a, b) => b.date.localeCompare(a.date));
+}
+
+// Firestoreからカテゴリーデータをすべて読み込む
+// 今はログイン機能がないため、仮の test-user 配下のカテゴリーを読み込む
+export async function loadCategoriesFromFirestore() {
+    // カテゴリーデータが入っているコレクションを指定する
+    // 例: users / test-user / categories
+    const categoriesRef = collection(db, "users", TEST_USER_ID, "categories");
+
+    // Firestoreからカテゴリーデータを取得する
+    const querySnapshot = await getDocs(categoriesRef);
+
+    // Firestoreのドキュメントを、アプリで使う Category[] の形に変換する
+    const categories = querySnapshot.docs.map((categoryDoc) => {
+        const category = categoryDoc.data() as Category;
+
+        // 古いデータや手動追加データで isDeleted がない場合に備える
+        // isDeleted がない場合は、削除されていないカテゴリーとして扱う
+        return {
+            ...category,
+            isDeleted: category.isDeleted ?? false,
+        };
+    });
+
+    // Firestoreにカテゴリーが1件もない場合は、初期カテゴリーを使う
+    // 初回利用時にカテゴリー選択が空にならないようにするため
+    if (categories.length === 0) {
+        return initialCategories;
+    }
+
+    return categories;
 }
