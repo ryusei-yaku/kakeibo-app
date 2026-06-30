@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import MonthlyCategorySummaryPage from "./features/categories/MonthlyCategorySummaryPage";
 import ExpenseFormPage from "./features/expenses/ExpenseFormPage";
@@ -11,9 +11,32 @@ import type { Category } from "./types/category";
 import { initialCategories } from "./features/categories/categories";
 import CategoryManagementPage from "./features/categories/CategoryManagementPage"
 
+const EXPENSES_STORAGE_KEY = "kakeibo-expenses";
+const CATEGORIES_STORAGE_KEY = "kakeibo-categories";
+
+function loadExpensesFromStorage() {
+  const savedExpenses = localStorage.getItem(EXPENSES_STORAGE_KEY);
+
+  if (savedExpenses === null) {
+    return [];
+  }
+
+  return JSON.parse(savedExpenses) as Expense[];
+}
+
+function loadCategoriesFromStorage() {
+  const savedCategories = localStorage.getItem(CATEGORIES_STORAGE_KEY);
+
+  if (savedCategories === null) {
+    return initialCategories;
+  }
+
+  return JSON.parse(savedCategories) as Category[];
+}
+
 function App() {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [expenses, setExpenses] = useState<Expense[]>(loadExpensesFromStorage);
+  const [categories, setCategories] = useState<Category[]>(loadCategoriesFromStorage);
 
   function addCategory(categoryName: string) {
     const deletedCategory = categories.find(
@@ -91,6 +114,14 @@ function App() {
       )
     );
   }
+
+  useEffect(() => {
+    localStorage.setItem(EXPENSES_STORAGE_KEY, JSON.stringify(expenses));
+  }, [expenses]);
+
+  useEffect(() => {
+  localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(categories));
+}, [categories]);
 
   const activeCategories = categories.filter(
     (category) => !category.isDeleted
