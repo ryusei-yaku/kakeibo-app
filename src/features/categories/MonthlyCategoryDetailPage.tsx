@@ -111,11 +111,39 @@ function MonthlyCategoryDetailPage({
                         カテゴリー別内訳へ戻る
                     </Button>
 
-                    <Box>
-                        <Typography variant="h5" component="h1" sx={{ fontWeight: "bold" }}>
-                            {categoryName}の今月の支出
+                    <Box
+                        sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            minWidth: 0,
+                        }}
+                    >
+                        <Typography
+                            variant="h5"
+                            component="h1"
+                            sx={{
+                                fontWeight: "bold",
+                                color: "#333333",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                            }}
+                        >
+                            {categoryName}
                         </Typography>
 
+                        <Typography
+                            variant="h5"
+                            component="h1"
+                            sx={{
+                                fontWeight: "bold",
+                                color: "#333333",
+                                flexShrink: 0,
+                            }}
+                        >の今月の支出</Typography>
+                    </Box>
+
+                    <Box>
                         <Typography color="text.secondary" sx={{ mt: 0.5 }}>
                             このカテゴリーで登録した支出を確認します。
                         </Typography>
@@ -210,11 +238,11 @@ function MonthlyCategoryDetailPage({
                                                         {formatYen(expense.amount)}
                                                     </Typography>
 
-                                                    <ChevronRightIcon 
-                                                    sx={{
-                                                        color:"text.secondary",
-                                                        flexShrink:0,
-                                                    }}/>
+                                                    <ChevronRightIcon
+                                                        sx={{
+                                                            color: "text.secondary",
+                                                            flexShrink: 0,
+                                                        }} />
                                                 </Box>
                                             </Box>
                                         ))}

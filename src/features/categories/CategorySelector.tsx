@@ -1,6 +1,6 @@
 import { Box, Button } from "@mui/material";
-import type { Category } from "../../types/category";
 import { useNavigate } from "react-router-dom";
+import type { Category } from "../../types/category";
 
 type CategorySelectorProps = {
     categories: Category[];
@@ -49,9 +49,15 @@ function CategorySelector({
                                     ? "text.secondary"
                                     : "#555555",
                             borderColor: category.isDeleted ? "#cccccc" : "#f59e0b",
-                            whiteSpace: "nowrap",
+
+                            // MUI Button の英字自動大文字化を止める
+                            textTransform: "none",
+
+                            // 3列グリッド内で横にはみ出さないようにする
                             minWidth: 0,
-                            fontSize: category.isDeleted ? 12 : 14,
+                            width: "100%",
+                            overflow: "hidden",
+
                             "&:hover": {
                                 backgroundColor: isSelected
                                     ? "#d97706"
@@ -62,7 +68,24 @@ function CategorySelector({
                             },
                         }}
                     >
-                        {category.isDeleted ? `${category.name}（削除済み）` : category.name}
+                        <Box
+                            component="span"
+                            sx={{
+                                display: "block",
+                                width: "100%",
+                                minWidth: 0,
+
+                                // 長いカテゴリー名は1行で省略する
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+
+                                // 削除済み表示は少し小さくする
+                                fontSize: category.isDeleted ? 12 : 14,
+                            }}
+                        >
+                            {category.isDeleted ? `${category.name}（削除済み）` : category.name}
+                        </Box>
                     </Button>
                 );
             })}
@@ -88,6 +111,7 @@ function CategorySelector({
                         "&:hover": {
                             backgroundColor: "#fbd4a7",
                             borderColor: "#d97706",
+                            textTransform: "none",
                         },
                     }}
                 >
