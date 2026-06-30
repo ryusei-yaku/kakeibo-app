@@ -21,6 +21,7 @@ import {
   saveExpenseToFirestore,
   softDeleteCategoryToFirestore,
   updateCategoryToFirestore,
+  updateExpenseCategoryNameToFirestore,
   updateExpenseToFirestore,
 } from "./lib/firestoreStorage";
 
@@ -179,6 +180,10 @@ function App() {
     try {
       // Firestore上のカテゴリー名も更新する
       await updateCategoryToFirestore(renamedCategory);
+
+      // Firestore上の過去支出データのcategoryNameも更新する
+      // categoryIdは変えず、表示用のカテゴリー名だけを新しい名前にそろえる
+      await updateExpenseCategoryNameToFirestore(categoryId, categoryName);
     } catch (error) {
       // Firestore更新に失敗しても、今はlocalStorage側には編集内容が残る
       // まずは開発中に原因を確認できるよう、コンソールに出す

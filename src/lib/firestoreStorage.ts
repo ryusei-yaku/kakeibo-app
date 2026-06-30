@@ -1,4 +1,13 @@
-import { collection, deleteDoc, doc, setDoc } from "firebase/firestore";
+import {
+    collection,
+    deleteDoc,
+    doc,
+    getDocs,
+    query,
+    setDoc,
+    updateDoc,
+    where,
+} from "firebase/firestore";
 import { db } from "./firebase";
 import type { Expense } from "../types/expense";
 import type { Category } from "../types/category";
@@ -93,4 +102,34 @@ export async function softDeleteCategoryToFirestore(category: Category) {
         ...category,
         isDeleted: true,
     });
+}
+
+// Firestore上の過去支出データのカテゴリー名をまとめて更新する
+// カテゴリー名を編集したとき、同じcategoryIdを持つ支出のcategoryNameも変更する
+export async function updateExpenseCategoryNameToFirestore(
+    categoryId: string,
+    categoryName: string
+) {
+    // 支出データが入っているコレクションを指定する
+    // 例: users / test-user / expenses
+    const expensesRef = collection(db, "users", TEST_USER_ID, "expenses");
+
+    // categoryId が一致する支出だけを取得する条件を作る
+    const expensesQuery = query(
+        expensesRef,
+        where("categoryId", "==", categoryId)
+    );
+
+    // 条件に一致する支出データをFirestoreから取得する
+    const querySnapshot = await getDocs(expensesQuery);
+
+    // 条件に一致した支出データを1件ずつ更新する
+    const updatePromises = querySnapshot.docs.map((expenseDoc) =>
+        updateDoc(expenseDoc.ref, {
+            categoryName,
+        })
+    );
+
+    // すべての更新が終わるまで待つ
+    await Promise.all(updatePromises);
 }
