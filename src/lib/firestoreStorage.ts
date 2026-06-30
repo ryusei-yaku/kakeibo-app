@@ -8,10 +8,10 @@ import {
     updateDoc,
     where,
 } from "firebase/firestore";
-import { db } from "./firebase";
-import type { Expense } from "../types/expense";
 import type { Category } from "../types/category";
-import { initialCategories } from "../features/categories/categories";
+import type { Expense } from "../types/expense";
+import { db } from "./firebase";
+
 
 // Firestore上で支出データを保存するコレクション名
 // 今はログイン機能がないため、仮のユーザーID配下に保存する
@@ -72,6 +72,27 @@ export async function saveCategoryToFirestore(category: Category) {
     // Firestoreにカテゴリーデータを保存する
     // setDoc は、指定したIDのドキュメントを作成または上書きする
     await setDoc(categoryRef, category);
+}
+
+// Firestoreに複数のカテゴリーデータをまとめて保存する
+// 初回起動時に、初期カテゴリーをFirestoreへ登録するために使う
+export async function saveCategoriesToFirestore(categories: Category[]) {
+    // カテゴリーごとにFirestore保存処理を作る
+    const savePromises = categories.map((category) => {
+        // 保存先のパスを作る
+        // 例: users / test-user / categories / カテゴリーID
+        const categoryRef = doc(
+            collection(db, "users", TEST_USER_ID, "categories"),
+            category.id
+        );
+
+        // Firestoreにカテゴリーデータを保存する
+        // setDoc は、指定したIDのドキュメントを作成または上書きする
+        return setDoc(categoryRef, category);
+    });
+
+    // すべてのカテゴリー保存が終わるまで待つ
+    await Promise.all(savePromises);
 }
 
 // Firestore上のカテゴリーデータを更新する
@@ -177,11 +198,7 @@ export async function loadCategoriesFromFirestore() {
         };
     });
 
-    // Firestoreにカテゴリーが1件もない場合は、初期カテゴリーを表示する
-    // 初回利用時にカテゴリー選択が空にならないようにするため
-    if (categories.length === 0) {
-        return initialCategories;
-    }
-
+    // ここではFirestoreに保存されているカテゴリーだけを返す
+    // Firestoreが空の場合に初期カテゴリーを使うかどうかは、App.tsx側で判断する
     return categories;
 }

@@ -19,6 +19,7 @@ import {
   deleteExpenseFromFirestore,
   loadCategoriesFromFirestore,
   loadExpensesFromFirestore,
+  saveCategoriesToFirestore,
   saveCategoryToFirestore,
   saveExpenseToFirestore,
   softDeleteCategoryToFirestore,
@@ -44,7 +45,7 @@ function App() {
   });
 
   // アプリ起動時にFirestoreから支出データとカテゴリーデータを読み込む
-  // ただし、Firestoreが空の場合は、今までのlocalStorageデータをそのまま使う
+  // ただし、Firestoreが空の場合は、今までのlocalStorageデータや初期カテゴリーを使う
   useEffect(() => {
     async function loadDataFromFirestore() {
       try {
@@ -60,10 +61,16 @@ function App() {
           setExpenses(firestoreExpenses);
         }
 
-        // Firestoreにカテゴリーデータがある場合だけ、画面上のカテゴリーデータを置き換える
-        // 空の場合は、useStateの初期値で設定したlocalStorageまたは初期カテゴリーをそのまま使う
+        // Firestoreにカテゴリーデータがある場合は、画面上のカテゴリーデータを置き換える
         if (firestoreCategories.length > 0) {
           setCategories(firestoreCategories);
+        }
+
+        // Firestoreのcategoriesが空だった場合に備えて、初期カテゴリーをFirestoreにも保存する
+        // これにより、次回以降はFirestore側にも初期カテゴリーが存在する状態になる
+        if (firestoreCategories.length === 0) {
+          setCategories(initialCategories);
+          await saveCategoriesToFirestore(initialCategories);
         }
       } catch (error) {
         // Firestore読み込みに失敗しても、localStorageから読み込んだデータでは使える
