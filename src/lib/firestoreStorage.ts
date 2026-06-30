@@ -9,7 +9,6 @@ import {
     where,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import { initialCategories } from "../features/categories/categories";
 import type { Expense } from "../types/expense";
 import type { Category } from "../types/category";
 
@@ -177,11 +176,7 @@ export async function loadCategoriesFromFirestore() {
         };
     });
 
-    // Firestoreにカテゴリーが1件もない場合は、初期カテゴリーを使う
-    // 初回利用時にカテゴリー選択が空にならないようにするため
-    if (categories.length === 0) {
-        return initialCategories;
-    }
-
+    // Firestoreにカテゴリーが1件もない場合は、空配列を返す
+    // App.tsx側で「Firestoreが空ならlocalStorageのデータを残す」と判断するため
     return categories;
 }

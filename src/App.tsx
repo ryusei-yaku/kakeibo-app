@@ -17,6 +17,8 @@ import type { Category } from "./types/category";
 import type { Expense } from "./types/expense";
 import {
   deleteExpenseFromFirestore,
+  loadCategoriesFromFirestore,
+  loadExpensesFromFirestore,
   saveCategoryToFirestore,
   saveExpenseToFirestore,
   softDeleteCategoryToFirestore,
@@ -28,6 +30,38 @@ import {
 function App() {
   const [expenses, setExpenses] = useState<Expense[]>(loadExpensesFromStorage);
   const [categories, setCategories] = useState<Category[]>(loadCategoriesFromStorage);
+
+  // アプリ起動時にFirestoreから支出データとカテゴリーデータを読み込む
+  // ただし、Firestoreが空の場合は、今までのlocalStorageデータをそのまま使う
+  useEffect(() => {
+    async function loadDataFromFirestore() {
+      try {
+        // Firestoreから支出データを読み込む
+        const firestoreExpenses = await loadExpensesFromFirestore();
+
+        // Firestoreからカテゴリーデータを読み込む
+        const firestoreCategories = await loadCategoriesFromFirestore();
+
+        // Firestoreに支出データがある場合だけ、画面上の支出データを置き換える
+        // 空の場合に置き換えると、localStorageに残っている既存データが見えなくなるため
+        if (firestoreExpenses.length > 0) {
+          setExpenses(firestoreExpenses);
+        }
+
+        // Firestoreにカテゴリーデータがある場合だけ、画面上のカテゴリーデータを置き換える
+        // 空の場合は、localStorageまたは初期カテゴリーをそのまま使う
+        if (firestoreCategories.length > 0) {
+          setCategories(firestoreCategories);
+        }
+      } catch (error) {
+        // Firestore読み込みに失敗しても、localStorageから読み込んだデータでは使える
+        // まずは開発中に原因を確認できるよう、コンソールに出す
+        console.error("Firestoreからのデータ読み込みに失敗しました", error);
+      }
+    }
+
+    loadDataFromFirestore();
+  }, []);
 
   async function addCategory(categoryName: string) {
     // 同じ名前の削除済みカテゴリーがあるか確認する
