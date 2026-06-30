@@ -1,5 +1,3 @@
-import { useParams, useNavigate } from "react-router-dom";
-import type { Expense } from "../../types/expense";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import {
     Box,
@@ -12,7 +10,9 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import type { Expense } from "../../types/expense";
 
 type ExpenseEditPageProps = {
     expenses: Expense[];
@@ -25,6 +25,15 @@ type ExpenseEditFormProps = {
     onUpdateExpense: (expense: Expense) => void;
     onDeleteExpense: (expenseId: string) => void;
 };
+
+const categories = [
+    { id: "food", name: "食費" },
+    { id: "daily", name: "日用品" },
+    { id: "transportation", name: "交通費" },
+    { id: "medical", name: "医療費" },
+    { id: "entertainment", name: "娯楽" },
+    { id: "other", name: "その他" },
+];
 
 function ExpenseEditForm({
     expense,
@@ -39,8 +48,28 @@ function ExpenseEditForm({
     const [date, setDate] = useState(expense.date);
     const [shopName, setShopName] = useState(expense.shopName);
     const [memo, setMemo] = useState(expense.memo);
+    const [selectedCategoryId, setSelectedCategoryId] = useState(expense.categoryId);
     //削除確認ダイアログを開いているかどうかを管理
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+    const dateInputRef = useRef<HTMLInputElement | null>(null);
+
+    function openDatePicker() {
+        const dateInput = dateInputRef.current;
+
+        if (dateInput === null) {
+            return;
+        }
+
+        // ブラウザがshowPickerに対応していれば、日付選択UIを開く
+        if (typeof dateInput.showPicker === "function") {
+            dateInput.showPicker();
+            return;
+        }
+
+        // showPickerに対応していない場合の処理
+        dateInput.focus();
+    }
 
     // 1項目分の横並びレイアウト
     const inputRowSx = {
@@ -53,7 +82,7 @@ function ExpenseEditForm({
     const inputLabelSx = {
         width: 88,
         flexShrink: 0,
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: "bold",
         color: "#555555",
     };
@@ -65,7 +94,7 @@ function ExpenseEditForm({
         backgroundColor: "#fde7cd",
         borderRadius: 2,
         px: 2,
-        py: 1.25,
+        py: 0.75,
     };
 
     function handleSubmit() {
@@ -73,10 +102,23 @@ function ExpenseEditForm({
         if (amount === "") {
             return;
         }
+
+        //選択中のカテゴリーIDに一致するカテゴリーを探す
+        const selectedCategory = categories.find(
+            (category) => category.id === selectedCategoryId
+        );
+
+        //万が一カテゴリが見つからなければ保存しない
+        if (selectedCategory === undefined) {
+            return;
+        }
+
         // 編集後の支出データを作る
         const updatedExpense: Expense = {
             ...expense,
             amount: Number(amount),
+            categoryId: selectedCategory.id,
+            categoryName: selectedCategory.name,
             date,
             shopName,
             memo,
@@ -124,23 +166,34 @@ function ExpenseEditForm({
                             日付
                         </Typography>
 
-                        <Box sx={inputValueBoxSx}>
+                        <Box
+                            sx={{
+                                ...inputValueBoxSx,
+                                cursor: "pointer",
+                            }}
+                            onClick={openDatePicker}
+                        >
                             <TextField
+                                inputRef={dateInputRef}
                                 type="date"
                                 value={date}
                                 onChange={(event) => setDate(event.target.value)}
                                 variant="standard"
                                 fullWidth
+                                sx={{
+                                    "& .MuiInputBase-root": {
+                                        cursor: "pointer",
+                                    },
+                                    "& input": {
+                                        fontSize: 18,
+                                        fontWeight: "bold",
+                                        textAlign: "right",
+                                        cursor: "pointer",
+                                    },
+                                }}
                                 slotProps={{
                                     input: {
                                         disableUnderline: true,
-                                    },
-                                    htmlInput: {
-                                        style: {
-                                            fontSize: 18,
-                                            fontWeight: "bold",
-                                            textAlign: "right",
-                                        },
                                     },
                                 }}
                             />
@@ -181,7 +234,7 @@ function ExpenseEditForm({
                                             inputMode: "numeric",
                                             style: {
                                                 textAlign: "right",
-                                                fontSize: 18,
+                                                fontSize: 20,
                                                 fontWeight: "bold",
                                             },
                                         },
@@ -201,25 +254,50 @@ function ExpenseEditForm({
                         </Box>
                     </Box>
                     {/* カテゴリー */}
-                    <Box sx={inputRowSx}>
-                        <Typography sx={inputLabelSx}>
+                    <Box>
+                        <Typography
+                            sx={{
+                                fontSize: 18,
+                                fontWeight: "bold",
+                                color: "#555555",
+                                mt: 0.5,
+                                mb: 1,
+                            }}>
                             カテゴリー
                         </Typography>
 
-                        <Box sx={inputValueBoxSx}>
-                            <Typography
-                                sx={{
-                                    fontSize: 18,
-                                    fontWeight: "bold",
-                                    color: "#333333",
-                                    textAlign: "right",
-                                    whiteSpace: "nowrap",
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                }}
-                            >
-                                {expense.categoryName}
-                            </Typography>
+                        <Box
+                            sx={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(3, 1fr)",
+                                gap: 1,
+                            }}
+                        >
+                            {categories.map((category => {
+                                const isSelected = selectedCategoryId === category.id;
+
+                                return (
+                                    <Button
+                                        key={category.id}
+                                        variant={isSelected ? "contained" : "outlined"}
+                                        onClick={() => setSelectedCategoryId(category.id)}
+                                        sx={{
+                                            fontWeight: "bold",
+                                            py: 1.5,
+                                            borderRadius: 2,
+                                            backgroundColor: isSelected ? "#f59e0b" : "#f6f4ef",
+                                            color: isSelected ? "#ffffff" : "#555555",
+                                            borderColor: "#f59e0b",
+                                            "&:hover": {
+                                                backgroundColor: isSelected ? "#d97706" : "#fbd4a7",
+                                                borderColor: "#d97706"
+                                            },
+                                        }}
+                                    >
+                                        {category.name}
+                                    </Button>
+                                );
+                            }))}
                         </Box>
                     </Box>
 
@@ -257,7 +335,7 @@ function ExpenseEditForm({
                         {/* メモだけは項目名を左上に表示する */}
                         <Typography
                             sx={{
-                                fontSize: 16,
+                                fontSize: 18,
                                 fontWeight: "bold",
                                 color: "#555555",
                                 mb: 1,
