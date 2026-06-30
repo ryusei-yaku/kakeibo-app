@@ -125,20 +125,28 @@ function ExpenseEditForm({
                             },
                         }}
                     />
-
                     {/* カテゴリー */}
-                    <TextField
-                        label="カテゴリー"
-                        value={expense.categoryName}
-                        fullWidth
-                        slotProps={{
-                            inputLabel: {
-                                shrink: true,
-                            }
+                    <Box
+                        sx={{
+                            backgroundColor: "#ffffff",
+                            border: "1px solid #d9d9d9",
+                            borderRadius: 1,
+                            px: 1.5,
+                            py: 1.25,
                         }}
-                        disabled
-                        helperText="カテゴリー編集は後で対応します"
-                    />
+                    >
+                        <Typography sx={{ fontSize: 12, color: "text.secondary", mb: 0.5 }}>
+                            カテゴリー
+                        </Typography>
+
+                        <Typography sx={{ fontWeight: "bold", color: "#333333" }}>
+                            {expense.categoryName}
+                        </Typography>
+
+                        <Typography sx={{ fontSize: 12, color: "text.secondary", mt: 0.5 }}>
+                            カテゴリー編集は後で対応します
+                        </Typography>
+                    </Box>
 
                     {/* 店名 */}
                     <TextField
@@ -172,6 +180,7 @@ function ExpenseEditForm({
                         sx={{
                             display: "flex",
                             gap: 1,
+                            pt:1,
                         }}
                     >
                         <Button
@@ -181,6 +190,10 @@ function ExpenseEditForm({
                             sx={{
                                 flex: 1,
                                 fontWeight: "bold",
+                                backgroundColor:"#f59e0b",
+                                "&:hover":{
+                                    backgroundColor:"#d97706"
+                                }
                             }}
                         >
                             保存する
