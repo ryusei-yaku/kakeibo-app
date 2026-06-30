@@ -1,21 +1,20 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import CalendarPage from "./features/calendar/CalendarPage";
+import CategoryManagementPage from "./features/categories/CategoryManagementPage";
+import MonthlyCategoryDetailPage from "./features/categories/MonthlyCategoryDetailPage";
 import MonthlyCategorySummaryPage from "./features/categories/MonthlyCategorySummaryPage";
+import ExpenseEditPage from "./features/expenses/ExpenseEditPage";
 import ExpenseFormPage from "./features/expenses/ExpenseFormPage";
 import HomePage from "./features/home/HomePage";
-import type { Expense } from "./types/expense";
-import MonthlyCategoryDetailPage from "./features/categories/MonthlyCategoryDetailPage";
-import CalendarPage from "./features/calendar/CalendarPage";
-import ExpenseEditPage from "./features/expenses/ExpenseEditPage";
-import type { Category } from "./types/category";
-import { initialCategories } from "./features/categories/categories";
-import CategoryManagementPage from "./features/categories/CategoryManagementPage"
 import {
   loadCategoriesFromStorage,
   loadExpensesFromStorage,
   saveCategoriesToStorage,
   saveExpensesToStorage,
 } from "./lib/localStorage";
+import type { Category } from "./types/category";
+import type { Expense } from "./types/expense";
 
 function App() {
   const [expenses, setExpenses] = useState<Expense[]>(loadExpensesFromStorage);
