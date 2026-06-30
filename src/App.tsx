@@ -23,6 +23,12 @@ function App() {
     );
   }
 
+  function deleteExpense(expenseId: string) {
+    setExpenses((currentExpenses) =>
+      currentExpenses.filter((expense) => expense.id !== expenseId)
+    );
+  }
+
   return (
     <BrowserRouter>
       <Routes>
@@ -46,6 +52,7 @@ function App() {
             <ExpenseEditPage
               expenses={expenses}
               onUpdateExpense={updateExpense}
+              onDeleteExpense={deleteExpense}
             />
           }
         />

@@ -14,14 +14,20 @@ import { useState } from "react";
 type ExpenseEditPageProps = {
     expenses: Expense[];
     onUpdateExpense: (expense: Expense) => void;
+    onDeleteExpense: (expenseId: string) => void;
 };
 
 type ExpenseEditFormProps = {
     expense: Expense;
     onUpdateExpense: (expense: Expense) => void;
+    onDeleteExpense: (expenseId: string) => void;
 };
 
-function ExpenseEditForm({ expense, onUpdateExpense }: ExpenseEditFormProps) {
+function ExpenseEditForm({
+    expense,
+    onUpdateExpense,
+    onDeleteExpense
+}: ExpenseEditFormProps) {
     //ページを移動するための関数
     const navigate = useNavigate();
     //編集フォーム用のstate
@@ -36,7 +42,6 @@ function ExpenseEditForm({ expense, onUpdateExpense }: ExpenseEditFormProps) {
         if (amount === "") {
             return;
         }
-
         // 編集後の支出データを作る
         const updatedExpense: Expense = {
             ...expense,
@@ -50,6 +55,14 @@ function ExpenseEditForm({ expense, onUpdateExpense }: ExpenseEditFormProps) {
         onUpdateExpense(updatedExpense);
 
         // 保存後は前の画面に戻る
+        navigate(-1);
+    }
+
+    function handleDelete() {
+        //この支出を削除する
+        onDeleteExpense(expense.id);
+
+        //削除後は前の画面に戻る
         navigate(-1);
     }
 
@@ -150,21 +163,47 @@ function ExpenseEditForm({ expense, onUpdateExpense }: ExpenseEditFormProps) {
                         }}
                     />
 
-                    <Button
-                        variant="contained"
-                        size="large"
-                        onClick={handleSubmit}
-                        sx={{ fontWeight: "bold" }}
+                    <Box
+                        sx={{
+                            display: "flex",
+                            gap: 1,
+                        }}
                     >
-                        保存する
-                    </Button>
+                        <Button
+                            variant="contained"
+                            size="large"
+                            onClick={handleSubmit}
+                            sx={{
+                                flex: 1,
+                                fontWeight: "bold",
+                            }}
+                        >
+                            保存する
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            size="large"
+                            onClick={handleDelete}
+                            sx={{
+                                flex: 1,
+                                fontWeight: "bold",
+                            }}
+                        >
+                            削除する
+                        </Button>
+                    </Box>
                 </Stack>
             </Container>
         </Box>
     );
 }
 
-function ExpenseEditPage({ expenses, onUpdateExpense }: ExpenseEditPageProps) {
+function ExpenseEditPage({
+    expenses,
+    onUpdateExpense,
+    onDeleteExpense,
+}: ExpenseEditPageProps) {
     //URLの:expenseIdに入っている支出IDを取得する
     const { expenseId } = useParams();
 
@@ -185,6 +224,7 @@ function ExpenseEditPage({ expenses, onUpdateExpense }: ExpenseEditPageProps) {
         <ExpenseEditForm
             expense={expense}
             onUpdateExpense={onUpdateExpense}
+            onDeleteExpense={onDeleteExpense}
         />
     )
 
