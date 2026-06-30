@@ -13,6 +13,7 @@ import {
 import { useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { Expense } from "../../types/expense";
+import { categories } from "../categories/categories";
 
 type ExpenseEditPageProps = {
     expenses: Expense[];
@@ -25,15 +26,6 @@ type ExpenseEditFormProps = {
     onUpdateExpense: (expense: Expense) => void;
     onDeleteExpense: (expenseId: string) => void;
 };
-
-const categories = [
-    { id: "food", name: "食費" },
-    { id: "daily", name: "日用品" },
-    { id: "transportation", name: "交通費" },
-    { id: "medical", name: "医療費" },
-    { id: "entertainment", name: "娯楽" },
-    { id: "other", name: "その他" },
-];
 
 function ExpenseEditForm({
     expense,

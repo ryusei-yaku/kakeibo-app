@@ -1,28 +1,20 @@
 import AddIcon from "@mui/icons-material/Add";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Box, Button, Container, Dialog, TextField, Typography } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import type {Dayjs } from "dayjs";
-import dayjs from "../../lib/dayjs";
+import type { Dayjs } from "dayjs";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import dayjs from "../../lib/dayjs";
 import type { Expense } from "../../types/expense";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { categories } from "../categories/categories";
 
 type ExpenseFormPageProps = {
     expenses: Expense[];
     onAddExpense: (expense: Expense) => void;
 }
-
-const categories = [
-    { id: "food", name: "食費" },
-    { id: "daily", name: "日用品" },
-    { id: "transportation", name: "交通費" },
-    { id: "medical", name: "医療費" },
-    { id: "entertainment", name: "娯楽" },
-    { id: "other", name: "その他" },
-];
 
 function formatDateLabel(date: Dayjs) {
     return date.locale("ja").format("YYYY年M月D日(ddd)")
