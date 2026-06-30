@@ -11,14 +11,11 @@ import dayjs from "../../lib/dayjs";
 import type { Expense } from "../../types/expense";
 import { formatAmount } from "../../utils/formatAmount";
 import { categories } from "../categories/categories";
+import { formatDateLabel } from "../../utils/formatDateLabel";
 
 type ExpenseFormPageProps = {
     expenses: Expense[];
     onAddExpense: (expense: Expense) => void;
-}
-
-function formatDateLabel(date: Dayjs) {
-    return date.locale("ja").format("YYYY年M月D日(ddd)")
 }
 
 function ExpenseFormPage({ expenses, onAddExpense }: ExpenseFormPageProps) {

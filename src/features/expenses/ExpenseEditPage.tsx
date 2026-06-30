@@ -19,6 +19,7 @@ import dayjs from "../../lib/dayjs";
 import type { Expense } from "../../types/expense";
 import { formatAmount } from "../../utils/formatAmount";
 import { categories } from "../categories/categories";
+import { formatDateLabel } from "../../utils/formatDateLabel";
 
 type ExpenseEditPageProps = {
     expenses: Expense[];
@@ -131,10 +132,6 @@ function ExpenseEditForm({
 
         //削除後は前の画面に戻る
         navigate(-1);
-    }
-
-    function formatDateLabel(date: string) {
-        return dayjs(date).locale("ja").format("YYYY年M月D日(ddd)");
     }
 
     return (
