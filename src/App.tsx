@@ -15,23 +15,31 @@ const EXPENSES_STORAGE_KEY = "kakeibo-expenses";
 const CATEGORIES_STORAGE_KEY = "kakeibo-categories";
 
 function loadExpensesFromStorage() {
-  const savedExpenses = localStorage.getItem(EXPENSES_STORAGE_KEY);
+  try {
+    const savedExpenses = localStorage.getItem(EXPENSES_STORAGE_KEY);
 
-  if (savedExpenses === null) {
+    if (savedExpenses === null) {
+      return [];
+    }
+
+    return JSON.parse(savedExpenses) as Expense[];
+  } catch {
     return [];
   }
-
-  return JSON.parse(savedExpenses) as Expense[];
 }
 
 function loadCategoriesFromStorage() {
-  const savedCategories = localStorage.getItem(CATEGORIES_STORAGE_KEY);
+  try {
+    const savedCategories = localStorage.getItem(CATEGORIES_STORAGE_KEY);
 
-  if (savedCategories === null) {
+    if (savedCategories === null) {
+      return initialCategories;
+    }
+
+    return JSON.parse(savedCategories) as Category[];
+  } catch {
     return initialCategories;
   }
-
-  return JSON.parse(savedCategories) as Category[];
 }
 
 function App() {
@@ -120,8 +128,8 @@ function App() {
   }, [expenses]);
 
   useEffect(() => {
-  localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(categories));
-}, [categories]);
+    localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(categories));
+  }, [categories]);
 
   const activeCategories = categories.filter(
     (category) => !category.isDeleted
