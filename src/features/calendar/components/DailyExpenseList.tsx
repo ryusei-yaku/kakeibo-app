@@ -8,6 +8,7 @@ type DailyExpenseListProps = {
     displayMonthTotalAmount: number;
     groupedExpensesByDate: DailyExpenseGroup[];
     dailyExpenseSectionRefs: React.MutableRefObject<Record<string, HTMLDivElement | null>>;
+    onExpenseClick: (expenseId: string) => void;
 };
 
 // 支出一覧に表示する詳細テキストを作る
@@ -33,6 +34,7 @@ function DailyExpenseList({
     displayMonthTotalAmount,
     groupedExpensesByDate,
     dailyExpenseSectionRefs,
+    onExpenseClick,
 }: DailyExpenseListProps) {
     return (
         <Box
@@ -156,6 +158,7 @@ function DailyExpenseList({
                             return (
                                 <Box
                                     key={expense.id}
+                                    onClick={()=>onExpenseClick(expense.id)}
                                     sx={{
                                         display: "flex",
                                         justifyContent: "space-between",
@@ -165,6 +168,7 @@ function DailyExpenseList({
                                         borderBottom: "1px solid #eeeeee",
                                         minWidth: 0,
                                         backgroundColor: "#ffffff",
+                                        cursor:"pointer",
                                     }}
                                 >
                                     <Box

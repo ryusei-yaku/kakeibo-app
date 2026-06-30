@@ -128,6 +128,11 @@ function CalendarPage({ expenses }: CalendarPageProps) {
         setDisplayMonth((currentMonth) => currentMonth.add(1, "month"));
     }
 
+    //支出明細を押したら、編集画面へ移動する
+    function handleExpenseClick(expenseId: string) {
+        navigate(`/expenses/edit/${expenseId}`);
+    }
+
     return (
         // 画面全体の背景と高さを設定する
         <Box
@@ -175,6 +180,7 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                         displayMonthTotalAmount={displayMonthTotalAmount}
                         groupedExpensesByDate={groupedExpensesByDate}
                         dailyExpenseSectionRefs={dailyExpenseSectionRefs}
+                        onExpenseClick={handleExpenseClick}
                     />
                 </Stack>
             </Container>

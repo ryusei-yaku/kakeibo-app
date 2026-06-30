@@ -6,6 +6,7 @@ import HomePage from "./features/home/HomePage";
 import type { Expense } from "./types/expense";
 import MonthlyCategoryDetailPage from "./features/categories/MonthlyCategoryDetailPage";
 import CalendarPage from "./features/calendar/CalendarPage";
+import ExpenseEditPage from "./features/expenses/ExpenseEditPage";
 
 function App() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -24,13 +25,16 @@ function App() {
         />
         <Route
           path="/categories/monthly"
-          element={<MonthlyCategorySummaryPage expenses={expenses}/>}
+          element={<MonthlyCategorySummaryPage expenses={expenses} />}
         />
         <Route
           path="/categories/monthly/:categoryId"
-          element={<MonthlyCategoryDetailPage expenses={expenses}/>}
+          element={<MonthlyCategoryDetailPage expenses={expenses} />}
         />
-        <Route path="/calendar" element={<CalendarPage expenses={expenses}/>}/>
+        <Route path="/calendar" element={<CalendarPage expenses={expenses} />} />
+        <Route
+          path="/expenses/edit/:expenseId"
+          element={<ExpenseEditPage />} />
       </Routes>
     </BrowserRouter>
   );
