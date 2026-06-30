@@ -108,7 +108,7 @@ function MonthlyCategoryDetailPage({
                             fontWeight: "bold",
                         }}
                     >
-                        内訳へ戻る
+                        カテゴリー別内訳へ戻る
                     </Button>
 
                     <Box>
@@ -176,7 +176,7 @@ function MonthlyCategoryDetailPage({
                                                     py: 1.5,
                                                     borderTop: index === 0 ? "none" : "1px solid #eeeeee",
                                                     cursor: "pointer",
-                                                    "&hover": {
+                                                    "&:hover": {
                                                         backgroundColor: "#fff8ef"
                                                     }
                                                 }}
