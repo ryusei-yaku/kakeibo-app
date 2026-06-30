@@ -7,6 +7,8 @@ import {
     Dialog,
     DialogActions,
     DialogTitle,
+    DialogContent,
+    DialogContentText,
     Stack,
     TextField,
     Typography,
@@ -152,13 +154,6 @@ function CategoryManagementPage({
                         >
                             カテゴリー管理
                         </Typography>
-
-                        <Typography
-                            color="text.secondary"
-                            sx={{ mt: 0.5, fontWeight: "bold" }}
-                        >
-                            支出入力で使うカテゴリーを追加できます。
-                        </Typography>
                     </Box>
 
                     {/* カテゴリー追加フォーム */}
@@ -178,7 +173,7 @@ function CategoryManagementPage({
                                     color: "text.secondary",
                                 }}
                             >
-                                新しいカテゴリー名
+                                {editingCategoryId === null ? "新しいカテゴリー名" : "カテゴリー名を編集"}
                             </Typography>
 
                             <TextField
@@ -187,7 +182,7 @@ function CategoryManagementPage({
                                     setCategoryName(event.target.value)
                                     setErrorMessage("");
                                 }}
-                                placeholder="例：美容"
+                                placeholder={editingCategoryId === null ? "例：美容" : "カテゴリー名を入力"}
                                 variant="standard"
                                 fullWidth
                                 slotProps={{
@@ -206,6 +201,17 @@ function CategoryManagementPage({
                                     },
                                 }}
                             />
+                            {editingCategoryId !== null && (
+                                <Typography
+                                    sx={{
+                                        color: "text.secondary",
+                                        fontSize: 13,
+                                        fontWeight: "bold",
+                                    }}
+                                >
+                                    保存すると、このカテゴリーを使った過去の支出データにも反映されます。
+                                </Typography>
+                            )}
                             {errorMessage !== "" && (
                                 <Typography
                                     sx={{
@@ -316,24 +322,34 @@ function CategoryManagementPage({
                                             }}
                                         >
                                             <Button
-                                                size="small"
+                                                size="medium"
+                                                variant="outlined"
                                                 onClick={() => startEditCategory(category)}
                                                 sx={{
+                                                    minWidth: 52,
+                                                    borderRadius: 2,
                                                     fontWeight: "bold",
                                                     color: "#f59e0b",
-                                                    fontSize: 15,
+                                                    borderColor: "#f59e0b",
+                                                    backgroundColor: "#fffaf2",
+                                                    "&:hover": {
+                                                        backgroundColor: "#fde7cd",
+                                                        borderColor: "#d97706",
+                                                    },
                                                 }}
                                             >
                                                 編集
                                             </Button>
 
                                             <Button
-                                                size="small"
+                                                size="medium"
+                                                variant="outlined"
                                                 color="error"
                                                 onClick={() => setDeleteTargetCategory(category)}
                                                 sx={{
+                                                    minWidth: 52,
+                                                    borderRadius: 2,
                                                     fontWeight: "bold",
-                                                    fontSize: 15,
                                                 }}
                                             >
                                                 削除
@@ -347,24 +363,23 @@ function CategoryManagementPage({
                                 open={isUpdateDialogOpen}
                                 onClose={() => setIsUpdateDialogOpen(false)}
                                 maxWidth="xs"
+                                fullWidth
                             >
                                 <DialogTitle
                                     sx={{
                                         textAlign: "center",
-                                        borderBottom: "1px solid #e0e0e0",
                                         fontWeight: "bold",
-                                        fontSize: 18,
+                                        borderBottom: "1px solid #e0e0e0",
                                     }}
                                 >
-                                    過去の支出データのカテゴリー名も変更されます。
-                                    <br />
-                                    よろしいですか？
+                                    カテゴリー名を変更しますか？
                                 </DialogTitle>
 
                                 <DialogActions
                                     sx={{
                                         p: 0,
                                         display: "flex",
+                                        borderTop: "1px solid #e0e0e0",
                                     }}
                                 >
                                     <Button
@@ -401,23 +416,36 @@ function CategoryManagementPage({
                                 open={deleteTargetCategory !== null}
                                 onClose={() => setDeleteTargetCategory(null)}
                                 maxWidth="xs"
+                                fullWidth
                             >
                                 <DialogTitle
                                     sx={{
                                         textAlign: "center",
-                                        borderBottom: "1px solid #e0e0e0",
                                         fontWeight: "bold",
+                                        borderBottom: "1px solid #e0e0e0",
                                     }}
                                 >
-                                    {deleteTargetCategory?.name}を削除しますか？
-                                    <br />
-                                    過去の支出データは変更されません。
+                                    カテゴリーを削除しますか？
                                 </DialogTitle>
+
+                                <DialogContent sx={{ pt: 2 }}>
+                                    <DialogContentText
+                                        sx={{
+                                            color: "text.secondary",
+                                            lineHeight: 1.8,
+                                        }}
+                                    >
+                                        「{deleteTargetCategory?.name}」は支出入力の選択肢から削除されます。
+                                        <br />
+                                        過去に登録した支出データは変更されません。
+                                    </DialogContentText>
+                                </DialogContent>
 
                                 <DialogActions
                                     sx={{
                                         p: 0,
                                         display: "flex",
+                                        borderTop: "1px solid #e0e0e0",
                                     }}
                                 >
                                     <Button
