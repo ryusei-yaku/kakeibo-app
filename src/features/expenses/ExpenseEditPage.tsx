@@ -5,6 +5,9 @@ import {
     Box,
     Button,
     Container,
+    Dialog,
+    DialogActions,
+    DialogTitle,
     Stack,
     TextField,
     Typography,
@@ -36,6 +39,8 @@ function ExpenseEditForm({
     const [date, setDate] = useState(expense.date);
     const [shopName, setShopName] = useState(expense.shopName);
     const [memo, setMemo] = useState(expense.memo);
+    //削除確認ダイアログを開いているかどうかを管理
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
     function handleSubmit() {
         // 金額が未入力の場合は保存しない
@@ -184,7 +189,7 @@ function ExpenseEditForm({
                             variant="outlined"
                             color="error"
                             size="large"
-                            onClick={handleDelete}
+                            onClick={() => setIsDeleteDialogOpen(true)}
                             sx={{
                                 flex: 1,
                                 fontWeight: "bold",
@@ -193,6 +198,56 @@ function ExpenseEditForm({
                             削除する
                         </Button>
                     </Box>
+
+                    {/* 削除確認ダイアログ */}
+                    <Dialog
+                        open={isDeleteDialogOpen}
+                        onClose={() => setIsDeleteDialogOpen(false)}
+                        maxWidth="xs"
+                    >
+                        <DialogTitle
+                            sx={{
+                                textAlign: "center",
+                                borderBottom: "1px solid #e0e0e0"
+                            }}
+                        >
+                            この支出を削除しますか？
+                        </DialogTitle>
+
+
+                        <DialogActions
+                            sx={{
+                                p: 0,
+                                display: "flex",
+                            }}
+                        >
+                            <Button
+                                onClick={() => setIsDeleteDialogOpen(false)}
+                                sx={{
+                                    flex: 1,
+                                    py: 1.5,
+                                    borderRadius: 0,
+                                    fontWeight: "bold"
+                                }}
+                            >
+                                キャンセル
+                            </Button>
+
+                            <Button
+                                color="error"
+                                onClick={handleDelete}
+                                sx={{
+                                    flex: 1,
+                                    py: 1.5,
+                                    borderRadius: 0,
+                                    fontWeight: "bold",
+                                    borderLeft: "1px solid #e0e0e0",
+                                }}
+                            >
+                                削除する
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
                 </Stack>
             </Container>
         </Box>
