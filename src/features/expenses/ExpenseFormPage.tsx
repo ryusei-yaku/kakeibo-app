@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "../../lib/dayjs";
 import type { Expense } from "../../types/expense";
+import { formatAmount } from "../../utils/formatAmount";
 import { categories } from "../categories/categories";
 
 type ExpenseFormPageProps = {
@@ -18,13 +19,6 @@ type ExpenseFormPageProps = {
 
 function formatDateLabel(date: Dayjs) {
     return date.locale("ja").format("YYYY年M月D日(ddd)")
-}
-//金額をカンマ付きにする。
-function formatAmount(value: string) {
-    if (value === "") {
-        return "";
-    }
-    return Number(value).toLocaleString();
 }
 
 function ExpenseFormPage({ expenses, onAddExpense }: ExpenseFormPageProps) {

@@ -10,14 +10,15 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import type { Expense } from "../../types/expense";
-import { categories } from "../categories/categories";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import dayjs from "../../lib/dayjs";
+import type { Expense } from "../../types/expense";
+import { formatAmount } from "../../utils/formatAmount";
+import { categories } from "../categories/categories";
 
 type ExpenseEditPageProps = {
     expenses: Expense[];
@@ -202,7 +203,7 @@ function ExpenseEditForm({
                                 }}
                             >
                                 <TextField
-                                    value={amount === "" ? "" : Number(amount).toLocaleString()}
+                                    value={formatAmount(amount)}
                                     onChange={(event) => {
                                         // 数字以外を取り除いて、内部ではカンマなしで管理する
                                         const onlyNumber = event.target.value.replace(/\D/g, "");
