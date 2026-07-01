@@ -13,20 +13,11 @@ type DailyExpenseListProps = {
 };
 
 // 支出一覧に表示する詳細テキストを作る
-// 店名とメモが両方ある場合は「店名（メモ）」の形にする
-function formatExpenseDetail(shopName: string, memo: string) {
-    if (shopName !== "" && memo !== "") {
-        return `${shopName}（${memo}）`;
-    }
-
-    if (shopName !== "") {
-        return shopName;
-    }
-
+// メモが両方ある場合は「店名（メモ）」の形にする
+function formatExpenseDetail(memo: string) {
     if (memo !== "") {
-        return `（${memo}）`;
+        return memo;
     }
-
     return "";
 }
 
@@ -151,10 +142,7 @@ function DailyExpenseList({
                         {/* その日の支出明細 */}
                         {group.items.map((expense) => {
                             // 店名とメモを「店名（メモ）」の形に整える
-                            const expenseDetail = formatExpenseDetail(
-                                expense.shopName,
-                                expense.memo
-                            );
+                            const expenseDetail = formatExpenseDetail(expense.memo);
 
                             return (
                                 <Box

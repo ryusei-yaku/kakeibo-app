@@ -11,7 +11,7 @@ import {
 import type { Category } from "../types/category";
 import type { Expense } from "../types/expense";
 import { db } from "./firebase";
-
+import { initialCategories } from "../features/categories/categories";
 
 // Firestore上で支出データを保存するコレクション名
 // 今はログイン機能がないため、仮のユーザーID配下に保存する
@@ -181,12 +181,38 @@ export async function loadExpensesFromFirestore() {
 
     // Firestoreのドキュメントを、アプリで使う Expense[] の形に変換する
     const expenses = querySnapshot.docs.map((expenseDoc) => {
-        return expenseDoc.data() as Expense;
+        const expense = expenseDoc.data() as Expense;
+
+        // 古いFirestoreデータには、typeが存在しない可能性がある
+        // その場合は、これまで通り「支出」として扱う
+        return {
+            ...expense,
+            type: expense.type ?? "expense",
+        }
     });
 
     // 日付が新しい順に並べる
     // Firestoreから取得した順番は画面表示用に保証されていないため、ここで並び替える
     return expenses.sort((a, b) => b.date.localeCompare(a.date));
+}
+
+// Firestoreに保存済みのカテゴリーに、初期カテゴリーで足りないものを補う
+function mergeWithInitialCategories(categories: Category[]) {
+    //初期カテゴリーのうち、Firestore側に存在しないものだけを取り出す
+    const missingInitialCategories = initialCategories.filter(
+        (initialCategory) =>
+            !categories.some(
+                (category) =>
+                    category.id === initialCategory.id ||
+                    (
+                        category.type === initialCategory.type &&
+                        category.name === initialCategory.name
+                    )
+            )
+    );
+
+    // Firestore側のカテゴリーを優先し、足りない初期カテゴリーを追加
+    return [...categories, ...missingInitialCategories];
 }
 
 // Firestoreからカテゴリーデータをすべて読み込む
@@ -203,15 +229,24 @@ export async function loadCategoriesFromFirestore() {
     const categories = querySnapshot.docs.map((categoryDoc) => {
         const category = categoryDoc.data() as Category;
 
-        // 古いデータや手動追加データで isDeleted がない場合に備える
-        // isDeleted がない場合は、削除されていないカテゴリーとして扱う
         return {
             ...category,
+
+            // 古いFirestoreデータには type が存在しない可能性がある
+            // その場合は、これまで通り支出カテゴリーとして扱う
+            type: category.type ?? "expense",
+
+            //古い保存データにはdisplayOrderが存在しない可能性
+            // その場合は、50として中間あたりに表示
+            displayOrder: category.displayOrder ?? 50,
+
+            // 古いデータや手動追加データで isDeleted がない場合に備える
+            // isDeleted がない場合は、削除されていないカテゴリーとして扱う
             isDeleted: category.isDeleted ?? false,
         };
     });
 
-    // ここではFirestoreに保存されているカテゴリーだけを返す
-    // Firestoreが空の場合に初期カテゴリーを使うかどうかは、App.tsx側で判断する
-    return categories;
+    //Firestoreに保存されているカテゴリーを返す
+    // ただし、古いデータで初期カテゴリーが不足している場合は補完する
+    return mergeWithInitialCategories(categories);
 }

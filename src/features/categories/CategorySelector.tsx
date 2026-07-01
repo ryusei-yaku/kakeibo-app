@@ -108,10 +108,10 @@ function CategorySelector({
                             sm: 14,
                         },
                         minWidth: 0,
+                        textTransform:"none",
                         "&:hover": {
                             backgroundColor: "#fbd4a7",
                             borderColor: "#d97706",
-                            textTransform: "none",
                         },
                     }}
                 >

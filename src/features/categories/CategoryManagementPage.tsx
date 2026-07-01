@@ -19,7 +19,10 @@ import type { Category } from "../../types/category";
 
 type CategoryManagementPageProps = {
     categories: Category[];
-    onAddCategory: (categoryName: string) => void;
+    onAddCategory: (
+        categoryName: string,
+        categoryType: "expense" | "income",
+    ) => void;
     onUpdateCategory: (categoryId: string, categoryName: string) => void;
     onDeleteCategory: (categoryId: string) => void;
 };
@@ -32,6 +35,8 @@ function CategoryManagementPage({
 }: CategoryManagementPageProps) {
     const navigate = useNavigate();
 
+    const [categoryType, setCategoryType] = useState<"expense" | "income">("expense")
+
     const [categoryName, setCategoryName] = useState("");
 
     const [errorMessage, setErrorMessage] = useState("");
@@ -42,9 +47,10 @@ function CategoryManagementPage({
 
     const [deleteTargetCategory, setDeleteTargetCategory] = useState<Category | null>(null);
 
-    const activeCategories = categories.filter(
-        (category) => !category.isDeleted
-    );
+    // 選択中の種類に合うカテゴリーだけを管理画面に表示する
+    const displayCategories = categories.filter(
+        (category) => category.type === categoryType && !category.isDeleted
+    )
 
     function handleSubmitCategory() {
         const trimmedCategoryName = categoryName.trim();
@@ -57,6 +63,7 @@ function CategoryManagementPage({
         const isDuplicateCategory = categories.some(
             (category) =>
                 !category.isDeleted &&
+                category.type === categoryType &&
                 category.name === trimmedCategoryName &&
                 category.id !== editingCategoryId
         );
@@ -67,7 +74,7 @@ function CategoryManagementPage({
         }
 
         if (editingCategoryId === null) {
-            onAddCategory(trimmedCategoryName);
+            onAddCategory(trimmedCategoryName, categoryType);
             setCategoryName("");
             setErrorMessage("");
             return;
@@ -125,6 +132,7 @@ function CategoryManagementPage({
     }
 
     function startEditCategory(category: Category) {
+        setCategoryType(category.type);
         setEditingCategoryId(category.id);
         setCategoryName(category.name);
         setErrorMessage("");
@@ -154,6 +162,63 @@ function CategoryManagementPage({
                         >
                             カテゴリー管理
                         </Typography>
+                    </Box>
+
+                    {/* 支出・収入切り替え */}
+                    <Box
+                        sx={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: 1,
+                            backgroundColor: "#ffffff",
+                            borderRadius: 3,
+                            p: 0.5,
+                        }}
+                    >
+                        <Button
+                            disabled={editingCategoryId !== null}
+                            onClick={() => {
+                                setCategoryType("expense");
+                                setEditingCategoryId(null);
+                                setCategoryName("");
+                                setErrorMessage("");
+                            }}
+                            sx={{
+                                py: 1.2,
+                                borderRadius: 2.5,
+                                fontWeight: "bold",
+                                backgroundColor: categoryType === "expense" ? "#f59e0b" : "transparent",
+                                color: categoryType === "expense" ? "#ffffff" : "#555555",
+                                textTransform: "none",
+                                "&:hover": {
+                                    backgroundColor: categoryType === "expense" ? "#d97706" : "#fde7cd",
+                                }
+                            }}
+                        >
+                            支出
+                        </Button>
+                        <Button
+                            disabled={editingCategoryId !== null}
+                            onClick={() => {
+                                setCategoryType("income");
+                                setEditingCategoryId(null);
+                                setCategoryName("");
+                                setErrorMessage("");
+                            }}
+                            sx={{
+                                py: 1.2,
+                                borderRadius: 2.5,
+                                fontWeight: "bold",
+                                backgroundColor: categoryType === "income" ? "#f59e0b" : "transparent",
+                                color: categoryType === "income" ? "#ffffff" : "#555555",
+                                textTransform: "none",
+                                "&:hover": {
+                                    backgroundColor: categoryType === "income" ? "#d97706" : "#fde7cd",
+                                }
+                            }}
+                        >
+                            収入
+                        </Button>
                     </Box>
 
                     {/* カテゴリー追加フォーム */}
@@ -280,84 +345,102 @@ function CategoryManagementPage({
                         </Typography>
 
                         <Stack spacing={1}>
-                            {activeCategories.map((category) => {
-                                const isEditing = editingCategoryId === category.id;
+                            {displayCategories.length === 0 ? (
+                                <Box
+                                    sx={{
+                                        backgroundColor: "#ffffff",
+                                        borderRadius: 3,
+                                        px: 2,
+                                        py: 1.5,
+                                        border: "1px solid #eeeeee",
+                                    }}
+                                >
+                                    <Typography color="#text.secondary">
+                                        登録済みカテゴリーはありません。
+                                    </Typography>
+                                </Box>
+                            ) : (
 
-                                return (
-                                    <Box
-                                        key={category.id}
-                                        sx={{
-                                            backgroundColor: isEditing ? "#fde7cd" : "#ffffff",
-                                            borderRadius: 3,
-                                            px: 2,
-                                            py: 1.5,
-                                            border: isEditing
-                                                ? "1px solid #f59e0b"
-                                                : "1px solid #eeeeee",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "space-between",
-                                            gap: 2,
-                                        }}
-                                    >
-                                        <Typography
-                                            sx={{
-                                                fontWeight: "bold",
-                                                color: "#333333",
-                                                minWidth: 0,
-                                                overflow: "hidden",
-                                                textOverflow: "ellipsis",
-                                                whiteSpace: "nowrap",
-                                            }}
-                                        >
-                                            {category.name}
-                                        </Typography>
+                                displayCategories.map((category) => {
+                                    const isEditing = editingCategoryId === category.id;
 
+                                    return (
                                         <Box
+                                            key={category.id}
                                             sx={{
+                                                backgroundColor: isEditing ? "#fde7cd" : "#ffffff",
+                                                borderRadius: 3,
+                                                px: 2,
+                                                py: 1.5,
+                                                border: isEditing
+                                                    ? "1px solid #f59e0b"
+                                                    : "1px solid #eeeeee",
                                                 display: "flex",
                                                 alignItems: "center",
-                                                gap: 0.5,
-                                                flexShrink: 0,
+                                                justifyContent: "space-between",
+                                                gap: 2,
                                             }}
                                         >
-                                            <Button
-                                                size="medium"
-                                                variant="outlined"
-                                                onClick={() => startEditCategory(category)}
+                                            <Typography
                                                 sx={{
-                                                    minWidth: 52,
-                                                    borderRadius: 2,
                                                     fontWeight: "bold",
-                                                    color: "#f59e0b",
-                                                    borderColor: "#f59e0b",
-                                                    backgroundColor: "#fffaf2",
-                                                    "&:hover": {
-                                                        backgroundColor: "#fde7cd",
-                                                        borderColor: "#d97706",
-                                                    },
+                                                    color: "#333333",
+                                                    minWidth: 0,
+                                                    overflow: "hidden",
+                                                    textOverflow: "ellipsis",
+                                                    whiteSpace: "nowrap",
                                                 }}
                                             >
-                                                編集
-                                            </Button>
+                                                {category.name}
+                                            </Typography>
 
-                                            <Button
-                                                size="medium"
-                                                variant="outlined"
-                                                color="error"
-                                                onClick={() => setDeleteTargetCategory(category)}
+                                            <Box
                                                 sx={{
-                                                    minWidth: 52,
-                                                    borderRadius: 2,
-                                                    fontWeight: "bold",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 0.5,
+                                                    flexShrink: 0,
                                                 }}
                                             >
-                                                削除
-                                            </Button>
+                                                <Button
+                                                    size="medium"
+                                                    variant="outlined"
+                                                    onClick={() => startEditCategory(category)}
+                                                    sx={{
+                                                        minWidth: 52,
+                                                        borderRadius: 2,
+                                                        fontWeight: "bold",
+                                                        color: "#f59e0b",
+                                                        borderColor: "#f59e0b",
+                                                        backgroundColor: "#fffaf2",
+                                                        "&:hover": {
+                                                            backgroundColor: "#fde7cd",
+                                                            borderColor: "#d97706",
+                                                        },
+                                                    }}
+                                                >
+                                                    編集
+                                                </Button>
+
+                                                <Button
+                                                    size="medium"
+                                                    variant="outlined"
+                                                    color="error"
+                                                    onClick={() => setDeleteTargetCategory(category)}
+                                                    sx={{
+                                                        minWidth: 52,
+                                                        borderRadius: 2,
+                                                        fontWeight: "bold",
+                                                    }}
+                                                >
+                                                    削除
+                                                </Button>
+                                            </Box>
                                         </Box>
-                                    </Box>
-                                );
-                            })}
+                                    );
+                                })
+
+                            )}
                             {/* カテゴリー名変更確認ダイアログ */}
                             <Dialog
                                 open={isUpdateDialogOpen}
@@ -435,7 +518,7 @@ function CategoryManagementPage({
                                             lineHeight: 1.8,
                                         }}
                                     >
-                                        「{deleteTargetCategory?.name}」は支出入力の選択肢から削除されます。
+                                        「{deleteTargetCategory?.name}」は入力画面の選択肢から削除されます。
                                         <br />
                                         過去に登録した支出データは変更されません。
                                     </DialogContentText>
@@ -480,7 +563,7 @@ function CategoryManagementPage({
                     </Box>
                 </Stack>
             </Container>
-        </Box>
+        </Box >
     );
 }
 

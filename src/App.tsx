@@ -85,12 +85,43 @@ function App() {
     loadDataFromFirestore();
   }, []);
 
-  async function addCategory(categoryName: string) {
+  function createNextCategoryDisplayOrder(categoryType: "expense" | "income") {
+    // 同じ種類のカテゴリーを取り出す
+    const sameTypeCategories = categories.filter(
+      (category) =>
+        category.type === categoryType &&
+        !category.isDeleted
+    );
+
+    // 「その他」は、displayOrder:99にしているため
+    // 追加カテゴリーはその他の前に入るように99未満だけを見る
+    const normalCategories = sameTypeCategories.filter(
+      (category) => category.displayOrder < 99
+    );
+
+    // まだ通常カテゴリーがない場合は1から始める
+    if (normalCategories.length === 0) {
+      return 1;
+    }
+
+    //既存カテゴリーの最大displayOrderの次の番号を返す
+    const maxDisplayOrder = Math.max(
+      ...normalCategories.map((category) => category.displayOrder)
+    );
+
+    return maxDisplayOrder + 1;
+  }
+
+  async function addCategory(
+    categoryName: string,
+    categoryType: "expense" | "income",
+  ) {
     // 同じ名前の削除済みカテゴリーがあるか確認する
     // ある場合は、新規追加ではなく復活させる
     const deletedCategory = categories.find(
       (category) =>
         category.name === categoryName &&
+        category.type === categoryType &&
         category.isDeleted
     );
 
@@ -127,6 +158,8 @@ function App() {
     const newCategory: Category = {
       id: crypto.randomUUID(),
       name: categoryName,
+      type:categoryType,
+      displayOrder:createNextCategoryDisplayOrder(categoryType),
       isDeleted: false,
     };
 

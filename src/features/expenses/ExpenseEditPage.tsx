@@ -48,16 +48,21 @@ function ExpenseEditForm({
     //既存の支出データを初期値として入れる
     const [amount, setAmount] = useState(String(expense.amount));
     const [date, setDate] = useState(expense.date);
-    const [shopName, setShopName] = useState(expense.shopName);
     const [memo, setMemo] = useState(expense.memo);
     const [selectedCategoryId, setSelectedCategoryId] = useState(expense.categoryId);
     const [isDateDialogOpen, setIsDateDialogOpen] = useState(false);
     //削除確認ダイアログを開いているかどうかを管理
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
+    // この支出データの種類を取得する
+    const transactionType = expense.type ?? "expense";
+
+    // 登録済みデータの種類に合うカテゴリーだけを表示する
+    // ただし、削除済みカテゴリーでも、このデータで使われているものは表示する
     const selectableCategories = categories.filter(
         (category) =>
-            !category.isDeleted || category.id === expense.categoryId
+            category.type === transactionType &&
+            (!category.isDeleted || category.id === expense.categoryId)
     );
 
     // 1項目分の横並びレイアウト
@@ -120,11 +125,11 @@ function ExpenseEditForm({
         // 編集後の支出データを作る
         const updatedExpense: Expense = {
             ...expense,
+            type: transactionType,
             amount: Number(amount),
+            date,
             categoryId: selectedCategory.id,
             categoryName: selectedCategory.name,
-            date,
-            shopName,
             memo,
         };
 
@@ -161,7 +166,7 @@ function ExpenseEditForm({
                     </Button>
 
                     <Typography variant="h5" component="h1" sx={{ fontWeight: "bold" }}>
-                        支出を編集
+                        {transactionType === "expense" ? "支出" : "収入"}を編集
                     </Typography>
 
                     {/* 日付 */}
@@ -196,7 +201,7 @@ function ExpenseEditForm({
                         sx={inputRowSx}
                     >
                         <Typography sx={inputLabelSx}>
-                            支出額
+                            {transactionType === "expense" ? "支出額" : "収入額"}
                         </Typography>
                         <Box sx={inputValueBoxSx}>
                             <Box
@@ -244,55 +249,6 @@ function ExpenseEditForm({
                             </Box>
                         </Box>
                     </Box>
-                    {/* カテゴリー */}
-                    <Box sx={{ mt: 0.5 }}>
-                        <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{
-                                fontWeight: "bold",
-                                mb: 1,
-                            }}>
-                            カテゴリー
-                        </Typography>
-
-                        <CategorySelector
-                            categories={selectableCategories}
-                            selectedCategoryId={selectedCategoryId}
-                            onSelectCategory={setSelectedCategoryId}
-                        />
-                    </Box>
-
-                    {/* 店名 */}
-                    <Box sx={inputRowSx}>
-                        <Typography sx={inputLabelSx}>
-                            店名
-                        </Typography>
-
-                        <Box sx={inputValueBoxSx}>
-                            <TextField
-                                value={shopName}
-                                onChange={(event) => setShopName(event.target.value)}
-                                variant="standard"
-                                fullWidth
-                                multiline
-                                minRows={1}
-                                placeholder="未入力"
-                                slotProps={{
-                                    input: {
-                                        disableUnderline: true,
-                                    },
-                                }}
-                                sx={{
-                                    "& textarea": {
-                                        fontSize: 18,
-                                        lineHeight: 1.6,
-                                        overflowWrap: "break-word",
-                                    },
-                                }}
-                            />
-                        </Box>
-                    </Box>
 
                     {/* メモ */}
                     <Box sx={multilineInputRowSx}>
@@ -323,6 +279,25 @@ function ExpenseEditForm({
                                 }}
                             />
                         </Box>
+                    </Box>
+
+                    {/* カテゴリー */}
+                    <Box sx={{ mt: 0.5 }}>
+                        <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{
+                                fontWeight: "bold",
+                                mb: 1,
+                            }}>
+                            カテゴリー
+                        </Typography>
+
+                        <CategorySelector
+                            categories={selectableCategories}
+                            selectedCategoryId={selectedCategoryId}
+                            onSelectCategory={setSelectedCategoryId}
+                        />
                     </Box>
 
                     <Box
@@ -373,7 +348,7 @@ function ExpenseEditForm({
                                 borderBottom: "1px solid #e0e0e0"
                             }}
                         >
-                            この支出を削除しますか？
+                            この{transactionType === "expense" ? "支出" : "収入"}を削除しますか？
                         </DialogTitle>
 
 

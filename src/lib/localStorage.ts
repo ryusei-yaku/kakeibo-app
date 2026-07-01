@@ -18,7 +18,14 @@ export function loadExpensesFromStorage() {
         }
 
         // localStorageには文字列として保存されているため、配列に戻す
-        return JSON.parse(savedExpenses) as Expense[];
+        const parsedExpenses = JSON.parse(savedExpenses) as Expense[];
+
+        // 古い保存データには、typeが存在しない可能性がある
+        // その場合は、これまで通り「支出」として扱う
+        return parsedExpenses.map((expense) => ({
+            ...expense,
+            type: expense.type ?? "expense",
+        }))
     } catch {
         // JSONの形式が壊れている場合など、読み込みに失敗したら初期状態に戻す
         return [];
@@ -28,6 +35,21 @@ export function loadExpensesFromStorage() {
 // 支出データをlocalStorageへ保存する
 export function saveExpensesToStorage(expenses: Expense[]) {
     localStorage.setItem(EXPENSES_STORAGE_KEY, JSON.stringify(expenses));
+}
+
+// 保存済みカテゴリーに、初期カテゴリーで足りないものを補う
+function mergeWithInitialCategories(categories: Category[]) {
+    const missingInitialCategories = initialCategories.filter(
+        (initialCategory) =>
+            !categories.some(
+                (category) =>
+                    category.id === initialCategory.id ||
+                    category.type === initialCategory.type &&
+                    category.name === initialCategory.name
+            )
+    );
+
+    return [...categories, ...missingInitialCategories];
 }
 
 // localStorageからカテゴリーデータを読み込む
@@ -51,12 +73,28 @@ export function loadCategoriesFromStorage() {
             return initialCategories;
         }
 
-        // 古い保存データには isDeleted が存在しない可能性がある
-        // その場合は、削除されていないカテゴリーとして扱う
-        return parsedCategories.map((category) => ({
-            ...category,
-            isDeleted: category.isDeleted ?? false,
-        }));
+        /**
+         * 
+         * @todo:収入カテゴリーの初期値を入力
+         * 
+         */
+        return mergeWithInitialCategories(
+            parsedCategories.map((category) => ({
+                ...category,
+
+                // 古い保存データにはtypeが存在しない可能性
+                // その場合は、これまで通り支出カテゴリーとして扱う
+                type: category.type ?? "expense",
+
+                //古い保存データにはdisplayOrderが存在しない可能性
+                // その場合は、50として中間あたりに表示
+                displayOrder: category.displayOrder ?? 50,
+
+                // 古い保存データには isDeleted が存在しない可能性がある
+                // その場合は、削除されていないカテゴリーとして扱う
+                isDeleted: category.isDeleted ?? false,
+            }))
+        );
     } catch {
         // JSONの形式が壊れている場合など、読み込みに失敗したら初期カテゴリーを使う
         return initialCategories;

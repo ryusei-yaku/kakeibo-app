@@ -14,6 +14,7 @@ import { formatAmount } from "../../utils/formatAmount";
 import { formatDateLabel } from "../../utils/formatDateLabel";
 import CategorySelector from "../categories/CategorySelector";
 
+
 type ExpenseFormPageProps = {
     expenses: Expense[];
     categories: Category[];
@@ -28,13 +29,21 @@ function ExpenseFormPage({
     //カレンダーのダイアログが開いているかを保持する。
     const [isDateDialogOpen, setIsDateDialogOpen] = useState(false);
     //選択しているカテゴリのIDを保持する。
-    const [selectedCategoryId, setSelectedCategoryId] = useState("food");
+    const [selectedCategoryId, setSelectedCategoryId] = useState("expense-food");
     //今入力されている金額を保持する。
     const [amount, setAmount] = useState("");
-    //店名を保持する
-    const [shopName, setShopName] = useState("");
     //メモを保持する
     const [memo, setMemo] = useState("");
+
+    // 支出・収入のどちらを登録するかを管理する
+    // 初期値は支出
+    const [transactionType, setTransactionType] = useState<"expense" | "income">("expense");
+
+    //選択中の種類に合うカテゴリーだけを表示する
+    // 支出なら支出カテゴリー、収入なら収入カテゴリーだけを表示
+    const selectableCategories = categories.filter(
+        (category) => category.type === transactionType
+    )
 
     const navigate = useNavigate();
 
@@ -64,18 +73,17 @@ function ExpenseFormPage({
 
         const newExpense: Expense = {
             id: crypto.randomUUID(),
+            type: transactionType,
             amount: Number(amount),
             categoryId: selectedCategory.id,
             categoryName: selectedCategory.name,
             date: selectedDate.format("YYYY-MM-DD"),
-            shopName,
             memo,
         };
 
         onAddExpense(newExpense);
 
         setAmount("");
-        setShopName("");
         setMemo("");
     }
 
@@ -93,6 +101,76 @@ function ExpenseFormPage({
                 >
                     ホームへ戻る
                 </Button>
+
+                {/* 支出・収入切り替え */}
+                <Box
+                    sx={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: 1,
+                        backgroundColor: "#ffffff",
+                        borderRadius: 3,
+                        p: 0.5,
+                    }}
+                >
+                    <Button
+                        onClick={() => {
+                            setTransactionType("expense");
+
+                            const firstExpenseCategory = categories.find(
+                                (category) =>
+                                    category.type === "expense" &&
+                                    !category.isDeleted
+                            );
+
+                            if (firstExpenseCategory !== undefined) {
+                                setSelectedCategoryId(firstExpenseCategory.id)
+                            }
+                        }}
+                        sx={{
+                            py: 1.2,
+                            borderRadius: 2.5,
+                            fontWeight: "bold",
+                            backgroundColor: transactionType === "expense" ? "#f59e0b" : "transparent",
+                            color: transactionType === "expense" ? "#ffffff" : "#555555",
+                            textTransform: "none",
+                            "&:hover": {
+                                backgroundColor: transactionType === "expense" ? "#d97706" : "#fde7cd",
+                            },
+                        }}
+                    >
+                        支出
+                    </Button>
+
+                    <Button
+                        onClick={() => {
+                            setTransactionType("income");
+
+                            const firstIncomeCategory = categories.find(
+                                (category) =>
+                                    category.type === "income" &&
+                                    !category.isDeleted
+                            );
+
+                            if (firstIncomeCategory !== undefined) {
+                                setSelectedCategoryId(firstIncomeCategory.id);
+                            }
+                        }}
+                        sx={{
+                            py: 1.2,
+                            borderRadius: 2.5,
+                            fontWeight: "bold",
+                            backgroundColor: transactionType === "income" ? "#f59e0b" : "transparent",
+                            color: transactionType === "income" ? "#ffffff" : "#555555",
+                            textTransform: "none",
+                            "&:hover": {
+                                backgroundColor: transactionType === "income" ? "#d97706" : "#fde7cd",
+                            },
+                        }}
+                    >
+                        収入
+                    </Button>
+                </Box>
 
                 <Box
                     sx={{
@@ -181,7 +259,7 @@ function ExpenseFormPage({
                             flexShrink: 0,
                         }}
                     >
-                        支出額
+                        {transactionType === "expense" ? "支出額" : "収入額"}
                     </Typography>
 
                     <TextField
@@ -219,66 +297,6 @@ function ExpenseFormPage({
                     >
                         円
                     </Typography>
-                </Box>
-
-                <Box sx={{ mt: 3 }}>
-                    <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ mb: 1, fontWeight: "bold", color: "text.secondary" }}
-                    >
-                        カテゴリー
-                    </Typography>
-
-                    <CategorySelector
-                        categories={categories}
-                        selectedCategoryId={selectedCategoryId}
-                        onSelectCategory={setSelectedCategoryId}
-                        showEditButton
-                    />
-                </Box>
-
-                <Box
-                    sx={{
-                        display: "flex",
-                        alignItems: "flex-start",
-                        borderBottom: "1px solid #e0e0e0",
-                        py: 1.5,
-                    }}
-                >
-                    <Typography
-                        sx={{
-                            width: 56,
-                            fontWeight: "bold",
-                            color: "text.secondary",
-                            flexShrink: 0,
-                            pt: 0.8,
-                        }}
-                    >
-                        店名
-                    </Typography>
-
-                    <TextField
-                        value={shopName}
-                        onChange={(event) => setShopName(event.target.value)}
-                        placeholder="未入力"
-                        variant="standard"
-                        multiline
-                        minRows={1}
-                        fullWidth
-                        slotProps={{
-                            input: {
-                                disableUnderline: true,
-                            },
-                        }}
-                        sx={{
-                            "& textarea": {
-                                fontSize: 18,
-                                lineHeight: 1.6,
-                                overflowWrap: "break-word",
-                            },
-                        }}
-                    />
                 </Box>
 
                 <Box
@@ -323,6 +341,23 @@ function ExpenseFormPage({
                     />
                 </Box>
 
+                <Box sx={{ mt: 3 }}>
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mb: 1, fontWeight: "bold", color: "text.secondary" }}
+                    >
+                        カテゴリー
+                    </Typography>
+
+                    <CategorySelector
+                        categories={selectableCategories}
+                        selectedCategoryId={selectedCategoryId}
+                        onSelectCategory={setSelectedCategoryId}
+                        showEditButton
+                    />
+                </Box>
+
                 <Button
                     variant="contained"
                     size="large"
@@ -341,7 +376,7 @@ function ExpenseFormPage({
                         },
                     }}
                 >
-                    登録する
+                    {transactionType === "expense" ? "支出を登録する" : "収入を登録する"}
                 </Button>
             </Container>
 

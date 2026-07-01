@@ -1,5 +1,7 @@
 export type Category = {
     id: string;
     name: string;
-    isDeleted:boolean;
+    type: "expense" | "income";
+    displayOrder: number;
+    isDeleted: boolean;
 };

@@ -25,21 +25,12 @@ function formatDateWithWeekday(date: string) {
 }
 
 //支出1件の左側に表示する文字列を作る
-//店名があれば店名を表示し、メモがあれば店名の横に（）で表示する
-function formatExpenseLabel(shopName: string, memo: string) {
-    if (shopName !== "" && memo !== "") {
-        return `${shopName} (${memo})`;
-    }
-
-    if (shopName !== "") {
-        return shopName;
-    }
-
+function formatExpenseLabel(memo: string) {
     if (memo !== "") {
-        return `(${memo})`;
+        return memo;
     }
 
-    return "詳細未入力";
+    return "メモなし";
 }
 
 function MonthlyCategoryDetailPage({
@@ -219,7 +210,7 @@ function MonthlyCategoryDetailPage({
                                                     textOverflow: "ellipsis",
                                                 }}
                                                 >
-                                                    {formatExpenseLabel(expense.shopName, expense.memo)}
+                                                    {formatExpenseLabel(expense.memo)}
                                                 </Typography>
 
                                                 {/* 右側：金額 */}
