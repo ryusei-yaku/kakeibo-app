@@ -17,7 +17,6 @@ import {
     type CalendarDay,
 } from "./utils/calendarDays";
 import {
-    calculateTotalAmount,
     createDailyExpenseTotals,
     filterExpensesByMonth,
     groupExpensesByDate,
@@ -90,8 +89,20 @@ function CalendarPage({ expenses }: CalendarPageProps) {
     //表示中の月の支出を、日付の新しい順に並べる
     const sortedDisplayMonthExpenses = sortExpensesByDateDesc(displayMonthExpenses);
 
-    //表示中の月の支出合計を計算する
-    const displayMonthTotalAmount = calculateTotalAmount(displayMonthExpenses);
+    // 表示中の月の収入合計を計算する
+    const displayMonthIncomeAmount = displayMonthExpenses
+        .filter((expense) => expense.type === "income")
+        .reduce((sum, expense) => sum + expense.amount, 0);
+
+    // 表示中の月の支出合計を計算する
+    const displayMonthExpenseAmount = displayMonthExpenses
+        .filter((expense) => expense.type === "expense")
+        .reduce((sum, expense) => sum + expense.amount, 0);
+
+    // 表示中の月の収支を計算する
+    // 収入から支出を引いた金額
+    const displayMonthBalanceAmount =
+        displayMonthIncomeAmount - displayMonthExpenseAmount;
 
     //表示中の月の支出を、日付ごとにまとめる
     const groupedExpensesByDate = groupExpensesByDate(sortedDisplayMonthExpenses);
@@ -177,7 +188,9 @@ function CalendarPage({ expenses }: CalendarPageProps) {
 
                     <DailyExpenseList
                         displayMonthText={displayMonth.format("YYYY年M月")}
-                        displayMonthTotalAmount={displayMonthTotalAmount}
+                        displayMonthIncomeAmount={displayMonthIncomeAmount}
+                        displayMonthExpenseAmount={displayMonthExpenseAmount}
+                        displayMonthBalanceAmount={displayMonthBalanceAmount}
                         groupedExpensesByDate={groupedExpensesByDate}
                         dailyExpenseSectionRefs={dailyExpenseSectionRefs}
                         onExpenseClick={handleExpenseClick}

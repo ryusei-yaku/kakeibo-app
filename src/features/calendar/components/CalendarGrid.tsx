@@ -8,7 +8,13 @@ import type { CalendarDay } from "../utils/calendarDays";
 // CalendarGrid が受け取るデータの型
 type CalendarGridProps = {
     calendarDays: CalendarDay[];
-    dailyExpenseTotals: Record<string, number>;
+    dailyExpenseTotals: Record<
+        string,
+        {
+            incomeAmount: number;
+            expenseAmount: number;
+        }
+    >;
     selectedDate: string;
     onDayClick: (calendarDay: CalendarDay) => void;
 };
@@ -44,7 +50,7 @@ function CalendarGrid({
                     // 曜日の見出しの文字色を決める
                     const color =
                         weekday === "土"
-                            ? "#2563eb"
+                            ? "#2592eb"
                             : weekday === "日"
                                 ? "#dc2626"
                                 : "#ffffff";
@@ -96,7 +102,7 @@ function CalendarGrid({
                             onClick={() => onDayClick(calendarDay)}
                             sx={{
                                 // 縦幅固定
-                                height: 58,
+                                height: 65,
 
                                 // 中身が長くてもマスの横幅を広げない
                                 minWidth: 0,
@@ -133,33 +139,49 @@ function CalendarGrid({
                                 {calendarDay.day}
                             </Typography>
 
-                            {/* その日に支出がある場合だけ、日付マスの中に合計金額を表示する */}
+                            {/* その日に収入・支出がある場合だけ、日付マスの中に合計金額を表示する */}
                             {dailyTotal !== undefined && (
-                                <Typography
+                                <Box
                                     sx={{
                                         mt: 0.5,
-                                        fontSize: 10,
-                                        fontWeight: "bold",
-                                        color: calendarDay.isCurrentMonth
-                                            ? "#dc2626"
-                                            : "#fca5a5",
-                                        textAlign: "right",
+                                        lineHeight: 1,
+                                    }}>
+                                    {/* 収入合計 */}
+                                    {dailyTotal.incomeAmount > 0 && (
+                                        <Typography
+                                            sx={{
+                                                fontSize: 12,
+                                                color: calendarDay.isCurrentMonth ? "#2592eb" : "#93c5fd",
+                                                textAlign: "right",
+                                                whiteSpace: "nowrap",
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis",
+                                                display: "block",
+                                                lineHeight: 1,
+                                            }}
+                                        >
+                                            {dailyTotal.incomeAmount.toLocaleString()}
+                                        </Typography>
+                                    )}
 
-                                        // 親の幅を超えない
-                                        maxWidth: "100%",
-                                        minWidth: 0,
-
-                                        // 金額が長い場合は折り返さず、省略する
-                                        whiteSpace: "nowrap",
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-
-                                        // Typographyを横幅制御しやすい表示にする
-                                        display: "block",
-                                    }}
-                                >
-                                    {dailyTotal.toLocaleString()}
-                                </Typography>
+                                    {/* 支出合計 */}
+                                    {dailyTotal.expenseAmount > 0 && (
+                                        <Typography
+                                            sx={{
+                                                fontSize: 12,
+                                                color: calendarDay.isCurrentMonth ? "#dc2626" : "#fca5a5",
+                                                textAlign: "right",
+                                                whiteSpace: "nowrap",
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis",
+                                                display: "block",
+                                                lineHeight: 1,
+                                            }}
+                                        >
+                                            {dailyTotal.expenseAmount.toLocaleString()}
+                                        </Typography>
+                                    )}
+                                </Box>
                             )}
                         </Box>
                     );

@@ -55,7 +55,7 @@ function HomePage({ expenses }: HomePageProps) {
     const monthBalance = monthIncomeTotal - monthExpenseTotal;
 
     // 収支がプラスなら青、マイナスなら赤にする
-    const balanceColor = monthBalance >= 0 ? "#2563eb" : "#dc2626"
+    const balanceColor = monthBalance >= 0 ? "#2592eb" : "#dc2626"
 
     return (
         <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef", py: 3 }}>
@@ -136,7 +136,7 @@ function HomePage({ expenses }: HomePageProps) {
                                         sx={{
                                             fontSize: 20,
                                             fontWeight: "bold",
-                                            color: "#2563eb",
+                                            color: "#2592eb",
                                         }}
                                     >
                                         {formatYen(monthIncomeTotal)}

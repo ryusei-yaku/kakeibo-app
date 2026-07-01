@@ -357,7 +357,7 @@ function App() {
           element={<MonthlyCategorySummaryPage expenses={expenses} />}
         />
         <Route
-          path="/categories/monthly/:categoryId"
+          path="/categories/monthly/:transactionType/:categoryId"
           element={<MonthlyCategoryDetailPage expenses={expenses} />}
         />
         <Route path="/calendar" element={<CalendarPage expenses={expenses} />} />

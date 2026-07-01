@@ -37,7 +37,12 @@ function MonthlyCategoryDetailPage({
     expenses,
 }: MonthlyCategoryDetailPageProps) {
     //URLの「:categoryId」に入っている値を取得する
-    const { categoryId } = useParams();
+    const { transactionType, categoryId } = useParams();
+
+    // URLのtransactionTypeがincomeのときだけ収入として扱う
+    const selectedTransactionType =
+        transactionType === "income" ? "income" : "expense";
+
     //今日が含まれる年月を"2026-06"のような形式で取得する
     const currentMonth = dayjs().format("YYYY-MM");
     const navigate = useNavigate();
@@ -46,7 +51,8 @@ function MonthlyCategoryDetailPage({
     const categoryMonthlyExpenses = expenses.filter(
         (expense) =>
             expense.date.startsWith(currentMonth) &&
-            expense.categoryId === categoryId
+            expense.categoryId === categoryId &&
+            expense.type === selectedTransactionType
     );
 
     //選択中カテゴリーの今月支出を、日付の新しい順に並べる
@@ -131,12 +137,22 @@ function MonthlyCategoryDetailPage({
                                 color: "#333333",
                                 flexShrink: 0,
                             }}
-                        >の今月の支出</Typography>
+                        >の今月の
+                            {selectedTransactionType === "expense"
+                                ? "支出"
+                                : "収入"
+                            }
+                        </Typography>
                     </Box>
 
                     <Box>
                         <Typography color="text.secondary" sx={{ mt: 0.5 }}>
-                            このカテゴリーで登録した支出を確認します。
+                            このカテゴリーで登録した
+                            {transactionType === "expense"
+                                ? "支出"
+                                : "収入"
+                            }
+                            を確認します。
                         </Typography>
                     </Box>
 
@@ -144,7 +160,12 @@ function MonthlyCategoryDetailPage({
 
                     {groupedExpensesByDate.length === 0 ? (
                         <Typography color="text.secondary">
-                            今月の支出はまだありません。
+                            今月の
+                            {transactionType === "expense"
+                                ? "支出"
+                                : "収入"
+                            }
+                            はまだありません。
                         </Typography>
                     ) : (
                         // 支出がある場合は、日付ごとにまとめて表示する

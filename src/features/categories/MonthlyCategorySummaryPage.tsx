@@ -13,6 +13,7 @@ import type { Expense } from "../../types/expense";
 import dayjs from "../../lib/dayjs";
 import CategoryIcon from "@mui/icons-material/Category";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import { useState } from "react";
 
 type MonthlyCategorySummaryPageProps = {
     expenses: Expense[];
@@ -36,12 +37,21 @@ function MonthlyCategorySummaryPage({
     const navigate = useNavigate();
     //今日が含まれる年月を"2026-06"のような形式で取得する
     const currentMonth = dayjs().format("YYYY-MM");
-    //全支出の中から、今月の日付の支出だけを取り出す
-    const monthlyExpenses = expenses.filter((expense) =>
-        expense.date.startsWith(currentMonth)
-    );
 
-    //今月の支出だけを、カテゴリーごとの合計金額にまとめる
+    // 表示するデータの種類を管理する
+    // 初期表示は支出
+    const [transactionType, setTransactionType] = useState<
+        "expense" | "income"
+    >("expense");
+
+    // 今月かつ、選択中の種類に一致するデータだけを取り出す
+    // 支出タブなら支出だけ、収入タブなら収入だけを集計対象にする
+    const monthlyExpenses = expenses.filter(
+        (expense) =>
+            expense.date.startsWith(currentMonth) &&
+            expense.type === transactionType
+    );
+    //今月の選択中データを、カテゴリーごとの合計金額にまとめる
     const monthlyCategorySummaries = monthlyExpenses.reduce<CategorySummary[]>(
         (summaries, expense) => {
             //すでに同じカテゴリーの集計データがあるか探す
@@ -75,20 +85,32 @@ function MonthlyCategorySummaryPage({
         (a, b) => b.amount - a.amount //大きいものを前にする並び替え。
     );
 
-    const chartColors = [
-        "#f59e0b", // オレンジ
-        "#2563eb", // 青
-        "#ff6ab4", // ピンク
-        "#16a34a", // 緑
-        "#7c3aed", // 紫
-        "#64748b", // グレー
-        "#dc2626", // 赤
-        "#0891b2", // シアン
-        "#92400e", // ブラウン
-        "#65a30d", // 黄緑
-        "#4338ca", // 藍色
-        "#ca8a04", // 濃い黄色
+    const expenseChartColors = [
+        "#f59e0b",
+        "#dc2626",
+        "#ff6ab4",
+        "#92400e",
+        "#ca8a04",
+        "#7c2d12",
+        "#fb7185",
+        "#f97316",
     ];
+
+    const incomeChartColors = [
+        "#2563eb",
+        "#16a34a",
+        "#0891b2",
+        "#7c3aed",
+        "#65a30d",
+        "#4338ca",
+        "#0f766e",
+        "#0284c7",
+    ];
+
+    const chartColors =
+        transactionType === "expense"
+            ? expenseChartColors
+            : incomeChartColors;
 
     const monthlyTotalAmount = monthlyExpenses.reduce(
         (total, expense) => total + expense.amount,
@@ -161,10 +183,77 @@ function MonthlyCategorySummaryPage({
                             color="text.secondary"
                             sx={{
                                 mt: 0.5,
-                                fontWeight: "bold",
                             }}>
-                            今月の支出をカテゴリーごとに確認します。
+                            今月の
+                            {transactionType === "expense"
+                                ? "支出"
+                                : "収入"
+                            }
+                            をカテゴリーごとに確認します。
                         </Typography>
+                        {/* 支出・収入切り替え */}
+                        <Box
+                            sx={{
+                                display: "grid",
+                                gridTemplateColumns: "1fr 1fr",
+                                gap: 1,
+                                backgroundColor: "#ffffff",
+                                borderRadius: 3,
+                                p: 0.5,
+                            }}
+                        >
+                            <Button
+                                onClick={() => setTransactionType("expense")}
+                                sx={{
+                                    py: 1.2,
+                                    borderRadius: 2.5,
+                                    fontWeight: "bold",
+                                    backgroundColor:
+                                        transactionType === "expense"
+                                            ? "#f59e0b"
+                                            : "transparent",
+                                    color:
+                                        transactionType === "expense"
+                                            ? "#ffffff"
+                                            : "#555555",
+                                    textTransform: "none",
+                                    "&:hover": {
+                                        backgroundColor:
+                                            transactionType === "expense"
+                                                ? "#d97706"
+                                                : "#fde7cd",
+                                    },
+                                }}
+                            >
+                                支出
+                            </Button>
+
+                            <Button
+                                onClick={() => setTransactionType("income")}
+                                sx={{
+                                    py: 1.2,
+                                    borderRadius: 2.5,
+                                    fontWeight: "bold",
+                                    backgroundColor:
+                                        transactionType === "income"
+                                            ? "#f59e0b"
+                                            : "transparent",
+                                    color:
+                                        transactionType === "income"
+                                            ? "#ffffff"
+                                            : "#555555",
+                                    textTransform: "none",
+                                    "&:hover": {
+                                        backgroundColor:
+                                            transactionType === "income"
+                                                ? "#d97706"
+                                                : "#fde7cd",
+                                    },
+                                }}
+                            >
+                                収入
+                            </Button>
+                        </Box>
                     </Box>
 
                     {/* カテゴリー割合グラフ */}
@@ -189,7 +278,12 @@ function MonthlyCategorySummaryPage({
 
                         {categoryChartItems.length === 0 ? (
                             <Typography color="text.secondary">
-                                表示できる支出がまだありません。
+                                表示できる
+                                {transactionType === "expense"
+                                    ? "支出"
+                                    : "収入"
+                                }
+                                がまだありません。
                             </Typography>
                         ) : (
                             <Box
@@ -279,7 +373,12 @@ function MonthlyCategorySummaryPage({
                                 fontWeight: "bold",
                             }}
                         >
-                            今月の支出合計
+                            今月の
+                            {transactionType === "expense"
+                                ? "支出"
+                                : "収入"
+                            }
+                            合計
                         </Typography>
 
                         <Typography
@@ -307,7 +406,12 @@ function MonthlyCategorySummaryPage({
                             }}
                         >
                             <Typography color="text.secondary">
-                                今月の支出はまだありません。
+                                今月の
+                                {transactionType === "expense"
+                                    ? "支出"
+                                    : "収入"
+                                }
+                                はまだありません。
                             </Typography>
                         </Box>
                     ) : (
@@ -318,7 +422,7 @@ function MonthlyCategorySummaryPage({
                                     key={summary.id}
                                     elevation={0}
                                     //カテゴリーカードを押したら、そのカテゴリーカードの今月詳細ページへ移動する。
-                                    onClick={() => navigate(`/categories/monthly/${summary.id}`)}
+                                    onClick={() => navigate(`/categories/monthly/${transactionType}/${summary.id}`)}
                                     sx={{
                                         borderRadius: 3,
                                         backgroundColor: "#ffffff",

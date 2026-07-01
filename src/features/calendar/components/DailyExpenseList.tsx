@@ -5,10 +5,25 @@ import type { DailyExpenseGroup } from "../utils/expenseGrouping";
 
 // DailyExpenseList が受け取るデータの型
 type DailyExpenseListProps = {
+    // 表示中の月（例：2026年7月）
     displayMonthText: string;
-    displayMonthTotalAmount: number;
+
+    // 表示中の月の収入合計
+    displayMonthIncomeAmount: number;
+
+    // 表示中の月の支出合計
+    displayMonthExpenseAmount: number;
+
+    // 表示中の月の収支
+    // 収入 - 支出
+    displayMonthBalanceAmount: number;
+
     groupedExpensesByDate: DailyExpenseGroup[];
-    dailyExpenseSectionRefs: React.MutableRefObject<Record<string, HTMLDivElement | null>>;
+
+    dailyExpenseSectionRefs: React.MutableRefObject<
+        Record<string, HTMLDivElement | null>
+    >;
+
     onExpenseClick: (expenseId: string) => void;
 };
 
@@ -23,7 +38,9 @@ function formatExpenseDetail(memo: string) {
 
 function DailyExpenseList({
     displayMonthText,
-    displayMonthTotalAmount,
+    displayMonthIncomeAmount,
+    displayMonthExpenseAmount,
+    displayMonthBalanceAmount,
     groupedExpensesByDate,
     dailyExpenseSectionRefs,
     onExpenseClick,
@@ -53,28 +70,98 @@ function DailyExpenseList({
                         fontSize: 14,
                         fontWeight: "bold",
                         color: "text.secondary",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        textAlign: "right",
+                        mb: 1,
                     }}
                 >
-                    {displayMonthText}の支出合計
+                    {displayMonthText}の合計
                 </Typography>
 
-                <Typography
+                <Box
                     sx={{
-                        fontSize: 18,
-                        fontWeight: "bold",
-                        color: "#dc2626",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        textAlign: "right",
+                        display: "grid",
+                        gridTemplateColumns: "repeat(3, 1fr)",
+                        gap: 1,
                     }}
                 >
-                    {displayMonthTotalAmount.toLocaleString()}円
-                </Typography>
+                    {/* 収入 */}
+                    <Box>
+                        <Typography
+                            sx={{
+                                fontSize: 12,
+                                fontWeight: "bold",
+                                color: "text.secondary",
+                            }}
+                        >
+                            収入
+                        </Typography>
+
+                        <Typography
+                            sx={{
+                                fontSize: 18,
+                                fontWeight: "bold",
+                                color: "#2592eb",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                            }}
+                        >
+                            {displayMonthIncomeAmount.toLocaleString()}円
+                        </Typography>
+                    </Box>
+
+                    {/* 支出 */}
+                    <Box>
+                        <Typography
+                            sx={{
+                                fontSize: 12,
+                                fontWeight: "bold",
+                                color: "text.secondary",
+                            }}
+                        >
+                            支出
+                        </Typography>
+
+                        <Typography
+                            sx={{
+                                fontSize: 18,
+                                fontWeight: "bold",
+                                color: "#dc2626",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                            }}
+                        >
+                            {displayMonthExpenseAmount.toLocaleString()}円
+                        </Typography>
+                    </Box>
+
+                    {/* 収支 */}
+                    <Box>
+                        <Typography
+                            sx={{
+                                fontSize: 12,
+                                fontWeight: "bold",
+                                color: "text.secondary",
+                            }}
+                        >
+                            収支
+                        </Typography>
+
+                        <Typography
+                            sx={{
+                                fontSize: 18,
+                                fontWeight: "bold",
+                                color: displayMonthBalanceAmount >= 0 ? "#2592eb" : "#dc2626",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                            }}
+                        >
+                            {displayMonthBalanceAmount >= 0 ? "+" : ""}
+                            {displayMonthBalanceAmount.toLocaleString()}円
+                        </Typography>
+                    </Box>
+                </Box>
             </Box>
 
             {groupedExpensesByDate.length === 0 ? (
@@ -135,7 +222,8 @@ function DailyExpenseList({
                                     textAlign: "right",
                                 }}
                             >
-                                -{group.totalAmount.toLocaleString()}円
+                                {group.balanceAmount >= 0 ? "+" : ""}
+                                {group.balanceAmount.toLocaleString()}円
                             </Typography>
                         </Box>
 
@@ -218,6 +306,7 @@ function DailyExpenseList({
                                                 overflow: "hidden",
                                                 textOverflow: "ellipsis",
                                                 textAlign: "right",
+                                                color: expense.type === "income" ? "#2592eb" : "#dc2626",
                                             }}
                                         >
                                             {expense.amount.toLocaleString()}円
