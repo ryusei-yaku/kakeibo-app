@@ -17,19 +17,33 @@ import { db } from "./firebase";
 // 今はログイン機能がないため、仮のユーザーID配下に保存する
 const TEST_USER_ID = "test-user";
 
-// Firestoreに支出データを1件保存する
-// まずは動作確認用として、localStorageとは別にFirestoreへ保存できる形を作る
+//FireStoreに支出データを1件保存する
 export async function saveExpenseToFirestore(expense: Expense) {
-    // 保存先のパスを作る
-    // 例: users / test-user / expenses / 支出ID
+    //保存先用のパスを作る
+    //例: users / test-user / expenses / 支出ID
     const expenseRef = doc(
         collection(db, "users", TEST_USER_ID, "expenses"),
         expense.id
     );
 
-    // Firestoreに支出データを保存する
-    // setDoc は、指定したIDのドキュメントを作成または上書きする
+    //Firestoreに支出データを保存する
     await setDoc(expenseRef, expense);
+}
+
+// Firestoreに複数の支出データをまとめて保存する
+// localStorageにだけ残っている既存データをFirestoreへ移行するために使う
+export async function saveExpensesToFirestore(expenses: Expense[]) {
+    const savePromises = expenses.map((expense) => {
+        const expenseRef = doc(
+            collection(db, "users", TEST_USER_ID, "expenses"),
+            expense.id
+        );
+
+        return setDoc(expenseRef, expense);
+    });
+
+    await Promise.all(savePromises);
+
 }
 
 // Firestore上の支出データを更新する
@@ -62,15 +76,14 @@ export async function deleteExpenseFromFirestore(expenseId: string) {
 // Firestoreにカテゴリーデータを1件保存する
 // カテゴリー追加時や、削除済みカテゴリーを復活させるときに使う
 export async function saveCategoryToFirestore(category: Category) {
-    // 保存先のパスを作る
-    // 例: users / test-user / categories / カテゴリーID
+    // 保存先のパス作成
+    // 例:users/test-user/categories/カテゴリーID
     const categoryRef = doc(
         collection(db, "users", TEST_USER_ID, "categories"),
         category.id
     );
 
     // Firestoreにカテゴリーデータを保存する
-    // setDoc は、指定したIDのドキュメントを作成または上書きする
     await setDoc(categoryRef, category);
 }
 

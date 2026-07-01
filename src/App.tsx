@@ -22,6 +22,7 @@ import {
   saveCategoriesToFirestore,
   saveCategoryToFirestore,
   saveExpenseToFirestore,
+  saveExpensesToFirestore,
   softDeleteCategoryToFirestore,
   updateCategoryToFirestore,
   updateExpenseCategoryNameToFirestore,
@@ -46,7 +47,7 @@ function App() {
   });
 
   // アプリ起動時にFirestoreから支出データとカテゴリーデータを読み込む
-  // ただし、Firestoreが空の場合は、今までのlocalStorageデータや初期カテゴリーを使う
+  // Firestoreが空の場合は、localStorageのデータをFirestoreへ移行する
   useEffect(() => {
     async function loadDataFromFirestore() {
       try {
@@ -56,27 +57,28 @@ function App() {
         // Firestoreからカテゴリーデータを読み込む
         const firestoreCategories = await loadCategoriesFromFirestore();
 
-        // Firestoreに支出データがある場合だけ、画面上の支出データを置き換える
-        // 空の場合に置き換えると、localStorageに残っている既存データが見えなくなるため
+        // Firestoreに支出データがある場合は、Firestoreのデータを画面に反映する
         if (firestoreExpenses.length > 0) {
           setExpenses(firestoreExpenses);
         }
 
-        // Firestoreにカテゴリーデータがある場合は、画面上のカテゴリーデータを置き換える
+        // Firestoreに支出データがなく、localStorageに支出データがある場合はFirestoreへ移行する
+        if (firestoreExpenses.length === 0 && expenses.length > 0) {
+          await saveExpensesToFirestore(expenses);
+        }
+
+        // Firestoreにカテゴリーデータがある場合は、Firestoreのデータを画面に反映する
         if (firestoreCategories.length > 0) {
           setCategories(firestoreCategories);
         }
 
-        // Firestoreのcategoriesが空だった場合に備えて、初期カテゴリーをFirestoreにも保存する
-        // これにより、次回以降はFirestore側にも初期カテゴリーが存在する状態になる
-        if (firestoreCategories.length === 0) {
-          setCategories(initialCategories);
-          await saveCategoriesToFirestore(initialCategories);
+        // Firestoreにカテゴリーデータがない場合は、現在画面で持っているカテゴリーをFirestoreへ移行する
+        if (firestoreCategories.length === 0 && categories.length > 0) {
+          await saveCategoriesToFirestore(categories);
         }
       } catch (error) {
-        // Firestore読み込みに失敗しても、localStorageから読み込んだデータでは使える
-        // まずは開発中に原因を確認できるよう、コンソールに出す
-        console.error("Firestoreからのデータ読み込みに失敗しました", error);
+        // Firestore読み込みや初回移行に失敗しても、localStorageから読み込んだデータでは使える
+        console.error("Firestoreからのデータ読み込みまたは初回移行に失敗しました", error);
       }
     }
 
