@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import CalendarPage from "./features/calendar/CalendarPage";
 import CategoryManagementPage from "./features/categories/CategoryManagementPage";
 import MonthlyCategoryDetailPage from "./features/categories/MonthlyCategoryDetailPage";
@@ -93,6 +93,8 @@ function AppRoutes({
                         />
                     }
                 />
+                {/* ログイン済み状態で /signup や /login などに残っていた場合はホームへ戻す */}
+                <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </BrowserRouter>
     );
