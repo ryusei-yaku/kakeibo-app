@@ -1,7 +1,7 @@
 import { Button, Stack, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { loginWithEmail } from "../../lib/auth";
+import { loginWithEmail, logout } from "../../lib/auth";
 import AuthLayout from "./AuthLayout";
 import { isValidEmail } from "./authValidation";
 
@@ -21,44 +21,61 @@ function AuthPage() {
     // 新規登録画面へ移動するための関数
     const navigate = useNavigate();
 
-async function handleLogin() {
-    setErrorMessage("");
+    async function handleLogin() {
+        setErrorMessage("");
 
-    // メールアドレスとパスワードが未入力の場合はログイン処理をしない
-    if (email.trim() === "" && password === "") {
-        setErrorMessage("メールアドレス、パスワードを入力してください。");
-        return;
+        // メールアドレスとパスワードが未入力の場合はログイン処理をしない
+        if (email.trim() === "" && password === "") {
+            setErrorMessage("メールアドレス、パスワードを入力してください。");
+            return;
+        }
+
+        // メールアドレスが未入力の場合はログイン処理をしない
+        if (email.trim() === "") {
+            setErrorMessage("メールアドレスを入力してください。");
+            return;
+        }
+
+        // メールアドレスの形式が不正な場合はログイン処理をしない
+        if (!isValidEmail(email)) {
+            setErrorMessage("メールアドレスの形式が正しくありません。");
+            return;
+        }
+
+        // パスワードが未入力の場合はログイン処理をしない
+        if (password === "") {
+            setErrorMessage("パスワードを入力してください。");
+            return;
+        }
+
+        setIsLoading(true);
+
+        try {
+            // Firebase Authenticationでログインする
+            const userCredential = await loginWithEmail(email, password);
+
+            // メール認証状態を最新化する
+            await userCredential.user.reload();
+
+            // 最新状態を確認する
+            if (!userCredential.user.emailVerified) {
+                await logout();
+
+                setErrorMessage(
+                    "メールアドレスの確認が完了していません。確認メール内のリンクを開いてからログインしてください。"
+                );
+
+                return;
+            }
+
+            // 認証済みなら、App.tsx側のログイン状態も最新化するため画面を再読み込みする
+            window.location.href = "/";
+        } catch {
+            setErrorMessage("ログインに失敗しました。メールアドレスとパスワードを確認してください。");
+        } finally {
+            setIsLoading(false);
+        }
     }
-
-    // メールアドレスが未入力の場合はログイン処理をしない
-    if (email.trim() === "") {
-        setErrorMessage("メールアドレスを入力してください。");
-        return;
-    }
-
-    // メールアドレスの形式が不正な場合はログイン処理をしない
-    if (!isValidEmail(email)) {
-        setErrorMessage("メールアドレスの形式が正しくありません。");
-        return;
-    }
-
-    // パスワードが未入力の場合はログイン処理をしない
-    if (password === "") {
-        setErrorMessage("パスワードを入力してください。");
-        return;
-    }
-
-    setIsLoading(true);
-
-    try {
-        // Firebase Authenticationでログインする
-        await loginWithEmail(email, password);
-    } catch {
-        setErrorMessage("ログインに失敗しました。メールアドレスとパスワードを確認してください。");
-    } finally {
-        setIsLoading(false);
-    }
-}
 
     return (
         <AuthLayout

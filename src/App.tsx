@@ -25,6 +25,7 @@ import type { Expense } from "./types/expense";
 import { sortCategories } from "./utils/sortCategories";
 import LoadingScreen from "./components/LoadingScreen";
 import ErrorDialog from "./components/ErrorDialog";
+import VerifyEmailPage from "./features/auth/VerifyEmailPage";
 
 function App() {
 
@@ -380,12 +381,13 @@ function App() {
   }
 
   // 未ログインならログイン画面を表示する
-  if (currentUser === null) {
+  if (currentUser === null || !currentUser.emailVerified) {
     return (
       <BrowserRouter>
         <Routes>
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="*" element={<AuthPage />} />
         </Routes>
       </BrowserRouter>
@@ -413,13 +415,13 @@ function App() {
         onDeleteCategory={deleteCategory}
       />
 
-<ErrorDialog
-  open={errorMessage !== ""}
-  title="読み込みに失敗しました"
-  message={errorMessage}
-  onClose={() => setErrorMessage("")}
-  onRetry={loadDataFromFirestore}
-/>
+      <ErrorDialog
+        open={errorMessage !== ""}
+        title="読み込みに失敗しました"
+        message={errorMessage}
+        onClose={() => setErrorMessage("")}
+        onRetry={loadDataFromFirestore}
+      />
 
     </>
   );
