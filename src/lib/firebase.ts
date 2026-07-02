@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 // FirebaseプロジェクトとこのWebアプリを接続するための設定
 // Viteでは、ブラウザ側で使う環境変数の名前を VITE_ から始める必要がある
@@ -12,9 +13,11 @@ const firebaseConfig = {
     appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-
 // Firebaseアプリを初期化する
 const app = initializeApp(firebaseConfig);
 
 // Firestoreを使うための接続オブジェクトを作る
 export const db = getFirestore(app);
+
+// Firebase Authenticationを使うための接続オブジェクト
+export const auth = getAuth(app);

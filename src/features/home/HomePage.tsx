@@ -66,9 +66,6 @@ function HomePage({ expenses }: HomePageProps) {
     // 今月の収支を計算する
     const monthBalance = monthIncomeTotal - monthExpenseTotal;
 
-    // 収支がプラスなら青、マイナスなら赤にする
-    const balanceColor = monthBalance >= 0 ? "#2567eb" : "#dc2626"
-
     return (
         <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef", py: 3 }}>
             <Container maxWidth="sm">
@@ -188,7 +185,7 @@ function HomePage({ expenses }: HomePageProps) {
                         </CardContent>
                     </Card>
 
-                    {/* 支出入力ボタン */}
+                    {/* 収支入力ボタン */}
                     <Button
                         variant="contained"
                         size="large"
