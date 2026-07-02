@@ -1,20 +1,11 @@
+import { onAuthStateChanged, type User } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import CalendarPage from "./features/calendar/CalendarPage";
-import CategoryManagementPage from "./features/categories/CategoryManagementPage";
-import MonthlyCategoryDetailPage from "./features/categories/MonthlyCategoryDetailPage";
-import MonthlyCategorySummaryPage from "./features/categories/MonthlyCategorySummaryPage";
-import ExpenseEditPage from "./features/expenses/ExpenseEditPage";
-import ExpenseFormPage from "./features/expenses/ExpenseFormPage";
-import HomePage from "./features/home/HomePage";
-import {
-  loadCategoriesFromStorage,
-  loadExpensesFromStorage,
-  saveCategoriesToStorage,
-  saveExpensesToStorage,
-} from "./lib/localStorage";
-import type { Category } from "./types/category";
-import type { Expense } from "./types/expense";
+import AppRoutes from "./AppRoutes";
+import AuthPage from "./features/auth/AuthPage";
+import SignUpPage from "./features/auth/SignUpPage";
+import { initialCategories } from "./features/categories/categories";
+import { auth } from "./lib/firebase";
 import {
   deleteExpenseFromFirestore,
   loadCategoriesFromFirestore,
@@ -28,8 +19,17 @@ import {
   updateExpenseCategoryNameToFirestore,
   updateExpenseToFirestore,
 } from "./lib/firestoreStorage";
-import { initialCategories } from "./features/categories/categories";
+import {
+  loadCategoriesFromStorage,
+  loadExpensesFromStorage,
+  saveCategoriesToStorage,
+  saveExpensesToStorage,
+} from "./lib/localStorage";
+import type { Category } from "./types/category";
+import type { Expense } from "./types/expense";
 import { sortCategories } from "./utils/sortCategories";
+import ResetPasswordPage from "./features/auth/ResetPasswordPage";
+import { logout } from "./lib/auth";
 
 function App() {
   const [expenses, setExpenses] = useState<Expense[]>(loadExpensesFromStorage);
@@ -158,8 +158,8 @@ function App() {
     const newCategory: Category = {
       id: crypto.randomUUID(),
       name: categoryName,
-      type:categoryType,
-      displayOrder:createNextCategoryDisplayOrder(categoryType),
+      type: categoryType,
+      displayOrder: createNextCategoryDisplayOrder(categoryType),
       isDeleted: false,
     };
 
@@ -317,6 +317,17 @@ function App() {
     }
   }
 
+  async function handleLogout() {
+    try {
+      // Firebase Authenticationからログアウトする
+      // ログアウトすると currentUser が null になり、ログイン画面へ戻る
+      await logout();
+    } catch (error) {
+      // ログアウトに失敗した場合、開発中に原因を確認できるようにする
+      console.error("ログアウトに失敗しました", error);
+    }
+  }
+
   // 支出データが変更されるたびに保存する
   // 今はlocalStorageに保存しているが、将来的にFirestore保存へ差し替えやすくする
   useEffect(() => {
@@ -337,56 +348,56 @@ function App() {
   // 「その他」は最後に表示する
   const sortedCategories = sortCategories(categories);
 
+  // ログイン中のユーザー情報を管理する
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  // Firebase Authenticationのログイン状態確認中かどうかを管理する
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+
+  // Firebase Authenticationのログイン状態を監視する
+  // 一度ログイン済みなら次回以降もFirebaseがログイン状態を復元する
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      setIsAuthChecking(false);
+    });
+
+    // Appが不要になったときに監視を解除する
+    return () => unsubscribe();
+  }, []);
+
+  // ログイン状態を確認中は、何も表示せず待つ
+  if (isAuthChecking) {
+    return null;
+  }
+
+  // 未ログインならログイン画面を表示する
+  if (currentUser === null) {
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="*" element={<AuthPage />} />
+        </Routes>
+      </BrowserRouter>
+    );
+  }
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage expenses={expenses} />} />
-        {/* 支出入力画面 */}
-        <Route
-          path="/expenses/new"
-          element={
-            <ExpenseFormPage
-              expenses={expenses}
-              categories={activeCategories}
-              onAddExpense={addExpense}
-            />
-          }
-        />
-        <Route
-          path="/categories/monthly"
-          element={<MonthlyCategorySummaryPage expenses={expenses} />}
-        />
-        <Route
-          path="/categories/monthly/:transactionType/:categoryId"
-          element={<MonthlyCategoryDetailPage expenses={expenses} />}
-        />
-        <Route path="/calendar" element={<CalendarPage expenses={expenses} />} />
-        {/* 支出編集画面 */}
-        <Route
-          path="/expenses/edit/:expenseId"
-          element={
-            <ExpenseEditPage
-              expenses={expenses}
-              categories={categories}
-              onUpdateExpense={updateExpense}
-              onDeleteExpense={deleteExpense}
-            />
-          }
-        />
-        {/* カテゴリー管理画面 */}
-        <Route
-          path="/categories/manage"
-          element={
-            <CategoryManagementPage
-              categories={sortedCategories}
-              onAddCategory={addCategory}
-              onUpdateCategory={updateCategory}
-              onDeleteCategory={deleteCategory}
-            />
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+    <AppRoutes
+      expenses={expenses}
+      categories={categories}
+      activeCategories={activeCategories}
+      sortedCategories={sortedCategories}
+      onLogout={handleLogout}
+      onAddExpense={addExpense}
+      onUpdateExpense={updateExpense}
+      onDeleteExpense={deleteExpense}
+      onAddCategory={addCategory}
+      onUpdateCategory={updateCategory}
+      onDeleteCategory={deleteCategory}
+    />
   );
 }
 

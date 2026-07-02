@@ -17,6 +17,7 @@ import type { Expense } from "../../types/expense";
 
 type HomePageProps = {
     expenses: Expense[];
+    onLogout: () => void;
 }
 
 function formatYen(amount: number) {
@@ -40,7 +41,7 @@ function getBalanceColor(amount: number) {
     return amount > 0 ? "#2567eb" : "#dc2626";
 }
 
-function HomePage({ expenses }: HomePageProps) {
+function HomePage({ expenses, onLogout }: HomePageProps) {
     const navigate = useNavigate();
 
     const currentMonth = dayjs().format("YYYY-MM");
@@ -71,7 +72,14 @@ function HomePage({ expenses }: HomePageProps) {
             <Container maxWidth="sm">
                 <Stack spacing={3}>
                     {/* ヘッダー */}
-                    <Box>
+                    <Box
+                        sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            gap: 2,
+                        }}
+                    >
                         <Typography
                             variant="h4"
                             component="h1"
@@ -82,6 +90,26 @@ function HomePage({ expenses }: HomePageProps) {
                         >
                             家計簿アプリ
                         </Typography>
+
+                        <Button
+                            variant="outlined"
+                            size="small"
+                            onClick={onLogout}
+                            sx={{
+                                borderRadius: 3,
+                                fontWeight: "bold",
+                                color: "#555555",
+                                borderColor: "#f59e0b",
+                                backgroundColor: "#ffffff",
+                                textTransform: "none",
+                                "&:hover": {
+                                    backgroundColor: "#fde7cd",
+                                    borderColor: "#d97706",
+                                },
+                            }}
+                        >
+                            ログアウト
+                        </Button>
                     </Box>
 
                     {/* 今月・今日の支出カード */}
