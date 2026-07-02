@@ -50,7 +50,7 @@ function CalendarGrid({
                     // 曜日の見出しの文字色を決める
                     const color =
                         weekday === "土"
-                            ? "#2592eb"
+                            ? "#2567eb"
                             : weekday === "日"
                                 ? "#dc2626"
                                 : "#ffffff";
@@ -151,7 +151,7 @@ function CalendarGrid({
                                         <Typography
                                             sx={{
                                                 fontSize: 12,
-                                                color: calendarDay.isCurrentMonth ? "#2592eb" : "#93c5fd",
+                                                color: calendarDay.isCurrentMonth ? "#2567eb" : "#93c5fd",
                                                 textAlign: "right",
                                                 whiteSpace: "nowrap",
                                                 overflow: "hidden",

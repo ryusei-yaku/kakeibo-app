@@ -24,8 +24,20 @@ function formatYen(amount: number) {
 }
 
 function formatBalance(amount: number) {
-    const sign = amount >= 0 ? "+" : "";
+    if (amount === 0) {
+        return "0円";
+    }
+
+    const sign = amount > 0 ? "+" : "";
     return `${sign}${amount.toLocaleString()}円`;
+}
+
+function getBalanceColor(amount: number) {
+    if (amount === 0) {
+        return "text.secondary";
+    }
+
+    return amount > 0 ? "#2567eb" : "#dc2626";
 }
 
 function HomePage({ expenses }: HomePageProps) {
@@ -55,7 +67,7 @@ function HomePage({ expenses }: HomePageProps) {
     const monthBalance = monthIncomeTotal - monthExpenseTotal;
 
     // 収支がプラスなら青、マイナスなら赤にする
-    const balanceColor = monthBalance >= 0 ? "#2592eb" : "#dc2626"
+    const balanceColor = monthBalance >= 0 ? "#2567eb" : "#dc2626"
 
     return (
         <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef", py: 3 }}>
@@ -99,7 +111,7 @@ function HomePage({ expenses }: HomePageProps) {
                                 sx={{
                                     mt: 1,
                                     fontWeight: "bold",
-                                    color: balanceColor,
+                                    color: getBalanceColor(monthBalance),
                                     letterSpacing: 0.5,
                                 }}
                             >
@@ -136,7 +148,7 @@ function HomePage({ expenses }: HomePageProps) {
                                         sx={{
                                             fontSize: 20,
                                             fontWeight: "bold",
-                                            color: "#2592eb",
+                                            color: "#2567eb",
                                         }}
                                     >
                                         {formatYen(monthIncomeTotal)}

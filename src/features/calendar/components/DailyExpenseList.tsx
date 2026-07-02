@@ -36,6 +36,23 @@ function formatExpenseDetail(memo: string) {
     return "";
 }
 
+function formatBalance(amount: number) {
+    if (amount === 0) {
+        return "0円";
+    }
+
+    const sign = amount > 0 ? "+" : "";
+    return `${sign}${amount.toLocaleString()}円`;
+}
+
+function getBalanceColor(amount: number) {
+    if (amount === 0) {
+        return "text.secondary";
+    }
+
+    return amount > 0 ? "#2567eb" : "#dc2626";
+}
+
 function DailyExpenseList({
     displayMonthText,
     displayMonthIncomeAmount,
@@ -99,7 +116,7 @@ function DailyExpenseList({
                             sx={{
                                 fontSize: 18,
                                 fontWeight: "bold",
-                                color: "#2592eb",
+                                color: "#2567eb",
                                 whiteSpace: "nowrap",
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
@@ -151,14 +168,13 @@ function DailyExpenseList({
                             sx={{
                                 fontSize: 18,
                                 fontWeight: "bold",
-                                color: displayMonthBalanceAmount >= 0 ? "#2592eb" : "#dc2626",
+                                color: getBalanceColor(displayMonthBalanceAmount),
                                 whiteSpace: "nowrap",
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
                             }}
                         >
-                            {displayMonthBalanceAmount >= 0 ? "+" : ""}
-                            {displayMonthBalanceAmount.toLocaleString()}円
+                            {formatBalance(displayMonthBalanceAmount)}
                         </Typography>
                     </Box>
                 </Box>
@@ -222,8 +238,7 @@ function DailyExpenseList({
                                     textAlign: "right",
                                 }}
                             >
-                                {group.balanceAmount >= 0 ? "+" : ""}
-                                {group.balanceAmount.toLocaleString()}円
+                               {formatBalance(group.balanceAmount)}
                             </Typography>
                         </Box>
 
@@ -306,7 +321,7 @@ function DailyExpenseList({
                                                 overflow: "hidden",
                                                 textOverflow: "ellipsis",
                                                 textAlign: "right",
-                                                color: expense.type === "income" ? "#2592eb" : "#dc2626",
+                                                color: expense.type === "income" ? "#2567eb" : "#dc2626",
                                             }}
                                         >
                                             {expense.amount.toLocaleString()}円

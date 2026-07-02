@@ -14,7 +14,7 @@ export function getDayColor(date: string) {
     }
 
     if (dayOfWeek === 6) {
-        return "#2592eb";
+        return "#2567eb";
     }
 
     return "#555555";
