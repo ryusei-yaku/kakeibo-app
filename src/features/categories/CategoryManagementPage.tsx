@@ -516,6 +516,7 @@ function CategoryManagementPage({
                                         sx={{
                                             color: "text.secondary",
                                             lineHeight: 1.8,
+                                            textAlign: "left",
                                         }}
                                     >
                                         「{deleteTargetCategory?.name}」は入力画面の選択肢から削除されます。

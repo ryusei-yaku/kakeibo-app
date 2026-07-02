@@ -23,13 +23,22 @@ import {
 import type { Category } from "./types/category";
 import type { Expense } from "./types/expense";
 import { sortCategories } from "./utils/sortCategories";
+import LoadingScreen from "./components/LoadingScreen";
+import ErrorDialog from "./components/ErrorDialog";
 
 function App() {
+
   // ログイン中のユーザー情報を管理する
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   // Firebase Authenticationのログイン状態確認中かどうかを管理する
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+
+  // Firestoreから家計簿データを読み込み中かどうかを管理する
+  const [isFirestoreLoading, setIsFirestoreLoading] = useState(false);
+
+  // ユーザーに表示するエラーメッセージを管理する
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Firestoreから読み込むまでは、支出・収入データは空で始める
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -37,46 +46,48 @@ function App() {
   // Firestoreから読み込むまでは、初期カテゴリーを表示する
   const [categories, setCategories] = useState<Category[]>(initialCategories);
 
-  // アプリ起動時にFirestoreから支出データとカテゴリーデータを読み込む
-  useEffect(() => {
-    async function loadDataFromFirestore() {
-      try {
-
-        // ログイン中のユーザーがまだ取得できていない場合は読み込まない
-        if (currentUser === null) {
-          return;
-        }
-
-        setExpenses([]);
-
-        // カテゴリーはユーザーごとにFirestoreから読み込むため、まず初期カテゴリーに戻す
-        setCategories(initialCategories);
-
-        // ログイン中ユーザー専用のFirestoreデータを読み込む
-        const firestoreExpenses = await loadExpensesFromFirestore(currentUser.uid);
-        const firestoreCategories = await loadCategoriesFromFirestore(currentUser.uid);
-
-        // Firestoreに支出データがある場合は、Firestoreのデータを画面に反映する
-        if (firestoreExpenses.length > 0) {
-          setExpenses(firestoreExpenses);
-        }
-
-        // Firestoreにカテゴリーデータがある場合は、Firestoreのデータを画面に反映する
-        if (firestoreCategories.length > 0) {
-          setCategories(firestoreCategories);
-        }
-
-        // Firestoreにカテゴリーデータがない場合は、初期カテゴリーをFirestoreへ保存する
-        if (firestoreCategories.length === 0) {
-          setCategories(initialCategories);
-          await saveCategoriesToFirestore(currentUser.uid, initialCategories);
-        }
-
-      } catch (error) {
-        console.error("Firestoreからのデータ読み込みまたは初回移行に失敗しました", error);
-      }
+  async function loadDataFromFirestore() {
+    // ログイン中のユーザーがまだ取得できていない場合は読み込まない
+    if (currentUser === null) {
+      return;
     }
 
+    // 前回のエラー表示を消す
+    setErrorMessage("");
+
+    // Firestoreの読み込みを開始する
+    setIsFirestoreLoading(true);
+
+    try {
+      // ログイン中ユーザー専用のFirestoreデータを読み込む
+      const firestoreExpenses = await loadExpensesFromFirestore(currentUser.uid);
+      const firestoreCategories = await loadCategoriesFromFirestore(currentUser.uid);
+
+      // Firestoreの支出・収入データを画面に反映する
+      setExpenses(firestoreExpenses);
+
+      // Firestoreにカテゴリーがない場合は、初期カテゴリーを保存して使う
+      if (firestoreCategories.length === 0) {
+        setCategories(initialCategories);
+        await saveCategoriesToFirestore(currentUser.uid, initialCategories);
+        return;
+      }
+
+      // Firestoreのカテゴリーデータを画面に反映する
+      setCategories(firestoreCategories);
+    } catch (error) {
+      console.error("Firestoreからのデータ読み込みに失敗しました", error);
+
+      setErrorMessage(
+        "家計簿データの読み込みに失敗しました。通信環境を確認して、もう一度お試しください。"
+      );
+    } finally {
+      setIsFirestoreLoading(false);
+    }
+  }
+
+  // アプリ起動時にFirestoreから支出データとカテゴリーデータを読み込む
+  useEffect(() => {
     loadDataFromFirestore();
   }, [currentUser]);
 
@@ -364,9 +375,8 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // ログイン状態を確認中は、何も表示せず待つ
   if (isAuthChecking) {
-    return null;
+    return <LoadingScreen />;
   }
 
   // 未ログインならログイン画面を表示する
@@ -382,20 +392,36 @@ function App() {
     );
   }
 
+  // Firestoreから家計簿データを読み込み中は、ホーム画面風のスケルトンを表示する
+  if (isFirestoreLoading) {
+    return <LoadingScreen />;
+  }
+
   return (
-    <AppRoutes
-      expenses={expenses}
-      categories={categories}
-      activeCategories={activeCategories}
-      sortedCategories={sortedCategories}
-      onLogout={handleLogout}
-      onAddExpense={addExpense}
-      onUpdateExpense={updateExpense}
-      onDeleteExpense={deleteExpense}
-      onAddCategory={addCategory}
-      onUpdateCategory={updateCategory}
-      onDeleteCategory={deleteCategory}
-    />
+    <>
+      <AppRoutes
+        expenses={expenses}
+        categories={categories}
+        activeCategories={activeCategories}
+        sortedCategories={sortedCategories}
+        onLogout={handleLogout}
+        onAddExpense={addExpense}
+        onUpdateExpense={updateExpense}
+        onDeleteExpense={deleteExpense}
+        onAddCategory={addCategory}
+        onUpdateCategory={updateCategory}
+        onDeleteCategory={deleteCategory}
+      />
+
+<ErrorDialog
+  open={errorMessage !== ""}
+  title="読み込みに失敗しました"
+  message={errorMessage}
+  onClose={() => setErrorMessage("")}
+  onRetry={loadDataFromFirestore}
+/>
+
+    </>
   );
 }
 
