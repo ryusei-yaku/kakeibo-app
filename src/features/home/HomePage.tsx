@@ -1,6 +1,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import PersonIcon from "@mui/icons-material/Person";
 import PieChartIcon from "@mui/icons-material/PieChart";
 import {
     Box,
@@ -14,14 +15,29 @@ import {
 import { useNavigate } from "react-router-dom";
 import dayjs from "../../lib/dayjs";
 import type { Expense } from "../../types/expense";
+import type { Profile } from "../../types/profile";
 
 type HomePageProps = {
     expenses: Expense[];
-    onLogout: () => void;
+    profile: Profile;
 }
 
 function formatYen(amount: number) {
     return `${amount.toLocaleString()}円`;
+}
+
+function getGreeting() {
+    const hour = dayjs().hour();
+
+    if (hour >= 5 && hour < 11) {
+        return "おはようございます";
+    }
+
+    if (hour >= 11 && hour < 18) {
+        return "こんにちは";
+    }
+
+    return "こんばんは";
 }
 
 function formatBalance(amount: number) {
@@ -41,8 +57,13 @@ function getBalanceColor(amount: number) {
     return amount > 0 ? "#2567eb" : "#dc2626";
 }
 
-function HomePage({ expenses, onLogout }: HomePageProps) {
+function HomePage({ expenses, profile }: HomePageProps) {
     const navigate = useNavigate();
+
+    // ユーザー名が未設定の場合は「ユーザー」と表示する
+    const displayName = profile.displayName !== "" ? profile.displayName : "ユーザー";
+
+    const greeting = getGreeting();
 
     const currentMonth = dayjs().format("YYYY-MM");
 
@@ -81,35 +102,15 @@ function HomePage({ expenses, onLogout }: HomePageProps) {
                         }}
                     >
                         <Typography
-                            variant="h4"
+                            variant="h6"
                             component="h1"
                             sx={{
                                 fontWeight: "bold",
                                 color: "#333333",
                             }}
                         >
-                            家計簿アプリ
+                            {displayName}さん、{greeting}！
                         </Typography>
-
-                        <Button
-                            variant="outlined"
-                            size="small"
-                            onClick={onLogout}
-                            sx={{
-                                borderRadius: 3,
-                                fontWeight: "bold",
-                                color: "#555555",
-                                borderColor: "#f59e0b",
-                                backgroundColor: "#ffffff",
-                                textTransform: "none",
-                                "&:hover": {
-                                    backgroundColor: "#fde7cd",
-                                    borderColor: "#d97706",
-                                },
-                            }}
-                        >
-                            ログアウト
-                        </Button>
                     </Box>
 
                     {/* 今月・今日の支出カード */}
@@ -303,6 +304,41 @@ function HomePage({ expenses, onLogout }: HomePageProps) {
                                 }}
                             >
                                 <div>今月の内訳をカテゴリー別で見る</div>
+                                <ChevronRightIcon sx={{ color: "#f59e0b" }} />
+                            </Box>
+                        </Button>
+
+                        <Button
+                            variant="outlined"
+                            size="large"
+                            fullWidth
+                            startIcon={<PersonIcon sx={{ color: "#f59e0b" }} />}
+                            onClick={() => navigate("/profile")}
+                            sx={{
+                                justifyContent: "flex-start",
+                                py: 1.6,
+                                px: 2,
+                                borderRadius: 3,
+                                fontWeight: "bold",
+                                backgroundColor: "#ffffff",
+                                color: "#555555",
+                                borderColor: "#f59e0b",
+                                textTransform: "none",
+                                "&:hover": {
+                                    backgroundColor: "#fde7cd",
+                                    borderColor: "#d97706",
+                                },
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    width: "100%",
+                                }}
+                            >
+                                <span>プロフィール</span>
                                 <ChevronRightIcon sx={{ color: "#f59e0b" }} />
                             </Box>
                         </Button>

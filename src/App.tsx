@@ -2,9 +2,12 @@ import { onAuthStateChanged, type User } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import AppRoutes from "./AppRoutes";
+import ErrorDialog from "./components/ErrorDialog";
+import LoadingScreen from "./components/LoadingScreen";
 import AuthPage from "./features/auth/AuthPage";
 import ResetPasswordPage from "./features/auth/ResetPasswordPage";
 import SignUpPage from "./features/auth/SignUpPage";
+import VerifyEmailPage from "./features/auth/VerifyEmailPage";
 import { initialCategories } from "./features/categories/categories";
 import { logout } from "./lib/auth";
 import { auth } from "./lib/firebase";
@@ -18,14 +21,14 @@ import {
   softDeleteCategoryToFirestore,
   updateCategoryToFirestore,
   updateExpenseCategoryNameToFirestore,
-  updateExpenseToFirestore
+  updateExpenseToFirestore,
+  loadProfileFromFirestore,
+  saveProfileToFirestore,
 } from "./lib/firestoreStorage";
 import type { Category } from "./types/category";
 import type { Expense } from "./types/expense";
 import { sortCategories } from "./utils/sortCategories";
-import LoadingScreen from "./components/LoadingScreen";
-import ErrorDialog from "./components/ErrorDialog";
-import VerifyEmailPage from "./features/auth/VerifyEmailPage";
+import type { Profile } from "./types/profile";
 
 function App() {
 
@@ -47,6 +50,11 @@ function App() {
   // Firestoreから読み込むまでは、初期カテゴリーを表示する
   const [categories, setCategories] = useState<Category[]>(initialCategories);
 
+  // ログイン中ユーザーのプロフィール情報を管理する
+  const [profile, setProfile] = useState<Profile>({
+    displayName: "",
+  });
+
   async function loadDataFromFirestore() {
     // ログイン中のユーザーがまだ取得できていない場合は読み込まない
     if (currentUser === null) {
@@ -63,6 +71,8 @@ function App() {
       // ログイン中ユーザー専用のFirestoreデータを読み込む
       const firestoreExpenses = await loadExpensesFromFirestore(currentUser.uid);
       const firestoreCategories = await loadCategoriesFromFirestore(currentUser.uid);
+      // ログイン中ユーザー専用のプロフィール情報を読み込む
+      const firestoreProfile = await loadProfileFromFirestore(currentUser.uid);
 
       // Firestoreの支出・収入データを画面に反映する
       setExpenses(firestoreExpenses);
@@ -76,6 +86,9 @@ function App() {
 
       // Firestoreのカテゴリーデータを画面に反映する
       setCategories(firestoreCategories);
+
+      // Firestoreのプロフィール情報を画面に反映する
+      setProfile(firestoreProfile);
     } catch (error) {
       console.error("Firestoreからのデータ読み込みに失敗しました", error);
 
@@ -345,6 +358,27 @@ function App() {
     }
   }
 
+  async function saveDisplayName(displayName: string) {
+    // ログイン中のユーザーがいない場合は、Firestoreに保存できないため何もしない
+    if (currentUser === null) {
+      return;
+    }
+
+    const updatedProfile: Profile = {
+      displayName,
+    };
+
+    // 先に画面上のプロフィール情報を更新する
+    setProfile(updatedProfile);
+
+    try {
+      // ログイン中ユーザー専用のFirestoreにプロフィール情報を保存する
+      await saveProfileToFirestore(currentUser.uid, updatedProfile);
+    } catch (error) {
+      console.error("Firestoreへのプロフィール保存に失敗しました", error);
+    }
+  }
+
   async function handleLogout() {
     try {
       // Firebase Authenticationからログアウトする
@@ -413,6 +447,9 @@ function App() {
         onAddCategory={addCategory}
         onUpdateCategory={updateCategory}
         onDeleteCategory={deleteCategory}
+        currentUser={currentUser}
+        profile={profile}
+        onSaveDisplayName={saveDisplayName}
       />
 
       <ErrorDialog

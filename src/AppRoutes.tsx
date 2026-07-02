@@ -1,3 +1,4 @@
+import type { User } from "firebase/auth";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import CalendarPage from "./features/calendar/CalendarPage";
 import CategoryManagementPage from "./features/categories/CategoryManagementPage";
@@ -6,8 +7,10 @@ import MonthlyCategorySummaryPage from "./features/categories/MonthlyCategorySum
 import ExpenseEditPage from "./features/expenses/ExpenseEditPage";
 import ExpenseFormPage from "./features/expenses/ExpenseFormPage";
 import HomePage from "./features/home/HomePage";
+import ProfilePage from "./features/profile/ProfilePage";
 import type { Category } from "./types/category";
 import type { Expense } from "./types/expense";
+import type { Profile } from "./types/profile";
 
 type AppRoutesProps = {
     expenses: Expense[];
@@ -24,6 +27,9 @@ type AppRoutesProps = {
     ) => void;
     onUpdateCategory: (categoryId: string, categoryName: string) => void;
     onDeleteCategory: (categoryId: string) => void;
+    currentUser: User;
+    profile: Profile;
+    onSaveDisplayName: (displayName: string) => void;
 };
 
 function AppRoutes({
@@ -31,6 +37,9 @@ function AppRoutes({
     categories,
     activeCategories,
     sortedCategories,
+    currentUser,
+    profile,
+    onSaveDisplayName,
     onLogout,
     onAddExpense,
     onUpdateExpense,
@@ -44,7 +53,7 @@ function AppRoutes({
             <Routes>
                 <Route
                     path="/"
-                    element={<HomePage expenses={expenses} onLogout={onLogout} />}
+                    element={<HomePage expenses={expenses} profile={profile} />}
                 />
 
                 <Route
@@ -95,6 +104,18 @@ function AppRoutes({
                 />
                 {/* ログイン済み状態で /signup や /login などに残っていた場合はホームへ戻す */}
                 <Route path="*" element={<Navigate to="/" replace />} />
+
+                <Route
+                    path="/profile"
+                    element={
+                        <ProfilePage
+                            currentUser={currentUser}
+                            displayName={profile.displayName}
+                            onSaveDisplayName={onSaveDisplayName}
+                            onLogout={onLogout}
+                        />
+                    }
+                />
             </Routes>
         </BrowserRouter>
     );

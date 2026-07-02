@@ -7,11 +7,13 @@ import {
     setDoc,
     updateDoc,
     where,
+    getDoc,
 } from "firebase/firestore";
 import type { Category } from "../types/category";
 import type { Expense } from "../types/expense";
 import { db } from "./firebase";
 import { initialCategories } from "../features/categories/categories";
+import type { Profile } from "../types/profile";
 
 //FireStoreに支出データを1件保存する
 export async function saveExpenseToFirestore(userId: string, expense: Expense) {
@@ -242,4 +244,41 @@ export async function loadCategoriesFromFirestore(userId: string) {
     //Firestoreに保存されているカテゴリーを返す
     // ただし、古いデータで初期カテゴリーが不足している場合は補完する
     return mergeWithInitialCategories(categories);
+}
+
+// Firestoreからプロフィール情報を読み込む
+export async function loadProfileFromFirestore(userId: string) {
+    // プロフィール情報が入っているドキュメントを指定する
+    // 例: users / ログインユーザーID / profile / main
+    const profileRef = doc(db, "users", userId, "profile", "main");
+
+    // Firestoreからプロフィール情報を取得する
+    const profileSnapshot = await getDoc(profileRef);
+
+    // プロフィールがまだ作成されていない場合は、初期値を返す
+    if (!profileSnapshot.exists()) {
+        return {
+            displayName: "",
+        };
+    }
+
+    // Firestoreのデータを、アプリで使う Profile 型として扱う
+    const profile = profileSnapshot.data() as Profile;
+
+    return {
+        displayName: profile.displayName ?? "",
+    };
+}
+
+// Firestoreにプロフィール情報を保存する
+export async function saveProfileToFirestore(
+    userId: string,
+    profile: Profile
+) {
+    // 保存先のドキュメントを指定する
+    // 例: users / ログインユーザーID / profile / main
+    const profileRef = doc(db, "users", userId, "profile", "main");
+
+    // プロフィール情報を作成または上書きする
+    await setDoc(profileRef, profile);
 }
