@@ -26,7 +26,6 @@ export async function saveExpenseToFirestore(userId: string, expense: Expense) {
 }
 
 // Firestoreに複数の支出データをまとめて保存する
-// localStorageにだけ残っている既存データをFirestoreへ移行するために使う
 export async function saveExpensesToFirestore(userId: string, expenses: Expense[]) {
     const savePromises = expenses.map((expense) => {
         const expenseRef = doc(

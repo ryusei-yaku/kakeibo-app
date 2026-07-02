@@ -20,12 +20,6 @@ import {
   updateExpenseCategoryNameToFirestore,
   updateExpenseToFirestore
 } from "./lib/firestoreStorage";
-import {
-  loadCategoriesFromStorage,
-  loadExpensesFromStorage,
-  saveCategoriesToStorage,
-  saveExpensesToStorage,
-} from "./lib/localStorage";
 import type { Category } from "./types/category";
 import type { Expense } from "./types/expense";
 import { sortCategories } from "./utils/sortCategories";
@@ -37,22 +31,13 @@ function App() {
   // Firebase Authenticationのログイン状態確認中かどうかを管理する
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
-  const [expenses, setExpenses] = useState<Expense[]>(loadExpensesFromStorage);
-  const [categories, setCategories] = useState<Category[]>(() => {
-    // localStorageからカテゴリーデータを読み込む
-    const storageCategories = loadCategoriesFromStorage();
+  // Firestoreから読み込むまでは、支出・収入データは空で始める
+  const [expenses, setExpenses] = useState<Expense[]>([]);
 
-    // localStorageに空配列が保存されている場合は、初期カテゴリーを使う
-    // これにより、初回表示でカテゴリーが何も出なくなるのを防ぐ
-    if (storageCategories.length === 0) {
-      return initialCategories;
-    }
-
-    return storageCategories;
-  });
+  // Firestoreから読み込むまでは、初期カテゴリーを表示する
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
 
   // アプリ起動時にFirestoreから支出データとカテゴリーデータを読み込む
-  // Firestoreが空の場合は、localStorageのデータをFirestoreへ移行する
   useEffect(() => {
     async function loadDataFromFirestore() {
       try {
@@ -62,7 +47,6 @@ function App() {
           return;
         }
 
-        // ユーザーが切り替わったときに、前のユーザーやlocalStorage由来のデータが一瞬表示されないようにする
         setExpenses([]);
 
         // カテゴリーはユーザーごとにFirestoreから読み込むため、まず初期カテゴリーに戻す
@@ -89,7 +73,6 @@ function App() {
         }
 
       } catch (error) {
-        // Firestore読み込みや初回移行に失敗しても、localStorageから読み込んだデータでは使える
         console.error("Firestoreからのデータ読み込みまたは初回移行に失敗しました", error);
       }
     }
@@ -163,7 +146,6 @@ function App() {
         // ログイン中ユーザー専用のFirestoreに、復活したカテゴリーを保存する
         await saveCategoryToFirestore(currentUser.uid, restoredCategory);
       } catch (error) {
-        // Firestore保存に失敗しても、今はlocalStorage側には反映される
         // まずは開発中に原因を確認できるよう、コンソールに出す
         console.error("Firestoreへのカテゴリー復活保存に失敗しました", error);
       }
@@ -190,8 +172,7 @@ function App() {
       // ログイン中ユーザー専用のFirestoreに、新しいカテゴリーを保存する
       await saveCategoryToFirestore(currentUser.uid, newCategory);
     } catch (error) {
-      // Firestore保存に失敗しても、今はlocalStorage側にはデータが残る
-      // まずは開発中に原因を確認できるよう、コンソールに出す
+      // 開発中に原因を確認できるよう、コンソールに出す
       console.error("Firestoreへのカテゴリー保存に失敗しました", error);
     }
   }
@@ -230,7 +211,6 @@ function App() {
       // ログイン中ユーザー専用のFirestore上の支出・収入データを更新する
       await updateExpenseToFirestore(currentUser.uid, updatedExpense);
     } catch (error) {
-      // Firestore更新に失敗しても、今はlocalStorage側には編集内容が残る
       // まずは開発中に原因を確認できるよう、コンソールに出す
       console.error("Firestoreへの支出更新に失敗しました", error);
     }
@@ -251,7 +231,6 @@ function App() {
       // ログイン中ユーザー専用のFirestore上の支出・収入データを削除する
       await deleteExpenseFromFirestore(currentUser.uid, expenseId);
     } catch (error) {
-      // Firestore削除に失敗しても、今はlocalStorage側では削除済みになる
       // まずは開発中に原因を確認できるよう、コンソールに出す
       console.error("Firestoreからの支出削除に失敗しました", error);
     }
@@ -308,8 +287,7 @@ function App() {
         categoryName
       );
     } catch (error) {
-      // Firestore更新に失敗しても、今はlocalStorage側には編集内容が残る
-      // まずは開発中に原因を確認できるよう、コンソールに出す
+      // 開発中に原因を確認できるよう、コンソールに出す
       console.error("Firestoreへのカテゴリー更新に失敗しました", error);
     }
   }
@@ -350,8 +328,7 @@ function App() {
       // ログイン中ユーザー専用のFirestore上のカテゴリーを削除済みにする
       await softDeleteCategoryToFirestore(currentUser.uid, deletedCategory);
     } catch (error) {
-      // Firestore更新に失敗しても、今はlocalStorage側では削除済みになる
-      // まずは開発中に原因を確認できるよう、コンソールに出す
+      // 開発中に原因を確認できるよう、コンソールに出す
       console.error("Firestoreへのカテゴリー削除反映に失敗しました", error);
     }
   }
@@ -367,18 +344,6 @@ function App() {
     }
   }
 
-  // 支出データが変更されるたびに保存する
-  // 今はlocalStorageに保存しているが、将来的にFirestore保存へ差し替えやすくする
-  useEffect(() => {
-    saveExpensesToStorage(expenses);
-  }, [expenses]);
-
-  // カテゴリーデータが変更されるたびに保存する
-  // 今はlocalStorageに保存しているが、将来的にFirestore保存へ差し替えやすくする
-  useEffect(() => {
-    saveCategoriesToStorage(categories);
-  }, [categories]);
-
   const activeCategories = sortCategories(
     categories.filter((category) => !category.isDeleted)
   );
@@ -386,8 +351,6 @@ function App() {
   // 画面表示用にカテゴリーを並び替える
   // 「その他」は最後に表示する
   const sortedCategories = sortCategories(categories);
-
-
 
   // Firebase Authenticationのログイン状態を監視する
   // 一度ログイン済みなら次回以降もFirebaseがログイン状態を復元する
