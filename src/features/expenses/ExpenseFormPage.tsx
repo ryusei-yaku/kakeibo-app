@@ -1,6 +1,6 @@
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { Box, Button, Container, Dialog, Snackbar, TextField, Typography } from "@mui/material";
+import { Box, Button, Container, Dialog, Drawer, Snackbar, TextField, Typography } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -36,6 +36,9 @@ function ExpenseFormPage({
     //保存完了メッセージを表示するかどうかを管理する
     const [isSaveMessageOpen, setIsSaveMessageOpen] = useState(false);
 
+    // 金額入力用テンキーを開いているかどうかを管理する
+    const [isAmountKeyboardOpen, setIsAmountKeyboardOpen] = useState(false);
+
     // 支出・収入のどちらを登録するかを管理する
     // 初期値は支出
     const [transactionType, setTransactionType] = useState<"expense" | "income">("expense");
@@ -55,6 +58,62 @@ function ExpenseFormPage({
     function goToNextDate() {
         setSelectedDate((currentDate) => currentDate.add(1, "day"));
     }
+
+    function addAmountDigit(digit: string) {
+        setAmount((currentAmount) => {
+            if (currentAmount === "0") {
+                return digit;
+            }
+
+            return currentAmount + digit;
+        });
+    }
+
+    function deleteAmountDigit() {
+        setAmount((currentAmount) => currentAmount.slice(0, -1));
+    }
+
+    function clearAmount() {
+        setAmount("");
+    }
+
+    function closeAmountKeyboard() {
+        setIsAmountKeyboardOpen(false);
+    }
+
+    const numberKeyButtonSx = {
+        py: 1.4,
+        borderRadius: 3,
+        backgroundColor: "#ffffff",
+        color: "#333333",
+        fontSize: 20,
+        fontWeight: "bold",
+        border: "1px solid #eeeeee",
+        "&:hover": {
+            backgroundColor: "#fde7cd",
+        },
+    };
+
+    const functionKeyButtonSx = {
+        ...numberKeyButtonSx,
+        color: "text.secondary",
+        fontSize: 16,
+    };
+
+    const okButtonSx = {
+        ...numberKeyButtonSx,
+        backgroundColor: "#f59e0b",
+        color: "#ffffff",
+        fontSize: 18,
+        "&:hover": {
+            backgroundColor: "#d97706",
+        },
+    };
+
+    const deleteButtonSx = {
+        ...functionKeyButtonSx,
+        color: "#dc2626",
+    };
 
     //支出を登録する
     function handleSubmit() {
@@ -279,44 +338,22 @@ function ExpenseFormPage({
                     </Typography>
 
                     <TextField
-                        value={amount}
-                        onChange={(event) => {
-                            const nativeEvent = event.nativeEvent as InputEvent;
-
-                            // 削除キーが押された場合
-                            if (nativeEvent.inputType === "deleteContentBackward") {
-                                setAmount((currentAmount) => currentAmount.slice(0, -1));
-                                return;
-                            }
-
-                            // 今回入力された文字だけ取得する
-                            const inputData = nativeEvent.data ?? "";
-
-                            // 数字以外は無視する
-                            const onlyNumber = inputData.replace(/\D/g, "");
-
-                            if (onlyNumber === "") {
-                                return;
-                            }
-
-                            // 入力欄全体の値ではなく、現在のstateに今回入力された数字だけを足す
-                            setAmount((currentAmount) => currentAmount + onlyNumber);
-                        }}
-                        type="tel"
+                        value={amount === "" ? "" : Number(amount).toLocaleString()}
+                        onClick={() => setIsAmountKeyboardOpen(true)}
                         placeholder="0"
                         variant="standard"
                         fullWidth
                         slotProps={{
                             input: {
                                 disableUnderline: true,
+                                readOnly: true,
                             },
-                            htmlInput: {
-                                inputMode: "numeric",
-                                style: {
-                                    fontSize: 36,
-                                    fontWeight: "bold",
-                                    textAlign: "right",
-                                },
+                        }}
+                        sx={{
+                            "& input": {
+                                fontSize: 36,
+                                fontWeight: "bold",
+                                textAlign: "right",
                             },
                         }}
                     />
@@ -331,6 +368,59 @@ function ExpenseFormPage({
                         円
                     </Typography>
                 </Box>
+                <Drawer
+                    anchor="bottom"
+                    open={isAmountKeyboardOpen}
+                    onClose={() => setIsAmountKeyboardOpen(false)}
+                    slotProps={{
+                        backdrop: {
+                            sx: {
+                                backgroundColor: "transparent",
+                            },
+                        },
+                    }}
+                >
+                    <Box
+                        sx={{
+                            width: 40,
+                            height: 4,
+                            borderRadius: 999,
+                            backgroundColor: "#cccccc",
+                            mx: "auto",
+                            mb: 2,
+                        }}
+                    />
+                    <Box
+                        sx={{
+                            backgroundColor: "#f6f4ef",
+                            p: 2,
+                            pb: 3,
+                        }}
+                    >
+                        <Box sx={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1 }}>
+
+                            <Button onClick={() => addAmountDigit("7")} sx={numberKeyButtonSx}>7</Button>
+                            <Button onClick={() => addAmountDigit("8")} sx={numberKeyButtonSx}>8</Button>
+                            <Button onClick={() => addAmountDigit("9")} sx={numberKeyButtonSx}>9</Button>
+                            <Button onClick={clearAmount} sx={functionKeyButtonSx}>AC</Button>
+
+                            <Button onClick={() => addAmountDigit("4")} sx={numberKeyButtonSx}>4</Button>
+                            <Button onClick={() => addAmountDigit("5")} sx={numberKeyButtonSx}>5</Button>
+                            <Button onClick={() => addAmountDigit("6")} sx={numberKeyButtonSx}>6</Button>
+                            <Button onClick={deleteAmountDigit} sx={deleteButtonSx}>Del</Button>
+
+                            <Button onClick={() => addAmountDigit("1")} sx={numberKeyButtonSx}>1</Button>
+                            <Button onClick={() => addAmountDigit("2")} sx={numberKeyButtonSx}>2</Button>
+                            <Button onClick={() => addAmountDigit("3")} sx={numberKeyButtonSx}>3</Button>
+                            <Button onClick={closeAmountKeyboard} sx={okButtonSx}>OK</Button>
+
+                            <Button onClick={() => addAmountDigit("0")} sx={numberKeyButtonSx}>0</Button>
+                            <Button onClick={() => addAmountDigit("00")} sx={numberKeyButtonSx}>00</Button>
+                            <Button onClick={() => addAmountDigit("000")} sx={numberKeyButtonSx}>000</Button>
+
+                        </Box>
+                    </Box>
+                </Drawer>
 
                 <Box
                     sx={{
