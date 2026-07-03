@@ -1,6 +1,6 @@
 import AddIcon from "@mui/icons-material/Add";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { Box, Button, Container, Dialog, TextField, Typography } from "@mui/material";
+import { Box, Button, Container, Dialog, Snackbar, TextField, Typography } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -34,6 +34,8 @@ function ExpenseFormPage({
     const [amount, setAmount] = useState("");
     //メモを保持する
     const [memo, setMemo] = useState("");
+    //保存完了メッセージを表示するかどうかを管理する
+    const [isSaveMessageOpen, setIsSaveMessageOpen] = useState(false);
 
     // 支出・収入のどちらを登録するかを管理する
     // 初期値は支出
@@ -85,23 +87,38 @@ function ExpenseFormPage({
 
         setAmount("");
         setMemo("");
+        // 保存できたことを短く表示する
+        setIsSaveMessageOpen(true);
     }
 
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef", py: 2 }}>
-            <Container maxWidth="sm">
-                <Button
-                    onClick={() => navigate("/")}
-                    startIcon={<ArrowBackIcon />}
-                    sx={{
-                        mb: 1,
-                        color: "text.secondary",
-                        fontWeight: "bold"
-                    }}
-                >
-                    ホームへ戻る
-                </Button>
+        <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef" }}>
+            <Box
+                sx={{
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 10,
+                    backgroundColor: "#f6f4ef",
+                    borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
+                }}
+            >
+                <Container
+                    maxWidth="sm">
+                    <Button
+                        onClick={() => navigate("/")}
+                        startIcon={<ArrowBackIcon />}
+                        sx={{
+                            py: 1.2,
+                            color: "text.secondary",
+                            fontWeight: "bold"
+                        }}
+                    >
+                        ホームへ戻る
+                    </Button>
+                </Container>
+            </Box>
 
+            <Container maxWidth="sm" sx={{ py: 2 }}>
                 {/* 支出・収入切り替え */}
                 <Box
                     sx={{
@@ -248,7 +265,7 @@ function ExpenseFormPage({
                         display: "flex",
                         alignItems: "center",
                         borderBottom: "1px solid #e0e0e0",
-                        py: 2,
+                        py: 1,
                     }}
                 >
                     <Typography
@@ -281,7 +298,7 @@ function ExpenseFormPage({
                         // TextFieldの中にあるinput要素に対してcssを充てるという意味
                         sx={{
                             "& input": {
-                                fontSize: 36,
+                                fontSize: 30,
                                 fontWeight: "bold",
                                 textAlign: "right",
                             },
@@ -366,7 +383,7 @@ function ExpenseFormPage({
                     onClick={handleSubmit}
                     sx={{
                         mt: 3,
-                        py: 1.8,
+                        py: 1.2,
                         borderRadius: 3,
                         fontSize: 18,
                         fontWeight: "bold",
@@ -395,6 +412,29 @@ function ExpenseFormPage({
                     />
                 </LocalizationProvider>
             </Dialog>
+            <Snackbar
+                open={isSaveMessageOpen}
+                autoHideDuration={700}
+                onClose={() => setIsSaveMessageOpen(false)}
+                message="保存しました"
+                anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "center",
+                }}
+                slotProps={{
+                    content: {
+                        sx: {
+                            borderRadius: 3,
+                            backgroundColor: "#ffffff",
+                            color: "text.secondary",
+                            fontWeight: "bold",
+                            textAlign: "center",
+                            justifyContent: "center",
+                            mb: 1,
+                        },
+                    },
+                }}
+            />
         </Box>
     )
 }

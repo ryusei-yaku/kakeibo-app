@@ -139,20 +139,33 @@ function CategoryManagementPage({
     }
 
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef", py: 3 }}>
-            <Container maxWidth="sm">
+        <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef",}}>
+            <Box
+    sx={{
+        position: "sticky",
+        top: 0,
+        zIndex: 10,
+        backgroundColor: "#f6f4ef",
+        borderBottom: "1px solid rgba(0,0,0,0.06)",
+    }}
+>
+    <Container maxWidth="sm">
+        <Button
+            onClick={() => navigate(-1)}
+            startIcon={<ArrowBackIcon />}
+            sx={{
+                py: 1.2,
+                color: "text.secondary",
+                fontWeight: "bold",
+            }}
+        >
+            戻る
+        </Button>
+    </Container>
+</Box>
+            <Container maxWidth="sm" sx={{ py: 2 }}>
                 <Stack spacing={2.5}>
-                    <Button
-                        onClick={() => navigate(-1)}
-                        startIcon={<ArrowBackIcon />}
-                        sx={{
-                            alignSelf: "flex-start",
-                            color: "text.secondary",
-                            fontWeight: "bold",
-                        }}
-                    >
-                        戻る
-                    </Button>
+
 
                     <Box>
                         <Typography

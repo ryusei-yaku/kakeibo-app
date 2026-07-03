@@ -82,17 +82,6 @@ function DailyExpenseList({
                     backgroundColor: "#ffffff",
                 }}
             >
-                <Typography
-                    sx={{
-                        fontSize: 14,
-                        fontWeight: "bold",
-                        color: "text.secondary",
-                        mb: 1,
-                    }}
-                >
-                    {displayMonthText}の合計
-                </Typography>
-
                 <Box
                     sx={{
                         display: "grid",

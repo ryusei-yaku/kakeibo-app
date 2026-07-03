@@ -44,20 +44,32 @@ function ProfilePage({
     }
 
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef", py: 3 }}>
-            <Container maxWidth="sm">
-                <Stack spacing={2.5}>
+        <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef" }}>
+            <Box
+                sx={{
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 10,
+                    backgroundColor: "#f6f4ef",
+                    borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
+                }}
+            >
+                <Container maxWidth="sm">
                     <Button
                         onClick={() => navigate("/")}
                         startIcon={<ArrowBackIcon />}
                         sx={{
-                            alignSelf: "flex-start",
+                            py: 1.2,
                             color: "text.secondary",
                             fontWeight: "bold",
                         }}
                     >
                         ホームへ戻る
                     </Button>
+                </Container>
+            </Box>
+            <Container maxWidth="sm" sx={{ py: 2 }}>
+                <Stack spacing={2.5}>
 
                     <Box>
                         <Typography
@@ -151,9 +163,9 @@ function ProfilePage({
                                 {currentUser.email}
                             </Typography>
                             <Typography
-                            sx={{
-                                color:"text.secondary",
-                            }}
+                                sx={{
+                                    color: "text.secondary",
+                                }}
                             >
                                 ※現在のバージョンではメールアドレスの変更はできません。
                             </Typography>

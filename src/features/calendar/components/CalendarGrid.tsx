@@ -62,7 +62,7 @@ function CalendarGrid({
                                 textAlign: "center",
                                 fontSize: 14,
                                 color,
-                                py: 1,
+                                py: 0.3,
                                 borderRight:
                                     weekday === "日"
                                         ? "none"
@@ -102,7 +102,7 @@ function CalendarGrid({
                             onClick={() => onDayClick(calendarDay)}
                             sx={{
                                 // 縦幅固定
-                                height: 65,
+                                height: 55,
 
                                 // 中身が長くてもマスの横幅を広げない
                                 minWidth: 0,
@@ -114,8 +114,7 @@ function CalendarGrid({
                                     : calendarDay.isCurrentMonth
                                         ? "#ffffff"
                                         : "#f3f3f3",
-
-                                p: 0.75,
+                                p:0.3,
                                 textAlign: "left",
 
                                 // 右端の列以外に右線を引く
@@ -143,7 +142,6 @@ function CalendarGrid({
                             {dailyTotal !== undefined && (
                                 <Box
                                     sx={{
-                                        mt: 0.5,
                                         lineHeight: 1,
                                     }}>
                                     {/* 収入合計 */}

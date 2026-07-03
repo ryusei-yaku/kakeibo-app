@@ -89,8 +89,18 @@ function HomePage({ expenses, profile }: HomePageProps) {
     const monthBalance = monthIncomeTotal - monthExpenseTotal;
 
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef", py: 3 }}>
-            <Container maxWidth="sm">
+        <Box
+            sx={{
+                minHeight: "100vh",
+                backgroundColor: "#f6f4ef",
+                display: "flex",
+                flexDirection: "column",
+            }}>
+            <Container
+                maxWidth="sm"
+                sx={{
+                    flex: 1,
+                }}>
                 <Stack spacing={3}>
                     {/* ヘッダー */}
                     <Box
@@ -107,6 +117,7 @@ function HomePage({ expenses, profile }: HomePageProps) {
                             sx={{
                                 fontWeight: "bold",
                                 color: "#333333",
+                                pt:2,
                             }}
                         >
                             {displayName}さん、{greeting}！
@@ -345,7 +356,19 @@ function HomePage({ expenses, profile }: HomePageProps) {
                     </Stack>
                 </Stack>
             </Container>
+            <Typography
+                sx={{
+                    mt: 2,
+                    textAlign: "center",
+                    color: "text.secondary",
+                    fontsize: 10,
+                }}>
+                v1.0.0
+                <br />
+                © 2026 Ryusei Yakushimaru
+            </Typography>
         </Box>
+
     );
 }
 
