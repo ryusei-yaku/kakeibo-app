@@ -1,12 +1,11 @@
-import { onAuthStateChanged, type User } from "firebase/auth";
 import { useEffect, useState } from "react";
 import AppRoutes from "./AppRoutes";
 import ErrorDialog from "./components/ErrorDialog";
 import LoadingScreen from "./components/LoadingScreen";
 import AuthRoutes from "./features/auth/AuthRoutes";
+import { useAuthState } from "./features/auth/useAuthState";
 import { initialCategories } from "./features/categories/categories";
 import { logout } from "./lib/auth";
-import { auth } from "./lib/firebase";
 import {
   deleteExpenseFromFirestore,
   loadCategoriesFromFirestore,
@@ -28,11 +27,7 @@ import type { Profile } from "./types/profile";
 
 function App() {
 
-  // ログイン中のユーザー情報を管理する
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-
-  // Firebase Authenticationのログイン状態確認中かどうかを管理する
-  const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const { currentUser, isAuthChecking } = useAuthState();
 
   // Firestoreから家計簿データを読み込み中かどうかを管理する
   const [isFirestoreLoading, setIsFirestoreLoading] = useState(false);
@@ -449,18 +444,6 @@ function App() {
   // 画面表示用にカテゴリーを並び替える
   // 「その他」は最後に表示する
   const sortedCategories = sortCategories(categories);
-
-  // Firebase Authenticationのログイン状態を監視する
-  // 一度ログイン済みなら次回以降もFirebaseがログイン状態を復元する
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-      setIsAuthChecking(false);
-    });
-
-    // Appが不要になったときに監視を解除する
-    return () => unsubscribe();
-  }, []);
 
   if (isAuthChecking) {
     return <LoadingScreen />;
