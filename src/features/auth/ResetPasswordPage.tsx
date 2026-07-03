@@ -49,8 +49,26 @@ function ResetPasswordPage() {
             setSuccessMessage(
                 "パスワード再設定メールを送信しました。メール内のリンクから新しいパスワードを設定してください。"
             );
-        } catch {
-            setErrorMessage("送信に失敗しました。メールアドレスを確認してください。");
+        } catch (error) {
+            console.error("パスワード再設定メールの送信に失敗しました", error);
+
+            if (
+                typeof error === "object" &&
+                error !== null &&
+                "code" in error
+            ) {
+                if (error.code === "auth/user-not-found") {
+                    setErrorMessage("このメールアドレスは登録されていません。");
+                    return;
+                }
+
+                if (error.code === "auth/too-many-requests") {
+                    setErrorMessage("短時間に何度も送信されています。時間をおいて再度お試しください。");
+                    return;
+                }
+            }
+
+            setErrorMessage("パスワード再設定メールの送信に失敗しました。時間をおいて再度お試しください。");
         } finally {
             setIsLoading(false);
         }

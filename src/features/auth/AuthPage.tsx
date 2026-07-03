@@ -70,8 +70,31 @@ function AuthPage() {
 
             // 認証済みなら、App.tsx側のログイン状態も最新化するため画面を再読み込みする
             window.location.href = "/";
-        } catch {
-            setErrorMessage("ログインに失敗しました。メールアドレスとパスワードを確認してください。");
+        } catch (error) {
+            console.error("ログインに失敗しました", error);
+
+            if (
+                typeof error === "object" &&
+                error !== null &&
+                "code" in error
+            ) {
+                if (error.code === "auth/user-not-found") {
+                    setErrorMessage("このメールアドレスは登録されていません。");
+                    return;
+                }
+
+                if (error.code === "auth/wrong-password") {
+                    setErrorMessage("パスワードが正しくありません。");
+                    return;
+                }
+
+                if (error.code === "auth/invalid-credential") {
+                    setErrorMessage("メールアドレスまたはパスワードが正しくありません。");
+                    return;
+                }
+            }
+
+            setErrorMessage("ログインに失敗しました。時間をおいて再度お試しください。");
         } finally {
             setIsLoading(false);
         }
@@ -105,9 +128,10 @@ function AuthPage() {
                         alignSelf: "flex-start",
                         p: 0,
                         minWidth: 0,
-                        color: "#f59e0b",
+                        color: "text.secondary",
                         fontWeight: "bold",
                         textTransform: "none",
+                        textDecoration: "underline",
                         "&:hover": {
                             backgroundColor: "transparent",
                             textDecoration: "underline",

@@ -55,6 +55,11 @@ function App() {
     displayName: "",
   });
 
+  function showError(message: string) {
+    // ユーザーに表示するエラーメッセージをセットする
+    setErrorMessage(message);
+  }
+
   async function loadDataFromFirestore() {
     // ログイン中のユーザーがまだ取得できていない場合は読み込まない
     if (currentUser === null) {
@@ -151,8 +156,10 @@ function App() {
     );
 
     if (deletedCategory) {
+      // Firestore保存に失敗したときに元へ戻せるよう、変更前のカテゴリー一覧を保存する
+      const previousCategories = categories;
+
       // 復活させるカテゴリーを作る
-      // Firestoreにも同じ内容を保存するため、変数として取り出しておく
       const restoredCategory: Category = {
         ...deletedCategory,
         isDeleted: false,
@@ -161,9 +168,7 @@ function App() {
       // 先に画面上のカテゴリー一覧を更新する
       setCategories((currentCategories) =>
         currentCategories.map((category) =>
-          category.id === restoredCategory.id
-            ? restoredCategory
-            : category
+          category.id === restoredCategory.id ? restoredCategory : category
         )
       );
 
@@ -171,12 +176,19 @@ function App() {
         // ログイン中ユーザー専用のFirestoreに、復活したカテゴリーを保存する
         await saveCategoryToFirestore(currentUser.uid, restoredCategory);
       } catch (error) {
-        // まずは開発中に原因を確認できるよう、コンソールに出す
         console.error("Firestoreへのカテゴリー復活保存に失敗しました", error);
+
+        // Firestore保存に失敗した場合は、画面上のカテゴリー一覧を元に戻す
+        setCategories(previousCategories);
+
+        showError("カテゴリーの保存に失敗しました。通信環境を確認して、もう一度お試しください。");
       }
 
       return;
     }
+
+    // Firestore保存に失敗したときに元へ戻せるよう、追加前のカテゴリー一覧を保存する
+    const previousCategories = categories;
 
     // 新しく追加するカテゴリーを作る
     const newCategory: Category = {
@@ -197,8 +209,12 @@ function App() {
       // ログイン中ユーザー専用のFirestoreに、新しいカテゴリーを保存する
       await saveCategoryToFirestore(currentUser.uid, newCategory);
     } catch (error) {
-      // 開発中に原因を確認できるよう、コンソールに出す
       console.error("Firestoreへのカテゴリー保存に失敗しました", error);
+
+      // Firestore保存に失敗した場合は、画面上のカテゴリー一覧を追加前に戻す
+      setCategories(previousCategories);
+
+      showError("カテゴリーの保存に失敗しました。通信環境を確認して、もう一度お試しください。");
     }
   }
 
@@ -208,7 +224,7 @@ function App() {
       return;
     }
 
-    //先に画面上の支出一覧を更新する
+    // 先に画面上の支出・収入一覧を更新する
     setExpenses((currentExpenses) => [expense, ...currentExpenses]);
 
     try {
@@ -216,6 +232,13 @@ function App() {
       await saveExpenseToFirestore(currentUser.uid, expense);
     } catch (error) {
       console.error("Firestoreへの支出・収入保存に失敗しました", error);
+
+      // Firestore保存に失敗した場合は、画面に追加したデータを元に戻す
+      setExpenses((currentExpenses) =>
+        currentExpenses.filter((currentExpense) => currentExpense.id !== expense.id)
+      );
+
+      showError("保存に失敗しました。通信環境を確認して、もう一度お試しください。");
     }
   }
 
@@ -224,8 +247,11 @@ function App() {
     if (currentUser === null) {
       return;
     }
-    // 先に画面上の支出データを更新する
-    // これにより、Firestore保存を待たずに編集結果をすぐ反映できる
+
+    // Firestore更新に失敗したときに元へ戻せるよう、更新前の一覧を保存する
+    const previousExpenses = expenses;
+
+    // 先に画面上の支出・収入データを更新する
     setExpenses((currentExpenses) =>
       currentExpenses.map((expense) =>
         expense.id === updatedExpense.id ? updatedExpense : expense
@@ -236,8 +262,12 @@ function App() {
       // ログイン中ユーザー専用のFirestore上の支出・収入データを更新する
       await updateExpenseToFirestore(currentUser.uid, updatedExpense);
     } catch (error) {
-      // まずは開発中に原因を確認できるよう、コンソールに出す
-      console.error("Firestoreへの支出更新に失敗しました", error);
+      console.error("Firestoreへの支出・収入更新に失敗しました", error);
+
+      // Firestore更新に失敗した場合は、画面上のデータを更新前に戻す
+      setExpenses(previousExpenses);
+
+      showError("更新に失敗しました。通信環境を確認して、もう一度お試しください。");
     }
   }
 
@@ -246,8 +276,11 @@ function App() {
     if (currentUser === null) {
       return;
     }
-    // 先に画面上の支出データを削除する
-    // これにより、Firestore削除を待たずに画面へすぐ反映できる
+
+    // Firestore削除に失敗したときに元へ戻せるよう、削除前の一覧を保存する
+    const previousExpenses = expenses;
+
+    // 先に画面上の支出・収入データを削除する
     setExpenses((currentExpenses) =>
       currentExpenses.filter((expense) => expense.id !== expenseId)
     );
@@ -256,8 +289,12 @@ function App() {
       // ログイン中ユーザー専用のFirestore上の支出・収入データを削除する
       await deleteExpenseFromFirestore(currentUser.uid, expenseId);
     } catch (error) {
-      // まずは開発中に原因を確認できるよう、コンソールに出す
-      console.error("Firestoreからの支出削除に失敗しました", error);
+      console.error("Firestoreからの支出・収入削除に失敗しました", error);
+
+      // Firestore削除に失敗した場合は、画面上のデータを削除前に戻す
+      setExpenses(previousExpenses);
+
+      showError("削除に失敗しました。通信環境を確認して、もう一度お試しください。");
     }
   }
 
@@ -267,7 +304,11 @@ function App() {
       return;
     }
 
-    // Firestoreにも保存するため、更新後のカテゴリーを先に作る
+    // Firestore更新に失敗したときに元へ戻せるよう、変更前の一覧を保存する
+    const previousCategories = categories;
+    const previousExpenses = expenses;
+
+    // Firestoreにも保存するため、更新対象のカテゴリーを先に探す
     const updatedCategory = categories.find(
       (category) => category.id === categoryId
     );
@@ -285,14 +326,11 @@ function App() {
     // 先に画面上のカテゴリー名を更新する
     setCategories((currentCategories) =>
       currentCategories.map((category) =>
-        category.id === categoryId
-          ? renamedCategory
-          : category
+        category.id === categoryId ? renamedCategory : category
       )
     );
 
-    // 過去に登録した支出データの categoryName も更新する
-    // categoryId は変えず、表示用のカテゴリー名だけを変える
+    // 過去に登録した支出・収入データの categoryName も更新する
     setExpenses((currentExpenses) =>
       currentExpenses.map((expense) =>
         expense.categoryId === categoryId
@@ -305,15 +343,20 @@ function App() {
       // ログイン中ユーザー専用のFirestore上のカテゴリー名を更新する
       await updateCategoryToFirestore(currentUser.uid, renamedCategory);
 
-      // ログイン中ユーザー専用のFirestore上の過去データのcategoryNameも更新する
+      // ログイン中ユーザー専用のFirestore上の過去データの categoryName も更新する
       await updateExpenseCategoryNameToFirestore(
         currentUser.uid,
         categoryId,
         categoryName
       );
     } catch (error) {
-      // 開発中に原因を確認できるよう、コンソールに出す
       console.error("Firestoreへのカテゴリー更新に失敗しました", error);
+
+      // Firestore更新に失敗した場合は、画面上のデータを更新前に戻す
+      setCategories(previousCategories);
+      setExpenses(previousExpenses);
+
+      showError("カテゴリーの更新に失敗しました。通信環境を確認して、もう一度お試しください。");
     }
   }
 
@@ -322,6 +365,9 @@ function App() {
     if (currentUser === null) {
       return;
     }
+
+    // Firestore更新に失敗したときに元へ戻せるよう、変更前のカテゴリー一覧を保存する
+    const previousCategories = categories;
 
     // Firestoreにも保存するため、削除対象のカテゴリーを取得する
     const deleteTargetCategory = categories.find(
@@ -334,7 +380,6 @@ function App() {
     }
 
     // 削除済みにしたカテゴリーを作る
-    // 今のアプリでは完全削除ではなく、isDeleted: true にする
     const deletedCategory: Category = {
       ...deleteTargetCategory,
       isDeleted: true,
@@ -343,9 +388,7 @@ function App() {
     // 先に画面上のカテゴリーを削除済みにする
     setCategories((currentCategories) =>
       currentCategories.map((category) =>
-        category.id === categoryId
-          ? deletedCategory
-          : category
+        category.id === categoryId ? deletedCategory : category
       )
     );
 
@@ -353,8 +396,12 @@ function App() {
       // ログイン中ユーザー専用のFirestore上のカテゴリーを削除済みにする
       await softDeleteCategoryToFirestore(currentUser.uid, deletedCategory);
     } catch (error) {
-      // 開発中に原因を確認できるよう、コンソールに出す
       console.error("Firestoreへのカテゴリー削除反映に失敗しました", error);
+
+      // Firestore更新に失敗した場合は、画面上のカテゴリー一覧を更新前に戻す
+      setCategories(previousCategories);
+
+      showError("カテゴリーの削除に失敗しました。通信環境を確認して、もう一度お試しください。");
     }
   }
 
@@ -363,6 +410,9 @@ function App() {
     if (currentUser === null) {
       return;
     }
+
+    // Firestore保存に失敗したときに元へ戻せるよう、変更前のプロフィールを保存する
+    const previousProfile = profile;
 
     const updatedProfile: Profile = {
       displayName,
@@ -376,6 +426,11 @@ function App() {
       await saveProfileToFirestore(currentUser.uid, updatedProfile);
     } catch (error) {
       console.error("Firestoreへのプロフィール保存に失敗しました", error);
+
+      // Firestore保存に失敗した場合は、画面上のプロフィールを保存前に戻す
+      setProfile(previousProfile);
+
+      showError("プロフィールの保存に失敗しました。通信環境を確認して、もう一度お試しください。");
     }
   }
 
@@ -385,8 +440,9 @@ function App() {
       // ログアウトすると currentUser が null になり、ログイン画面へ戻る
       await logout();
     } catch (error) {
-      // ログアウトに失敗した場合、開発中に原因を確認できるようにする
       console.error("ログアウトに失敗しました", error);
+
+      showError("ログアウトに失敗しました。通信環境を確認して、もう一度お試しください。");
     }
   }
 

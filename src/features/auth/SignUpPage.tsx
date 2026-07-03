@@ -22,6 +22,8 @@ function SignUpPage() {
     // エラーメッセージを画面に表示するために管理する
     const [errorMessage, setErrorMessage] = useState("");
 
+    const [successMessage, setSuccessMessage] = useState("");
+
     // 確認メールを送信済みかどうかを管理する
     const [isVerificationEmailSent, setIsVerificationEmailSent] = useState(false);
 
@@ -61,87 +63,54 @@ function SignUpPage() {
             // Firebase Authenticationで新規登録する
             const userCredential = await signUpWithEmail(email, password);
 
-            console.log("新規登録成功", userCredential.user.email);
-
             // 確認メールを再送できるように、新規登録したユーザー情報を保存する
             setRegisteredUser(userCredential.user);
 
-            console.log("確認メール送信前");
-
             // 新規登録したユーザー宛に確認メールを送信する
             await sendVerificationEmail(userCredential.user);
-
-            console.log("確認メール送信成功");
 
             // 確認メール送信後は、送信完了画面を表示する
             setIsVerificationEmailSent(true);
 
         } catch (error) {
-            // 確認メール送信や新規登録で何が失敗したか確認する
+            // 新規登録や確認メール送信で失敗した内容を開発中に確認する
             console.error("新規登録または確認メール送信に失敗しました", error);
+
+            // Firebase Authenticationで、すでに登録済みのメールアドレスだった場合
+            if (
+                typeof error === "object" &&
+                error !== null &&
+                "code" in error &&
+                error.code === "auth/email-already-in-use"
+            ) {
+                setErrorMessage("このメールアドレスは既に登録されています。");
+                return;
+            }
 
             setErrorMessage("新規登録または確認メール送信に失敗しました。メールアドレスやパスワードを確認してください。");
         } finally {
             setIsLoading(false);
         }
     }
+
     if (isVerificationEmailSent) {
         return (
             <AuthLayout
-                title="確認メールを送信しました"
-                description="登録したメールアドレス宛に確認メールを送信しました。メール内のリンクを開いて、登録を完了してください。"
+                title="メールを送信しました"
+                description=""
             >
                 <Stack spacing={2}>
                     <Typography
                         sx={{
                             color: "text.secondary",
-                            fontWeight: "bold",
-                            lineHeight: 1.7,
+                            lineHeight: 1.8,
+                            fontSize: 14,
                         }}
                     >
-                        メール確認後、ログイン画面からログインしてください。
+                        ご入力のメールアドレス宛に認証メールを送信しました。
                         <br />
-                        メールが届かない場合は、迷惑メールフォルダも確認してください。
+                        メール内のリンクを開くと登録が完了します。
                     </Typography>
-
-                    <Button
-                        variant="outlined"
-                        size="large"
-                        onClick={async () => {
-                            setErrorMessage("");
-
-                            try {
-                                if (registeredUser === null) {
-                                    setErrorMessage("確認メールを再送できませんでした。もう一度新規登録をお試しください。");
-                                    return;
-                                }
-
-                                // 新規登録したユーザー宛に確認メールをもう一度送信する
-                                await sendVerificationEmail(registeredUser);
-                            } catch {
-                                setErrorMessage("確認メールの再送信に失敗しました。時間をおいて再度お試しください。");
-                            }
-                        }}
-                        sx={{
-                            py: 1.4,
-                            borderRadius: 3,
-                            fontWeight: "bold",
-                            color: "#f59e0b",
-                            borderColor: "#f59e0b",
-                            "&:hover": {
-                                backgroundColor: "#fde7cd",
-                                borderColor: "#d97706",
-                            },
-                        }}
-                    >
-                        確認メールを再送する
-                    </Button>
-
-                    {errorMessage !== "" && (
-                        <Typography sx={{ color: "#dc2626", fontWeight: "bold" }}>
-                            {errorMessage}
-                        </Typography>
-                    )}
 
                     <Button
                         variant="contained"
@@ -159,6 +128,63 @@ function SignUpPage() {
                     >
                         ログイン画面へ
                     </Button>
+                    <Typography
+                        sx={{
+                            color: "text.secondary",
+                            fontSize: 12,
+                            lineHeight: 1.7,
+                        }}
+                    >
+                        ※メールが届くまで数分かかる場合があります。
+                        <br />
+                        ※迷惑メールフォルダもご確認ください。
+                    </Typography>
+                    <Button
+                        onClick={async () => {
+                            setErrorMessage("");
+                            setSuccessMessage("");
+
+                            try {
+                                if (registeredUser === null) {
+                                    setErrorMessage("確認メールを再送できませんでした。もう一度新規登録をお試しください。");
+                                    return;
+                                }
+
+                                await sendVerificationEmail(registeredUser);
+                                setSuccessMessage("確認メールを再送しました。");
+                            } catch (error) {
+                                console.error("確認メールの再送信に失敗しました", error);
+                                setErrorMessage("確認メールの再送信に失敗しました。時間をおいて再度お試しください。");
+                            }
+                        }}
+                        size="small"
+                        sx={{
+                            alignSelf: "flex-start",
+                            p: 0,
+                            minWidth: 0,
+                            color: "text.secondary",
+                            textTransform: "none",
+                            textDecoration: "underline",
+                            "&:hover": {
+                                backgroundColor: "transparent",
+                                textDecoration: "underline",
+                            },
+                        }}
+                    >
+                        確認メールを再送する
+                    </Button>
+
+                    {errorMessage !== "" && (
+                        <Typography sx={{ color: "#dc2626", fontWeight: "bold" }}>
+                            {errorMessage}
+                        </Typography>
+                    )}
+
+                    {successMessage !== "" && (
+                        <Typography sx={{ color: "text.secondary", fontWeight: "bold" }}>
+                            {successMessage}
+                        </Typography>
+                    )}
                 </Stack>
             </AuthLayout>
         );
@@ -189,14 +215,14 @@ function SignUpPage() {
                 <Typography
                     sx={{
                         color: "text.secondary",
-                        fontSize: 13,
+                        fontSize: 12,
                         fontWeight: "bold",
                         lineHeight: 1.6,
                     }}
                 >
-                    メールアドレスは受信できるものを入力してください。
+                    ※メールアドレスは受信できるものを入力してください。
                     <br />
-                    パスワードは6文字以上で入力してください。
+                    ※パスワードは6文字以上で入力してください。
                 </Typography>
 
                 {errorMessage !== "" && (

@@ -38,9 +38,11 @@ function VerifyEmailPage() {
                 await verifyEmailCode(oobCode);
 
                 setIsVerified(true);
-            } catch {
+            } catch (error) {
+                console.error("メールアドレス確認に失敗しました", error);
+
                 setErrorMessage(
-                    "メールアドレスの確認に失敗しました。リンクの有効期限が切れている可能性があります。"
+                    "メールアドレスの確認に失敗しました。リンクの有効期限が切れているか、すでに使用済みの可能性があります。"
                 );
             } finally {
                 setIsVerifying(false);

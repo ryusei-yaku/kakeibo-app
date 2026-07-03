@@ -14,7 +14,7 @@ function AuthLayout({ title, description, children }: AuthLayoutProps) {
                 <Stack spacing={2.5}>
                     <Box>
                         <Typography
-                            variant="h4"
+                            variant="h5"
                             component="h1"
                             sx={{ fontWeight: "bold", color: "#333333" }}
                         >
