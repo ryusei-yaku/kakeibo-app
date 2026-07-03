@@ -281,8 +281,26 @@ function ExpenseFormPage({
                     <TextField
                         value={amount}
                         onChange={(event) => {
-                            const onlyNumbers = event.target.value.replace(/\D/g, "");
-                            setAmount(onlyNumbers);
+                            const nativeEvent = event.nativeEvent as InputEvent;
+
+                            // 削除キーが押された場合
+                            if (nativeEvent.inputType === "deleteContentBackward") {
+                                setAmount((currentAmount) => currentAmount.slice(0, -1));
+                                return;
+                            }
+
+                            // 今回入力された文字だけ取得する
+                            const inputData = nativeEvent.data ?? "";
+
+                            // 数字以外は無視する
+                            const onlyNumber = inputData.replace(/\D/g, "");
+
+                            if (onlyNumber === "") {
+                                return;
+                            }
+
+                            // 入力欄全体の値ではなく、現在のstateに今回入力された数字だけを足す
+                            setAmount((currentAmount) => currentAmount + onlyNumber);
                         }}
                         type="tel"
                         placeholder="0"
