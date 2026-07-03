@@ -11,12 +11,14 @@ type CalendarMonthHeaderProps = {
     displayMonthText: string;
     onPreviousMonth: () => void;
     onNextMonth: () => void;
+    onMonthClick: () => void;
 };
 
 function CalendarMonthHeader({
     displayMonthText,
     onPreviousMonth,
     onNextMonth,
+    onMonthClick,
 }: CalendarMonthHeaderProps) {
     return (
         <Box
@@ -37,6 +39,7 @@ function CalendarMonthHeader({
 
             {/* 現在表示している年月 */}
             <Box
+                onClick={onMonthClick}
                 sx={{
                     flex: 1,
                     backgroundColor: "#fde7cd",

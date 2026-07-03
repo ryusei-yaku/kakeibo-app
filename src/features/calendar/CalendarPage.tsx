@@ -3,6 +3,7 @@ import {
     Box,
     Button,
     Container,
+    Dialog,
     Stack,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
@@ -22,6 +23,9 @@ import {
     groupExpensesByDate,
     sortExpensesByDateDesc
 } from "./utils/expenseGrouping";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
+import { DateCalendar } from "@mui/x-date-pickers/DateCalendar"
+import { LocalizationProvider } from "@mui/x-date-pickers";
 
 // CalendarPageがApp.tsxから受け取るデータの型
 type CalendarPageProps = {
@@ -35,6 +39,9 @@ function CalendarPage({ expenses }: CalendarPageProps) {
     //表示中の月を管理する
     //初期値は今日が含まれる月にする
     const [displayMonth, setDisplayMonth] = useState(dayjs().startOf("month"));
+
+    // 年月選択ダイアログを開いているかどうかを管理する
+    const [isMonthDialogOpen, setIsMonthDialogOpen] = useState(false);
 
     //カレンダー上で選択中の日付を管理する
     //初期値は今日の日付
@@ -176,6 +183,7 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                             displayMonthText={displayMonth.format("YYYY年M月")}
                             onPreviousMonth={goToPreviousMonth}
                             onNextMonth={goToNextMonth}
+                            onMonthClick={() => setIsMonthDialogOpen(true)}
                         />
 
                         <CalendarGrid
@@ -197,6 +205,29 @@ function CalendarPage({ expenses }: CalendarPageProps) {
                     />
                 </Stack>
             </Container>
+            <Dialog
+                open={isMonthDialogOpen}
+                onClose={() => setIsMonthDialogOpen(false)}
+            >
+                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ja">
+                    <DateCalendar
+                        value={displayMonth}
+                        views={["year", "month"]}
+                        openTo="month"
+                        onChange={(newDate) => {
+                            if (newDate === null) {
+                                return;
+                            }
+
+                            const newDisplayMonth = newDate.startOf("month");
+
+                            setDisplayMonth(newDisplayMonth);
+                            setSelectedDate(newDisplayMonth.format("YYYY-MM-DD"));
+                            setIsMonthDialogOpen(false);
+                        }}
+                    />
+                </LocalizationProvider>
+            </Dialog>
         </Box>
     );
 }

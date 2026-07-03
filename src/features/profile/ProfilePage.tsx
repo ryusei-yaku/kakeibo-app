@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 type ProfilePageProps = {
     currentUser: User;
     displayName: string;
-    onSaveDisplayName: (displayName: string) => void;
+    onSaveDisplayName: (displayName: string) => Promise<void>;
     onLogout: () => void;
 };
 
@@ -33,14 +33,12 @@ function ProfilePage({
     // 入力中のユーザー名を管理する
     const [editingDisplayName, setEditingDisplayName] = useState(displayName);
 
-    const [successMessage, setSuccessMessage] = useState("");
-
-    function handleSave() {
+    async function handleSave() {
         // 前後の空白を取り除いて保存する
-        onSaveDisplayName(editingDisplayName.trim());
+        await onSaveDisplayName(editingDisplayName.trim());
 
-        // 保存できたことを画面に表示する
-        setSuccessMessage("ユーザー名を保存しました。");
+        // 保存後、ホーム画面へ戻る
+        navigate("/");
     }
 
     return (
@@ -129,11 +127,6 @@ function ProfilePage({
                             >
                                 保存する
                             </Button>
-                            {successMessage !== "" && (
-                                <Typography sx={{ color: "text.secondary", fontWeight: "bold" }}>
-                                    {successMessage}
-                                </Typography>
-                            )}
                         </Stack>
                     </Box>
 
