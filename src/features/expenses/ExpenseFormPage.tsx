@@ -280,29 +280,25 @@ function ExpenseFormPage({
 
                     <TextField
                         value={amount}
-                        type="tel"
                         onChange={(event) => {
-                            const inputValue = event.target.value;
-
-                            const onlyNumbers = inputValue.replace(/\D/g, "");
-                            setAmount(onlyNumbers)
+                            const onlyNumbers = event.target.value.replace(/\D/g, "");
+                            setAmount(onlyNumbers);
                         }}
-                        inputMode="numeric"
+                        type="tel"
                         placeholder="0"
                         variant="standard"
                         fullWidth
-                        //TextFieldの中にある実際の入力部分の調整
                         slotProps={{
                             input: {
                                 disableUnderline: true,
                             },
-                        }}
-                        // TextFieldの中にあるinput要素に対してcssを充てるという意味
-                        sx={{
-                            "& input": {
-                                fontSize: 30,
-                                fontWeight: "bold",
-                                textAlign: "right",
+                            htmlInput: {
+                                inputMode: "numeric",
+                                style: {
+                                    fontSize: 36,
+                                    fontWeight: "bold",
+                                    textAlign: "right",
+                                },
                             },
                         }}
                     />
