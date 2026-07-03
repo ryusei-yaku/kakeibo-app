@@ -10,7 +10,6 @@ import { useNavigate } from "react-router-dom";
 import dayjs from "../../lib/dayjs";
 import type { Category } from "../../types/category";
 import type { Expense } from "../../types/expense";
-import { formatAmount } from "../../utils/formatAmount";
 import { formatDateLabel } from "../../utils/formatDateLabel";
 import CategorySelector from "../categories/CategorySelector";
 
@@ -280,7 +279,7 @@ function ExpenseFormPage({
                     </Typography>
 
                     <TextField
-                        value={formatAmount(amount)}
+                        value={amount}
                         onChange={(event) => {
                             const onlyNumbers = event.target.value.replace(/\D/g, "");
                             setAmount(onlyNumbers)
