@@ -29,7 +29,7 @@ type AppRoutesProps = {
     onDeleteCategory: (categoryId: string) => void;
     currentUser: User;
     profile: Profile;
-    onSaveDisplayName: (displayName: string) => void;
+    onSaveDisplayName: (displayName: string) => Promise<void>;
 };
 
 function AppRoutes({
