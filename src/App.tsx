@@ -1,13 +1,9 @@
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { useEffect, useState } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
 import AppRoutes from "./AppRoutes";
 import ErrorDialog from "./components/ErrorDialog";
 import LoadingScreen from "./components/LoadingScreen";
-import AuthPage from "./features/auth/AuthPage";
-import ResetPasswordPage from "./features/auth/ResetPasswordPage";
-import SignUpPage from "./features/auth/SignUpPage";
-import VerifyEmailPage from "./features/auth/VerifyEmailPage";
+import AuthRoutes from "./features/auth/AuthRoutes";
 import { initialCategories } from "./features/categories/categories";
 import { logout } from "./lib/auth";
 import { auth } from "./lib/firebase";
@@ -472,16 +468,7 @@ function App() {
 
   // 未ログインならログイン画面を表示する
   if (currentUser === null || !currentUser.emailVerified) {
-    return (
-      <BrowserRouter>
-        <Routes>
-          <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/verify-email" element={<VerifyEmailPage />} />
-          <Route path="*" element={<AuthPage />} />
-        </Routes>
-      </BrowserRouter>
-    );
+    return <AuthRoutes />;
   }
 
   // Firestoreから家計簿データを読み込み中は、ホーム画面風のスケルトンを表示する
