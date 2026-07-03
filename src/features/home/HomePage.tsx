@@ -363,7 +363,7 @@ function HomePage({ expenses, profile }: HomePageProps) {
                     color: "text.secondary",
                     fontsize: 10,
                 }}>
-                v1.0.0
+                v1.0.1
                 <br />
                 © 2026 Ryusei Yakushimaru
             </Typography>

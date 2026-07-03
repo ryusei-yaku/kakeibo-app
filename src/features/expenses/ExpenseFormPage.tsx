@@ -92,6 +92,10 @@ function ExpenseFormPage({
         "&:hover": {
             backgroundColor: "#fde7cd",
         },
+        "&:active": {
+            transform: "scale(0.97)",
+        },
+        transition: "0.1s",
     };
 
     const functionKeyButtonSx = {
@@ -336,27 +340,33 @@ function ExpenseFormPage({
                     >
                         {transactionType === "expense" ? "支出額" : "収入額"}
                     </Typography>
-
-                    <TextField
-                        value={amount === "" ? "" : Number(amount).toLocaleString()}
+                    <Button
                         onClick={() => setIsAmountKeyboardOpen(true)}
-                        placeholder="0"
-                        variant="standard"
                         fullWidth
-                        slotProps={{
-                            input: {
-                                disableUnderline: true,
-                                readOnly: true,
+                        sx={{
+                            justifyContent: "flex-end",
+                            minHeight: 56,
+                            color: "#333333",
+                            textTransform: "none",
+                            backgroundColor: "transparent",
+                            "&:hover": {
+                                backgroundColor: "transparent",
                             },
                         }}
-                        sx={{
-                            "& input": {
+                    >
+                        <Typography
+                            sx={{
                                 fontSize: 36,
                                 fontWeight: "bold",
                                 textAlign: "right",
-                            },
-                        }}
-                    />
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                            }}
+                        >
+                            {amount === "" ? "0" : Number(amount).toLocaleString()}
+                        </Typography>
+                    </Button>
 
                     <Typography
                         sx={{
