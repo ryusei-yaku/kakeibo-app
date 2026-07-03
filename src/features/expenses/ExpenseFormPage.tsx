@@ -280,8 +280,11 @@ function ExpenseFormPage({
 
                     <TextField
                         value={amount}
+                        type="tel"
                         onChange={(event) => {
-                            const onlyNumbers = event.target.value.replace(/\D/g, "");
+                            const inputValue = event.target.value;
+
+                            const onlyNumbers = inputValue.replace(/\D/g, "");
                             setAmount(onlyNumbers)
                         }}
                         inputMode="numeric"
