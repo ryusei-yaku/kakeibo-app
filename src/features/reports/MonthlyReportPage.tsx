@@ -131,18 +131,23 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                 }}
             >
                 <Container maxWidth="md">
-                    <Stack direction="row" spacing={1} sx={{ py: 1 }}>
+                    <Stack
+                        direction={{ xs: "column", sm: "row" }}
+                        spacing={1}
+                        sx={{ py: 1 }}
+                    >
                         <Button
                             onClick={() => navigate("/")}
                             startIcon={<ArrowBackIcon />}
                             sx={{
+                                width: { xs: "100%", sm: "auto" },
+                                justifyContent: { xs: "flex-start", sm: "center" },
                                 color: "text.secondary",
                                 fontWeight: "bold",
                             }}
                         >
                             ホームへ戻る
                         </Button>
-
                         <TextField
                             label="印刷する月"
                             type="month"
@@ -151,7 +156,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                             size="small"
                             sx={{
                                 backgroundColor: "#ffffff",
-                                minWidth: 180,
+                                minWidth: { xs: "100%", sm: 180 },
                             }}
                         />
 
@@ -160,7 +165,8 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                             startIcon={<PrintIcon />}
                             onClick={() => window.print()}
                             sx={{
-                                ml: "auto",
+                                width: { xs: "100%", sm: "auto" },
+                                ml: { xs: 0, sm: "auto" },
                                 fontWeight: "bold",
                                 backgroundColor: "#333333",
                                 "&:hover": {
