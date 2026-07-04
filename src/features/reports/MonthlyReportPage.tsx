@@ -19,6 +19,11 @@ type MonthlyReportPageProps = {
     expenses: Expense[];
 };
 
+function formatYen(amount: number) {
+    // 金額を「2,000円」のようにカンマ付きで表示する
+    return `${amount.toLocaleString()}円`;
+}
+
 function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
     const navigate = useNavigate();
 
@@ -31,6 +36,38 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
     // 選択した月の支出・収入データだけを取り出す
     const monthlyExpenses = expenses.filter((expense) =>
         expense.date.startsWith(selectedMonth)
+    );
+
+    // 選択した月の出金だけを取り出す
+    const monthlyExpenseItems = monthlyExpenses.filter(
+        (expense) => expense.type === "expense"
+    );
+
+    // 出金データを「項目」ごとに集計する
+    const categorySummaries = monthlyExpenseItems.reduce<Record<string, number>>(
+        (summary, expense) => {
+            // categoryName は画面上では「項目」として表示する
+            const itemName = expense.categoryName;
+
+            // まだ集計表にない項目は0円から始める
+            if (summary[itemName] === undefined) {
+                summary[itemName] = 0;
+            }
+
+            // 同じ項目の金額を足していく
+            summary[itemName] += expense.amount;
+
+            return summary;
+        },
+        {}
+    );
+
+    // 表示しやすいように、集計結果を配列に変換する
+    const categorySummaryRows = Object.entries(categorySummaries).map(
+        ([categoryName, totalAmount]) => ({
+            categoryName,
+            totalAmount,
+        })
     );
 
     return (
@@ -141,9 +178,76 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                 1. 項目別集計
                             </Typography>
 
-                            <Typography>
-                                ここに項目別集計を表示します。
-                            </Typography>
+                            {categorySummaryRows.length === 0 ? (
+                                <Typography>
+                                    この月の出金データはありません。
+                                </Typography>
+                            ) : (
+                                <Box
+                                    component="table"
+                                    sx={{
+                                        width: "420px",
+                                        maxWidth: "100%",
+                                        borderCollapse: "collapse",
+                                        fontSize: 14,
+                                    }}
+                                >
+                                    <Box component="thead">
+                                        <Box component="tr">
+                                            <Box
+                                                component="th"
+                                                sx={{
+                                                    border: "1px solid #999999",
+                                                    backgroundColor: "#eeeeee",
+                                                    p: 1,
+                                                    textAlign: "center",
+                                                    width: "70%",
+                                                }}
+                                            >
+                                                項目
+                                            </Box>
+                                            <Box
+                                                component="th"
+                                                sx={{
+                                                    border: "1px solid #999999",
+                                                    backgroundColor: "#eeeeee",
+                                                    p: 1,
+                                                    textAlign: "center",
+                                                    width: "30%",
+                                                }}
+                                            >
+                                                金額
+                                            </Box>
+                                        </Box>
+                                    </Box>
+
+                                    <Box component="tbody">
+                                        {categorySummaryRows.map((row) => (
+                                            <Box component="tr" key={row.categoryName}>
+                                                <Box
+                                                    component="td"
+                                                    sx={{
+                                                        border: "1px solid #999999",
+                                                        p: 1,
+                                                    }}
+                                                >
+                                                    {row.categoryName}
+                                                </Box>
+                                                <Box
+                                                    component="td"
+                                                    sx={{
+                                                        border: "1px solid #999999",
+                                                        p: 1,
+                                                        textAlign: "right",
+                                                    }}
+                                                >
+                                                    {formatYen(row.totalAmount)}
+                                                </Box>
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                </Box>
+                            )}
                         </Box>
 
                         {/* 支出一覧エリア */}
