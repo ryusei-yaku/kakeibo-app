@@ -6,11 +6,14 @@ import {
     Container,
     Paper,
     Stack,
+    TextField,
     Typography,
 } from "@mui/material";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "../../lib/dayjs";
 import type { Expense } from "../../types/expense";
+
 
 type MonthlyReportPageProps = {
     expenses: Expense[];
@@ -19,8 +22,16 @@ type MonthlyReportPageProps = {
 function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
     const navigate = useNavigate();
 
-    // 最初は今月を印刷対象月として表示する
-    const selectedMonth = dayjs().format("YYYY年M月");
+    // 印刷対象の月を管理する
+    const [selectedMonth, setSelectedMonth] = useState(dayjs().format("YYYY-MM"));
+
+    // 画面や印刷用タイトルに表示する年月
+    const selectedMonthLabel = dayjs(selectedMonth).format("YYYY年M月");
+
+    // 選択した月の支出・収入データだけを取り出す
+    const monthlyExpenses = expenses.filter((expense) =>
+        expense.date.startsWith(selectedMonth)
+    );
 
     return (
         <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef" }}>
@@ -47,6 +58,18 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                         >
                             ホームへ戻る
                         </Button>
+
+                        <TextField
+                            label="印刷する月"
+                            type="month"
+                            value={selectedMonth}
+                            onChange={(event) => setSelectedMonth(event.target.value)}
+                            size="small"
+                            sx={{
+                                backgroundColor: "#ffffff",
+                                minWidth: 180,
+                            }}
+                        />
 
                         <Button
                             variant="contained"
@@ -99,7 +122,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                     fontWeight: "bold",
                                 }}
                             >
-                                {selectedMonth} 家計簿
+                                {selectedMonthLabel} 家計簿
                             </Typography>
                         </Box>
 
@@ -139,7 +162,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                             </Typography>
 
                             <Typography>
-                                登録件数：{expenses.length}件
+                                登録件数：{monthlyExpenses.length}件
                             </Typography>
                         </Box>
                     </Stack>
