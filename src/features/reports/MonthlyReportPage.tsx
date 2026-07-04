@@ -24,6 +24,11 @@ function formatYen(amount: number) {
     return `${amount.toLocaleString()}円`;
 }
 
+function formatNumber(amount: number) {
+    // 入出金明細では「円」を付けず、帳簿らしく数字だけを表示する
+    return amount.toLocaleString();
+}
+
 function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
     const navigate = useNavigate();
 
@@ -187,7 +192,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                     sx={{
                         backgroundColor: "#ffffff",
                         color: "#000000",
-                        p: 4,
+                        p: { xs: 2, sm: 4 },
                         borderRadius: 1,
                         border: "1px solid #d0d0d0",
                     }}
@@ -240,8 +245,10 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                 <Box
                                     component="table"
                                     sx={{
-                                        width: "420px",
+                                        width: { xs: "100%", sm: "420px" },
                                         maxWidth: "100%",
+                                        mx: "auto",
+                                        tableLayout: "fixed",
                                         borderCollapse: "collapse",
                                         fontSize: 14,
                                     }}
@@ -440,7 +447,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                                         whiteSpace: "nowrap",
                                                     }}
                                                 >
-                                                    {row.incomeAmount === null ? "" : formatYen(row.incomeAmount)}
+                                                    {row.incomeAmount === null ? "" : formatNumber(row.incomeAmount)}
                                                 </Box>
                                                 <Box
                                                     component="td"
@@ -451,7 +458,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                                         whiteSpace: "nowrap",
                                                     }}
                                                 >
-                                                    {row.expenseAmount === null ? "" : formatYen(row.expenseAmount)}
+                                                    {row.expenseAmount === null ? "" : formatNumber(row.expenseAmount)}
                                                 </Box>
                                                 <Box
                                                     component="td"
@@ -462,7 +469,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                                         whiteSpace: "nowrap",
                                                     }}
                                                 >
-                                                    {formatYen(row.balance)}
+                                                    {formatNumber(row.balance)}
                                                 </Box>
                                                 <Box
                                                     component="td"
@@ -516,20 +523,23 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
             }
 
             table {
+                width: 100% !important;
+                border-collapse: collapse !important;
                 page-break-inside: auto;
-                border-collapse: collapse;
+                break-inside: auto;
             }
 
             thead {
-                display: table-header-group;
+                display: table-header-group !important;
             }
 
             tbody {
-                display: table-row-group;
+                display: table-row-group !important;
             }
 
             tr {
                 page-break-inside: avoid;
+                break-inside: avoid;
                 page-break-after: auto;
             }
 
