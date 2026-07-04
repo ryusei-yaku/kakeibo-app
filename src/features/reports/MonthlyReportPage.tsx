@@ -70,6 +70,40 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
         })
     );
 
+    // 支出一覧に表示するため、選択月のデータを日付順に並び替える
+    const sortedMonthlyExpenses = [...monthlyExpenses].sort((a, b) => {
+        // 日付が違う場合は、日付の古い順に並べる
+        if (a.date !== b.date) {
+            return a.date.localeCompare(b.date);
+        }
+
+        // 同じ日付の場合は、登録順の判断が難しいためID順で安定させる
+        return a.id.localeCompare(b.id);
+    });
+
+    // 入金・出金を反映しながら、各行の残高を計算する
+    let runningBalance = 0;
+
+    const reportRows = sortedMonthlyExpenses.map((expense) => {
+        // 入金なら残高を増やし、出金なら残高を減らす
+        runningBalance =
+            expense.type === "income"
+                ? runningBalance + expense.amount
+                : runningBalance - expense.amount;
+
+        return {
+            id: expense.id,
+            date: expense.date,
+            // categoryName は画面上では「項目」として表示する
+            itemName: expense.categoryName,
+            incomeAmount: expense.type === "income" ? expense.amount : null,
+            expenseAmount: expense.type === "expense" ? expense.amount : null,
+            balance: runningBalance,
+            // memo は画面上では「備考」として表示する
+            note: expense.memo,
+        };
+    });
+
     return (
         <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef" }}>
             {/* 通常画面でだけ表示する操作エリア */}
@@ -262,12 +296,169 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                     mb: 1.5,
                                 }}
                             >
-                                2. 支出一覧
+                                2. 入出金一覧
                             </Typography>
 
-                            <Typography>
-                                登録件数：{monthlyExpenses.length}件
-                            </Typography>
+                            {reportRows.length === 0 ? (
+                                <Typography>
+                                    この月のデータはありません。
+                                </Typography>
+                            ) : (
+                                <Box
+                                    component="table"
+                                    sx={{
+                                        width: "100%",
+                                        borderCollapse: "collapse",
+                                        fontSize: 13,
+                                    }}
+                                >
+                                    <Box component="thead">
+                                        <Box component="tr">
+                                            <Box
+                                                component="th"
+                                                sx={{
+                                                    border: "1px solid #999999",
+                                                    backgroundColor: "#eeeeee",
+                                                    p: 0.8,
+                                                    textAlign: "center",
+                                                    width: "13%",
+                                                }}
+                                            >
+                                                日付
+                                            </Box>
+                                            <Box
+                                                component="th"
+                                                sx={{
+                                                    border: "1px solid #999999",
+                                                    backgroundColor: "#eeeeee",
+                                                    p: 0.8,
+                                                    textAlign: "center",
+                                                    width: "15%",
+                                                }}
+                                            >
+                                                項目
+                                            </Box>
+                                            <Box
+                                                component="th"
+                                                sx={{
+                                                    border: "1px solid #999999",
+                                                    backgroundColor: "#eeeeee",
+                                                    p: 0.8,
+                                                    textAlign: "center",
+                                                    width: "13%",
+                                                }}
+                                            >
+                                                入金
+                                            </Box>
+                                            <Box
+                                                component="th"
+                                                sx={{
+                                                    border: "1px solid #999999",
+                                                    backgroundColor: "#eeeeee",
+                                                    p: 0.8,
+                                                    textAlign: "center",
+                                                    width: "13%",
+                                                }}
+                                            >
+                                                出金
+                                            </Box>
+                                            <Box
+                                                component="th"
+                                                sx={{
+                                                    border: "1px solid #999999",
+                                                    backgroundColor: "#eeeeee",
+                                                    p: 0.8,
+                                                    textAlign: "center",
+                                                    width: "13%",
+                                                }}
+                                            >
+                                                残高
+                                            </Box>
+                                            <Box
+                                                component="th"
+                                                sx={{
+                                                    border: "1px solid #999999",
+                                                    backgroundColor: "#eeeeee",
+                                                    p: 0.8,
+                                                    textAlign: "center",
+                                                    width: "33%",
+                                                }}
+                                            >
+                                                備考
+                                            </Box>
+                                        </Box>
+                                    </Box>
+
+                                    <Box component="tbody">
+                                        {reportRows.map((row) => (
+                                            <Box component="tr" key={row.id}>
+                                                <Box
+                                                    component="td"
+                                                    sx={{
+                                                        border: "1px solid #999999",
+                                                        p: 0.8,
+                                                        whiteSpace: "nowrap",
+                                                    }}
+                                                >
+                                                    {row.date}
+                                                </Box>
+                                                <Box
+                                                    component="td"
+                                                    sx={{
+                                                        border: "1px solid #999999",
+                                                        p: 0.8,
+                                                    }}
+                                                >
+                                                    {row.itemName}
+                                                </Box>
+                                                <Box
+                                                    component="td"
+                                                    sx={{
+                                                        border: "1px solid #999999",
+                                                        p: 0.8,
+                                                        textAlign: "right",
+                                                        whiteSpace: "nowrap",
+                                                    }}
+                                                >
+                                                    {row.incomeAmount === null ? "" : formatYen(row.incomeAmount)}
+                                                </Box>
+                                                <Box
+                                                    component="td"
+                                                    sx={{
+                                                        border: "1px solid #999999",
+                                                        p: 0.8,
+                                                        textAlign: "right",
+                                                        whiteSpace: "nowrap",
+                                                    }}
+                                                >
+                                                    {row.expenseAmount === null ? "" : formatYen(row.expenseAmount)}
+                                                </Box>
+                                                <Box
+                                                    component="td"
+                                                    sx={{
+                                                        border: "1px solid #999999",
+                                                        p: 0.8,
+                                                        textAlign: "right",
+                                                        whiteSpace: "nowrap",
+                                                    }}
+                                                >
+                                                    {formatYen(row.balance)}
+                                                </Box>
+                                                <Box
+                                                    component="td"
+                                                    sx={{
+                                                        border: "1px solid #999999",
+                                                        p: 0.8,
+                                                        wordBreak: "break-word",
+                                                    }}
+                                                >
+                                                    {row.note}
+                                                </Box>
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                </Box>
+                            )}
                         </Box>
                     </Stack>
                 </Paper>
@@ -278,7 +469,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                 {`
         @page {
             size: A4 landscape;
-            margin: 12mm;
+            margin: 5mm;
         }
 
         @media print {
