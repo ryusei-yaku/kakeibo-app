@@ -115,7 +115,10 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
     });
 
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef" }}>
+        <Box
+            className="print-page"
+            sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef" }}
+        >
             {/* 通常画面でだけ表示する操作エリア */}
             <Box
                 className="no-print"
@@ -173,6 +176,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
 
             <Container maxWidth="md" sx={{ py: 3 }}>
                 <Paper
+                    className="print-paper"
                     elevation={0}
                     sx={{
                         backgroundColor: "#ffffff",
@@ -479,16 +483,60 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                 {`
         @page {
             size: A4 portrait;
-            margin: 0mm;
+            margin: 12mm 10mm;
         }
 
         @media print {
+            html,
+            body,
+            #root {
+                background: #ffffff !important;
+            }
+
             .no-print {
                 display: none !important;
             }
 
-            body {
+            .print-page {
                 background: #ffffff !important;
+                padding: 0 !important;
+            }
+
+            .print-paper {
+                background: #ffffff !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+            }
+
+            table {
+                page-break-inside: auto;
+                border-collapse: collapse;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+
+            tbody {
+                display: table-row-group;
+            }
+
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            th {
+                background: #ffffff !important;
+                color: #000000 !important;
+                border-top: 1.5px solid #000000 !important;
+                border-bottom: 1.5px solid #000000 !important;
+                font-weight: bold !important;
+            }
+
+            td {
+                color: #000000 !important;
             }
         }
     `}
