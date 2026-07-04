@@ -309,7 +309,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                     sx={{
                                         width: "100%",
                                         borderCollapse: "collapse",
-                                        fontSize: 13,
+                                        fontSize: 11,
                                     }}
                                 >
                                     <Box component="thead">
@@ -319,9 +319,9 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                                 sx={{
                                                     border: "1px solid #999999",
                                                     backgroundColor: "#eeeeee",
-                                                    p: 0.8,
+                                                    p: 0.5,
                                                     textAlign: "center",
-                                                    width: "13%",
+                                                    width: "11%",
                                                 }}
                                             >
                                                 日付
@@ -331,9 +331,9 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                                 sx={{
                                                     border: "1px solid #999999",
                                                     backgroundColor: "#eeeeee",
-                                                    p: 0.8,
+                                                    p: 0.5,
                                                     textAlign: "center",
-                                                    width: "15%",
+                                                    width: "17%",
                                                 }}
                                             >
                                                 項目
@@ -343,7 +343,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                                 sx={{
                                                     border: "1px solid #999999",
                                                     backgroundColor: "#eeeeee",
-                                                    p: 0.8,
+                                                    p: 0.5,
                                                     textAlign: "center",
                                                     width: "13%",
                                                 }}
@@ -355,7 +355,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                                 sx={{
                                                     border: "1px solid #999999",
                                                     backgroundColor: "#eeeeee",
-                                                    p: 0.8,
+                                                    p: 0.5,
                                                     textAlign: "center",
                                                     width: "13%",
                                                 }}
@@ -367,7 +367,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                                 sx={{
                                                     border: "1px solid #999999",
                                                     backgroundColor: "#eeeeee",
-                                                    p: 0.8,
+                                                    p: 0.5,
                                                     textAlign: "center",
                                                     width: "13%",
                                                 }}
@@ -379,7 +379,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                                 sx={{
                                                     border: "1px solid #999999",
                                                     backgroundColor: "#eeeeee",
-                                                    p: 0.8,
+                                                    p: 0.5,
                                                     textAlign: "center",
                                                     width: "33%",
                                                 }}
@@ -396,7 +396,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                                     component="td"
                                                     sx={{
                                                         border: "1px solid #999999",
-                                                        p: 0.8,
+                                                        p: 0.5,
                                                         whiteSpace: "nowrap",
                                                     }}
                                                 >
@@ -406,7 +406,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                                     component="td"
                                                     sx={{
                                                         border: "1px solid #999999",
-                                                        p: 0.8,
+                                                        p: 0.5,
                                                     }}
                                                 >
                                                     {row.itemName}
@@ -415,7 +415,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                                     component="td"
                                                     sx={{
                                                         border: "1px solid #999999",
-                                                        p: 0.8,
+                                                        p: 0.5,
                                                         textAlign: "right",
                                                         whiteSpace: "nowrap",
                                                     }}
@@ -426,7 +426,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                                     component="td"
                                                     sx={{
                                                         border: "1px solid #999999",
-                                                        p: 0.8,
+                                                        p: 0.5,
                                                         textAlign: "right",
                                                         whiteSpace: "nowrap",
                                                     }}
@@ -437,7 +437,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                                     component="td"
                                                     sx={{
                                                         border: "1px solid #999999",
-                                                        p: 0.8,
+                                                        p: 0.5,
                                                         textAlign: "right",
                                                         whiteSpace: "nowrap",
                                                     }}
@@ -448,7 +448,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                                     component="td"
                                                     sx={{
                                                         border: "1px solid #999999",
-                                                        p: 0.8,
+                                                        p: 0.5,
                                                         wordBreak: "break-word",
                                                     }}
                                                 >
@@ -468,8 +468,8 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
             <style>
                 {`
         @page {
-            size: A4 landscape;
-            margin: 5mm;
+            size: A4 portrait;
+            margin: 0mm;
         }
 
         @media print {
