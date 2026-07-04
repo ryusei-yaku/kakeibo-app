@@ -14,7 +14,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import dayjs from "../../lib/dayjs";
 import type { Expense } from "../../types/expense";
 import { formatAmount } from "../../utils/formatAmount";
@@ -44,6 +44,11 @@ function ExpenseEditForm({
 }: ExpenseEditFormProps) {
     //ページを移動するための関数
     const navigate = useNavigate();
+
+    const [searchParams] = useSearchParams();
+
+    const returnMonth = searchParams.get("returnMonth");
+
     //編集フォーム用のstate
     //既存の支出データを初期値として入れる
     const [amount, setAmount] = useState(String(expense.amount));
@@ -106,6 +111,15 @@ function ExpenseEditForm({
         py: 0.75,
     };
 
+    function navigateBackToCalendar(){
+        if (returnMonth !== null){
+            navigate(`/calendar?month=${returnMonth}`);
+            return;
+        }
+
+        navigate(-1);
+    }
+
     function handleSubmit() {
         // 金額が未入力の場合は保存しない
         if (amount === "") {
@@ -137,7 +151,7 @@ function ExpenseEditForm({
         onUpdateExpense(updatedExpense);
 
         // 保存後は前の画面に戻る
-        navigate(-1);
+        navigateBackToCalendar();
     }
 
     function handleDelete() {
@@ -145,7 +159,7 @@ function ExpenseEditForm({
         onDeleteExpense(expense.id);
 
         //削除後は前の画面に戻る
-        navigate(-1);
+        navigateBackToCalendar();
     }
 
     return (
@@ -162,7 +176,7 @@ function ExpenseEditForm({
                 <Container maxWidth="sm">
                     {/* 前の画面に戻るボタン */}
                     <Button
-                        onClick={() => navigate(-1)}
+                        onClick={navigateBackToCalendar}
                         startIcon={<ArrowBackIcon />}
                         sx={{
                             py: 1.2,

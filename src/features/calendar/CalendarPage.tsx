@@ -7,7 +7,7 @@ import {
     Stack,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import dayjs from "../../lib/dayjs";
 import type { Expense } from "../../types/expense";
 import CalendarGrid from "./components/CalendarGrid";
@@ -36,9 +36,19 @@ function CalendarPage({ expenses }: CalendarPageProps) {
     // ページ移動をするための関数を用意する
     const navigate = useNavigate();
 
+    const [searchParams] = useSearchParams();
+
+    const initialMonth = searchParams.get("month");
+
     //表示中の月を管理する
     //初期値は今日が含まれる月にする
-    const [displayMonth, setDisplayMonth] = useState(dayjs().startOf("month"));
+    const [displayMonth, setDisplayMonth] = useState(()=>{
+        if(initialMonth !== null){
+            return dayjs(initialMonth).startOf("month");
+        }
+
+        return dayjs().startOf("month");
+    });
 
     // 年月選択ダイアログを開いているかどうかを管理する
     const [isMonthDialogOpen, setIsMonthDialogOpen] = useState(false);
@@ -148,7 +158,7 @@ function CalendarPage({ expenses }: CalendarPageProps) {
 
     //支出明細を押したら、編集画面へ移動する
     function handleExpenseClick(expenseId: string) {
-        navigate(`/expenses/edit/${expenseId}`);
+        navigate(`/expenses/edit/${expenseId}?returnMonth=${displayMonth.format("YYYY-MM")}`);
     }
 
     return (
