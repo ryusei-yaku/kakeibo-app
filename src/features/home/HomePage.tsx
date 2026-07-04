@@ -3,6 +3,7 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import PersonIcon from "@mui/icons-material/Person";
 import PieChartIcon from "@mui/icons-material/PieChart";
+import PrintIcon from "@mui/icons-material/Print";
 import {
     Box,
     Button,
@@ -117,7 +118,7 @@ function HomePage({ expenses, profile }: HomePageProps) {
                             sx={{
                                 fontWeight: "bold",
                                 color: "#333333",
-                                pt:2,
+                                pt: 2,
                             }}
                         >
                             {displayName}さん、{greeting}！
@@ -353,6 +354,40 @@ function HomePage({ expenses, profile }: HomePageProps) {
                                 <ChevronRightIcon sx={{ color: "#f59e0b" }} />
                             </Box>
                         </Button>
+                        <Button
+                            variant="outlined"
+                            size="large"
+                            fullWidth
+                            startIcon={<PrintIcon sx={{ color: "#f59e0b" }} />}
+                            onClick={() => navigate("/reports/monthly")}
+                            sx={{
+                                justifyContent: "flex-start",
+                                py: 1.6,
+                                px: 2,
+                                borderRadius: 3,
+                                fontWeight: "bold",
+                                backgroundColor: "#ffffff",
+                                color: "#555555",
+                                borderColor: "#f59e0b",
+                                textTransform: "none",
+                                "&:hover": {
+                                    backgroundColor: "#fde7cd",
+                                    borderColor: "#d97706",
+                                },
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    width: "100%",
+                                }}
+                            >
+                                <span>月次レポートを印刷する</span>
+                                <ChevronRightIcon sx={{ color: "#f59e0b" }} />
+                            </Box>
+                        </Button>
                     </Stack>
                 </Stack>
             </Container>
@@ -363,7 +398,7 @@ function HomePage({ expenses, profile }: HomePageProps) {
                     color: "text.secondary",
                     fontsize: 10,
                 }}>
-                v1.0.1
+                v1.1.0
                 <br />
                 © 2026 Ryusei Yakushimaru
             </Typography>

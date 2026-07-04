@@ -1,0 +1,554 @@
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import PrintIcon from "@mui/icons-material/Print";
+import {
+    Box,
+    Button,
+    Container,
+    Paper,
+    Stack,
+    TextField,
+    Typography,
+} from "@mui/material";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import dayjs from "../../lib/dayjs";
+import type { Expense } from "../../types/expense";
+
+
+type MonthlyReportPageProps = {
+    expenses: Expense[];
+};
+
+function formatYen(amount: number) {
+    // 金額を「2,000円」のようにカンマ付きで表示する
+    return `${amount.toLocaleString()}円`;
+}
+
+function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
+    const navigate = useNavigate();
+
+    // 印刷対象の月を管理する
+    const [selectedMonth, setSelectedMonth] = useState(dayjs().format("YYYY-MM"));
+
+    // 画面や印刷用タイトルに表示する年月
+    const selectedMonthLabel = dayjs(selectedMonth).format("YYYY年M月");
+
+    // 選択した月の支出・収入データだけを取り出す
+    const monthlyExpenses = expenses.filter((expense) =>
+        expense.date.startsWith(selectedMonth)
+    );
+
+    // 選択した月の出金だけを取り出す
+    const monthlyExpenseItems = monthlyExpenses.filter(
+        (expense) => expense.type === "expense"
+    );
+
+    // 出金データを「項目」ごとに集計する
+    const categorySummaries = monthlyExpenseItems.reduce<Record<string, number>>(
+        (summary, expense) => {
+            // categoryName は画面上では「項目」として表示する
+            const itemName = expense.categoryName;
+
+            // まだ集計表にない項目は0円から始める
+            if (summary[itemName] === undefined) {
+                summary[itemName] = 0;
+            }
+
+            // 同じ項目の金額を足していく
+            summary[itemName] += expense.amount;
+
+            return summary;
+        },
+        {}
+    );
+
+    // 表示しやすいように、集計結果を配列に変換する
+    const categorySummaryRows = Object.entries(categorySummaries).map(
+        ([categoryName, totalAmount]) => ({
+            categoryName,
+            totalAmount,
+        })
+    );
+
+    // 入出金明細に表示するため、選択月のデータを日付順に並び替える
+    const sortedMonthlyExpenses = [...monthlyExpenses].sort((a, b) => {
+        // 日付が違う場合は、日付の古い順に並べる
+        if (a.date !== b.date) {
+            return a.date.localeCompare(b.date);
+        }
+
+        // 同じ日付の場合は、現金出納帳として見やすいように入金を先に表示する
+        if (a.type !== b.type) {
+            return a.type === "income" ? -1 : 1;
+        }
+
+        // 同じ日付・同じ種類の場合は、項目名順に並べて表示を安定させる
+        if (a.categoryName !== b.categoryName) {
+            return a.categoryName.localeCompare(b.categoryName, "ja");
+        }
+
+        // 日付・種類・項目が同じ場合は、ID順にして表示を安定させる
+        return a.id.localeCompare(b.id);
+    });
+
+    // 入金・出金を反映しながら、各行の残高を計算する
+    let runningBalance = 0;
+
+    const reportRows = sortedMonthlyExpenses.map((expense) => {
+        // 入金なら残高を増やし、出金なら残高を減らす
+        runningBalance =
+            expense.type === "income"
+                ? runningBalance + expense.amount
+                : runningBalance - expense.amount;
+
+        return {
+            id: expense.id,
+            date: expense.date,
+            // categoryName は画面上では「項目」として表示する
+            itemName: expense.categoryName,
+            incomeAmount: expense.type === "income" ? expense.amount : null,
+            expenseAmount: expense.type === "expense" ? expense.amount : null,
+            balance: runningBalance,
+            // memo は画面上では「備考」として表示する
+            note: expense.memo,
+        };
+    });
+
+    return (
+        <Box
+            className="print-page"
+            sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef" }}
+        >
+            {/* 通常画面でだけ表示する操作エリア */}
+            <Box
+                className="no-print"
+                sx={{
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 10,
+                    backgroundColor: "#f6f4ef",
+                    borderBottom: "1px solid rgba(0, 0, 0, 0.08)",
+                }}
+            >
+                <Container maxWidth="md">
+                    <Stack
+                        direction={{ xs: "column", sm: "row" }}
+                        spacing={1}
+                        sx={{ py: 1 }}
+                    >
+                        <Button
+                            onClick={() => navigate("/")}
+                            startIcon={<ArrowBackIcon />}
+                            sx={{
+                                width: { xs: "100%", sm: "auto" },
+                                justifyContent: { xs: "flex-start", sm: "center" },
+                                color: "text.secondary",
+                                fontWeight: "bold",
+                            }}
+                        >
+                            ホームへ戻る
+                        </Button>
+                        <TextField
+                            label="印刷する月"
+                            type="month"
+                            value={selectedMonth}
+                            onChange={(event) => setSelectedMonth(event.target.value)}
+                            size="small"
+                            sx={{
+                                backgroundColor: "#ffffff",
+                                minWidth: { xs: "100%", sm: 180 },
+                            }}
+                        />
+
+                        <Button
+                            variant="contained"
+                            startIcon={<PrintIcon />}
+                            onClick={() => window.print()}
+                            sx={{
+                                width: { xs: "100%", sm: "auto" },
+                                ml: { xs: 0, sm: "auto" },
+                                fontWeight: "bold",
+                                backgroundColor: "#333333",
+                                "&:hover": {
+                                    backgroundColor: "#000000",
+                                },
+                            }}
+                        >
+                            印刷する
+                        </Button>
+                    </Stack>
+                </Container>
+            </Box>
+
+            <Container maxWidth="md" sx={{ py: 3 }}>
+                <Paper
+                    className="print-paper"
+                    elevation={0}
+                    sx={{
+                        backgroundColor: "#ffffff",
+                        color: "#000000",
+                        p: 4,
+                        borderRadius: 1,
+                        border: "1px solid #d0d0d0",
+                    }}
+                >
+                    <Stack spacing={3}>
+                        {/* レポートのタイトル */}
+                        <Box sx={{ textAlign: "center" }}>
+                            <Typography
+                                component="h1"
+                                sx={{
+                                    fontSize: 24,
+                                    fontWeight: "bold",
+                                    letterSpacing: 1,
+                                }}
+                            >
+                                月次家計簿レポート
+                            </Typography>
+
+                            <Typography
+                                sx={{
+                                    mt: 1,
+                                    fontSize: 18,
+                                    fontWeight: "bold",
+                                }}
+                            >
+                                {selectedMonthLabel} 家計簿
+                            </Typography>
+                        </Box>
+
+                        {/* 項目別集計エリア */}
+                        <Box>
+                            <Typography
+                                component="h2"
+                                sx={{
+                                    fontSize: 18,
+                                    fontWeight: "bold",
+                                    borderBottom: "2px solid #000000",
+                                    pb: 0.5,
+                                    mb: 1.5,
+                                }}
+                            >
+                                1. 項目別集計
+                            </Typography>
+
+                            {categorySummaryRows.length === 0 ? (
+                                <Typography>
+                                    この月の出金データはありません。
+                                </Typography>
+                            ) : (
+                                <Box
+                                    component="table"
+                                    sx={{
+                                        width: "420px",
+                                        maxWidth: "100%",
+                                        borderCollapse: "collapse",
+                                        fontSize: 14,
+                                    }}
+                                >
+                                    <Box component="thead">
+                                        <Box component="tr">
+                                            <Box
+                                                component="th"
+                                                sx={{
+                                                    border: "1px solid #999999",
+                                                    backgroundColor: "#eeeeee",
+                                                    p: 1,
+                                                    textAlign: "center",
+                                                    width: "70%",
+                                                }}
+                                            >
+                                                項目
+                                            </Box>
+                                            <Box
+                                                component="th"
+                                                sx={{
+                                                    border: "1px solid #999999",
+                                                    backgroundColor: "#eeeeee",
+                                                    p: 1,
+                                                    textAlign: "center",
+                                                    width: "30%",
+                                                }}
+                                            >
+                                                金額
+                                            </Box>
+                                        </Box>
+                                    </Box>
+
+                                    <Box component="tbody">
+                                        {categorySummaryRows.map((row) => (
+                                            <Box component="tr" key={row.categoryName}>
+                                                <Box
+                                                    component="td"
+                                                    sx={{
+                                                        border: "1px solid #999999",
+                                                        p: 1,
+                                                    }}
+                                                >
+                                                    {row.categoryName}
+                                                </Box>
+                                                <Box
+                                                    component="td"
+                                                    sx={{
+                                                        border: "1px solid #999999",
+                                                        p: 1,
+                                                        textAlign: "right",
+                                                    }}
+                                                >
+                                                    {formatYen(row.totalAmount)}
+                                                </Box>
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                </Box>
+                            )}
+                        </Box>
+
+                        {/* 支出一覧エリア */}
+                        <Box>
+                            <Typography
+                                component="h2"
+                                sx={{
+                                    fontSize: 18,
+                                    fontWeight: "bold",
+                                    borderBottom: "2px solid #000000",
+                                    pb: 0.5,
+                                    mb: 1.5,
+                                }}
+                            >
+                                2. 入出金明細
+                            </Typography>
+
+                            {reportRows.length === 0 ? (
+                                <Typography>
+                                    この月のデータはありません。
+                                </Typography>
+                            ) : (
+                                <Box
+                                    component="table"
+                                    sx={{
+                                        width: "100%",
+                                        borderCollapse: "collapse",
+                                        fontSize: 11,
+                                    }}
+                                >
+                                    <Box component="thead">
+                                        <Box component="tr">
+                                            <Box
+                                                component="th"
+                                                sx={{
+                                                    border: "1px solid #999999",
+                                                    backgroundColor: "#eeeeee",
+                                                    p: 0.5,
+                                                    textAlign: "center",
+                                                    width: "11%",
+                                                }}
+                                            >
+                                                日付
+                                            </Box>
+                                            <Box
+                                                component="th"
+                                                sx={{
+                                                    border: "1px solid #999999",
+                                                    backgroundColor: "#eeeeee",
+                                                    p: 0.5,
+                                                    textAlign: "center",
+                                                    width: "17%",
+                                                }}
+                                            >
+                                                項目
+                                            </Box>
+                                            <Box
+                                                component="th"
+                                                sx={{
+                                                    border: "1px solid #999999",
+                                                    backgroundColor: "#eeeeee",
+                                                    p: 0.5,
+                                                    textAlign: "center",
+                                                    width: "13%",
+                                                }}
+                                            >
+                                                入金
+                                            </Box>
+                                            <Box
+                                                component="th"
+                                                sx={{
+                                                    border: "1px solid #999999",
+                                                    backgroundColor: "#eeeeee",
+                                                    p: 0.5,
+                                                    textAlign: "center",
+                                                    width: "13%",
+                                                }}
+                                            >
+                                                出金
+                                            </Box>
+                                            <Box
+                                                component="th"
+                                                sx={{
+                                                    border: "1px solid #999999",
+                                                    backgroundColor: "#eeeeee",
+                                                    p: 0.5,
+                                                    textAlign: "center",
+                                                    width: "13%",
+                                                }}
+                                            >
+                                                残高
+                                            </Box>
+                                            <Box
+                                                component="th"
+                                                sx={{
+                                                    border: "1px solid #999999",
+                                                    backgroundColor: "#eeeeee",
+                                                    p: 0.5,
+                                                    textAlign: "center",
+                                                    width: "33%",
+                                                }}
+                                            >
+                                                備考
+                                            </Box>
+                                        </Box>
+                                    </Box>
+
+                                    <Box component="tbody">
+                                        {reportRows.map((row) => (
+                                            <Box component="tr" key={row.id}>
+                                                <Box
+                                                    component="td"
+                                                    sx={{
+                                                        border: "1px solid #999999",
+                                                        p: 0.5,
+                                                        whiteSpace: "nowrap",
+                                                    }}
+                                                >
+                                                    {row.date}
+                                                </Box>
+                                                <Box
+                                                    component="td"
+                                                    sx={{
+                                                        border: "1px solid #999999",
+                                                        p: 0.5,
+                                                    }}
+                                                >
+                                                    {row.itemName}
+                                                </Box>
+                                                <Box
+                                                    component="td"
+                                                    sx={{
+                                                        border: "1px solid #999999",
+                                                        p: 0.5,
+                                                        textAlign: "right",
+                                                        whiteSpace: "nowrap",
+                                                    }}
+                                                >
+                                                    {row.incomeAmount === null ? "" : formatYen(row.incomeAmount)}
+                                                </Box>
+                                                <Box
+                                                    component="td"
+                                                    sx={{
+                                                        border: "1px solid #999999",
+                                                        p: 0.5,
+                                                        textAlign: "right",
+                                                        whiteSpace: "nowrap",
+                                                    }}
+                                                >
+                                                    {row.expenseAmount === null ? "" : formatYen(row.expenseAmount)}
+                                                </Box>
+                                                <Box
+                                                    component="td"
+                                                    sx={{
+                                                        border: "1px solid #999999",
+                                                        p: 0.5,
+                                                        textAlign: "right",
+                                                        whiteSpace: "nowrap",
+                                                    }}
+                                                >
+                                                    {formatYen(row.balance)}
+                                                </Box>
+                                                <Box
+                                                    component="td"
+                                                    sx={{
+                                                        border: "1px solid #999999",
+                                                        p: 0.5,
+                                                        wordBreak: "break-word",
+                                                    }}
+                                                >
+                                                    {row.note}
+                                                </Box>
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                </Box>
+                            )}
+                        </Box>
+                    </Stack>
+                </Paper>
+            </Container>
+
+            {/* 印刷時だけ、操作ボタンなどを消す */}
+            <style>
+                {`
+        @page {
+            size: A4 portrait;
+            margin: 12mm 10mm;
+        }
+
+        @media print {
+            html,
+            body,
+            #root {
+                background: #ffffff !important;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .print-page {
+                background: #ffffff !important;
+                padding: 0 !important;
+            }
+
+            .print-paper {
+                background: #ffffff !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+            }
+
+            table {
+                page-break-inside: auto;
+                border-collapse: collapse;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+
+            tbody {
+                display: table-row-group;
+            }
+
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            th {
+                background: #ffffff !important;
+                color: #000000 !important;
+                border-top: 1.5px solid #000000 !important;
+                border-bottom: 1.5px solid #000000 !important;
+                font-weight: bold !important;
+            }
+
+            td {
+                color: #000000 !important;
+            }
+        }
+    `}
+            </style>
+        </Box>
+    );
+}
+
+export default MonthlyReportPage;

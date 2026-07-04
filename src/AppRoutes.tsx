@@ -8,6 +8,7 @@ import ExpenseEditPage from "./features/expenses/ExpenseEditPage";
 import ExpenseFormPage from "./features/expenses/ExpenseFormPage";
 import HomePage from "./features/home/HomePage";
 import ProfilePage from "./features/profile/ProfilePage";
+import MonthlyReportPage from "./features/reports/MonthlyReportPage";
 import type { Category } from "./types/category";
 import type { Expense } from "./types/expense";
 import type { Profile } from "./types/profile";
@@ -115,6 +116,10 @@ function AppRoutes({
                             onLogout={onLogout}
                         />
                     }
+                />
+                <Route
+                    path="/reports/monthly"
+                    element={<MonthlyReportPage expenses={expenses} />}
                 />
             </Routes>
         </BrowserRouter>
