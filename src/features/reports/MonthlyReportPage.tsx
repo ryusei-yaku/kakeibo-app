@@ -70,14 +70,24 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
         })
     );
 
-    // 支出一覧に表示するため、選択月のデータを日付順に並び替える
+    // 入出金明細に表示するため、選択月のデータを日付順に並び替える
     const sortedMonthlyExpenses = [...monthlyExpenses].sort((a, b) => {
         // 日付が違う場合は、日付の古い順に並べる
         if (a.date !== b.date) {
             return a.date.localeCompare(b.date);
         }
 
-        // 同じ日付の場合は、登録順の判断が難しいためID順で安定させる
+        // 同じ日付の場合は、現金出納帳として見やすいように入金を先に表示する
+        if (a.type !== b.type) {
+            return a.type === "income" ? -1 : 1;
+        }
+
+        // 同じ日付・同じ種類の場合は、項目名順に並べて表示を安定させる
+        if (a.categoryName !== b.categoryName) {
+            return a.categoryName.localeCompare(b.categoryName, "ja");
+        }
+
+        // 日付・種類・項目が同じ場合は、ID順にして表示を安定させる
         return a.id.localeCompare(b.id);
     });
 
@@ -296,7 +306,7 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                                     mb: 1.5,
                                 }}
                             >
-                                2. 入出金一覧
+                                2. 入出金明細
                             </Typography>
 
                             {reportRows.length === 0 ? (
