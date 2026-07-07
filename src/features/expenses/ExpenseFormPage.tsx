@@ -5,7 +5,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import type { Dayjs } from "dayjs";
-import { useState } from "react";
+import { useState, type PointerEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "../../lib/dayjs";
 import type { Category } from "../../types/category";
@@ -81,6 +81,34 @@ function ExpenseFormPage({
         setIsAmountKeyboardOpen(false);
     }
 
+    function handleAmountDigitPointerDown(
+        event: PointerEvent<HTMLButtonElement>,
+        digit: string
+    ) {
+        // スマホの連続タップでクリックが取りこぼされにくいように、
+        // onClickではなく、onPointerDownで金額を追加する
+        event.preventDefault();
+        addAmountDigit(digit);
+    }
+
+    function handleClearAmountPointerDown(event: PointerEvent<HTMLButtonElement>) {
+        // スマホのタップ反応を安定させるため、押した瞬間に金額をクリアする
+        event.preventDefault();
+        clearAmount();
+    }
+
+    function handleDeleteAmountPointerDown(event: PointerEvent<HTMLButtonElement>) {
+        // スマホのタップ反応を安定させるため、押した瞬間に1桁削除する
+        event.preventDefault();
+        deleteAmountDigit();
+    }
+
+    function handleCloseAmountKeyboardPointerDown(event: PointerEvent<HTMLButtonElement>) {
+        // OKボタンも押した瞬間にテンキーを閉じる
+        event.preventDefault();
+        closeAmountKeyboard();
+    }
+
     const numberKeyButtonSx = {
         py: 1.4,
         borderRadius: 3,
@@ -89,6 +117,8 @@ function ExpenseFormPage({
         fontSize: 20,
         fontWeight: "bold",
         border: "1px solid #eeeeee",
+        touchAction: "manipulation",
+        userSelect: "none",
         "&:hover": {
             backgroundColor: "#fde7cd",
         },
@@ -409,24 +439,99 @@ function ExpenseFormPage({
                     >
                         <Box sx={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1 }}>
 
-                            <Button onClick={() => addAmountDigit("7")} sx={numberKeyButtonSx}>7</Button>
-                            <Button onClick={() => addAmountDigit("8")} sx={numberKeyButtonSx}>8</Button>
-                            <Button onClick={() => addAmountDigit("9")} sx={numberKeyButtonSx}>9</Button>
-                            <Button onClick={clearAmount} sx={functionKeyButtonSx}>AC</Button>
+                            <Button
+                                onPointerDown={(event) => handleAmountDigitPointerDown(event, "7")}
+                                sx={numberKeyButtonSx}
+                            >
+                                7
+                            </Button>
+                            <Button
+                                onPointerDown={(event) => handleAmountDigitPointerDown(event, "8")}
+                                sx={numberKeyButtonSx}
+                            >
+                                8
+                            </Button>
+                            <Button
+                                onPointerDown={(event) => handleAmountDigitPointerDown(event, "9")}
+                                sx={numberKeyButtonSx}
+                            >
+                                9
+                            </Button>
+                            <Button
+                                onPointerDown={handleClearAmountPointerDown}
+                                sx={functionKeyButtonSx}
+                            >
+                                AC
+                            </Button>
 
-                            <Button onClick={() => addAmountDigit("4")} sx={numberKeyButtonSx}>4</Button>
-                            <Button onClick={() => addAmountDigit("5")} sx={numberKeyButtonSx}>5</Button>
-                            <Button onClick={() => addAmountDigit("6")} sx={numberKeyButtonSx}>6</Button>
-                            <Button onClick={deleteAmountDigit} sx={deleteButtonSx}>Del</Button>
+                            <Button
+                                onPointerDown={(event) => handleAmountDigitPointerDown(event, "4")}
+                                sx={numberKeyButtonSx}
+                            >
+                                4
+                            </Button>
+                            <Button
+                                onPointerDown={(event) => handleAmountDigitPointerDown(event, "5")}
+                                sx={numberKeyButtonSx}
+                            >
+                                5
+                            </Button>
+                            <Button
+                                onPointerDown={(event) => handleAmountDigitPointerDown(event, "6")}
+                                sx={numberKeyButtonSx}
+                            >
+                                6
+                            </Button>
+                            <Button
+                                onPointerDown={handleDeleteAmountPointerDown}
+                                sx={deleteButtonSx}
+                            >
+                                Del
+                            </Button>
 
-                            <Button onClick={() => addAmountDigit("1")} sx={numberKeyButtonSx}>1</Button>
-                            <Button onClick={() => addAmountDigit("2")} sx={numberKeyButtonSx}>2</Button>
-                            <Button onClick={() => addAmountDigit("3")} sx={numberKeyButtonSx}>3</Button>
-                            <Button onClick={closeAmountKeyboard} sx={okButtonSx}>OK</Button>
+                            <Button
+                                onPointerDown={(event) => handleAmountDigitPointerDown(event, "1")}
+                                sx={numberKeyButtonSx}
+                            >
+                                1
+                            </Button>
+                            <Button
+                                onPointerDown={(event) => handleAmountDigitPointerDown(event, "2")}
+                                sx={numberKeyButtonSx}
+                            >
+                                2
+                            </Button>
+                            <Button
+                                onPointerDown={(event) => handleAmountDigitPointerDown(event, "3")}
+                                sx={numberKeyButtonSx}
+                            >
+                                3
+                            </Button>
+                            <Button
+                                onPointerDown={handleCloseAmountKeyboardPointerDown}
+                                sx={okButtonSx}
+                            >
+                                OK
+                            </Button>
 
-                            <Button onClick={() => addAmountDigit("0")} sx={numberKeyButtonSx}>0</Button>
-                            <Button onClick={() => addAmountDigit("00")} sx={numberKeyButtonSx}>00</Button>
-                            <Button onClick={() => addAmountDigit("000")} sx={numberKeyButtonSx}>000</Button>
+                            <Button
+                                onPointerDown={(event) => handleAmountDigitPointerDown(event, "0")}
+                                sx={numberKeyButtonSx}
+                            >
+                                0
+                            </Button>
+                            <Button
+                                onPointerDown={(event) => handleAmountDigitPointerDown(event, "00")}
+                                sx={numberKeyButtonSx}
+                            >
+                                00
+                            </Button>
+                            <Button
+                                onPointerDown={(event) => handleAmountDigitPointerDown(event, "000")}
+                                sx={numberKeyButtonSx}
+                            >
+                                000
+                            </Button>
 
                         </Box>
                     </Box>
