@@ -1,7 +1,11 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Box, Button, Container, Stack, Typography } from "@mui/material";
 import dayjs from "../../lib/dayjs";
-import { useNavigate, useParams } from "react-router-dom";
+import {
+    useNavigate,
+    useParams,
+    useSearchParams
+} from "react-router-dom";
 import type { Expense } from "../../types/expense";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
@@ -43,14 +47,21 @@ function MonthlyCategoryDetailPage({
     const selectedTransactionType =
         transactionType === "income" ? "income" : "expense";
 
-    //今日が含まれる年月を"2026-06"のような形式で取得する
-    const currentMonth = dayjs().format("YYYY-MM");
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+
+    // 一覧画面から渡された月を取得する
+    // monthがない場合は現在の月を表示する
+    const selectedMonth =
+        searchParams.get("month") ?? dayjs().format("YYYY-MM");
+
+    // 画面表示用に「2026年7月」の形式へ変換する
+    const selectedMonthLabel = dayjs(selectedMonth).format("YYYY年M月");
 
     //全支出の中から、今月かつURLのcategoryIdと一致する支出だけを取り出す
     const categoryMonthlyExpenses = expenses.filter(
         (expense) =>
-            expense.date.startsWith(currentMonth) &&
+            expense.date.startsWith(selectedMonth) &&
             expense.categoryId === categoryId &&
             expense.type === selectedTransactionType
     );
@@ -97,7 +108,9 @@ function MonthlyCategoryDetailPage({
             <Container maxWidth="sm">
                 <Stack spacing={2}>
                     <Button
-                        onClick={() => navigate("/categories/monthly")}
+                        onClick={() =>
+                            navigate(`/categories/monthly?month=${selectedMonth}`)
+                        }
                         startIcon={<ArrowBackIcon />}
                         sx={{
                             alignSelf: "flex-start",
@@ -121,27 +134,11 @@ function MonthlyCategoryDetailPage({
                             sx={{
                                 fontWeight: "bold",
                                 color: "#333333",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
+                                wordBreak: "break-word",
                             }}
                         >
-                            {categoryName}
-                        </Typography>
-
-                        <Typography
-                            variant="h5"
-                            component="h1"
-                            sx={{
-                                fontWeight: "bold",
-                                color: "#333333",
-                                flexShrink: 0,
-                            }}
-                        >の今月の
-                            {selectedTransactionType === "expense"
-                                ? "支出"
-                                : "収入"
-                            }
+                            {selectedMonthLabel}の{categoryName}の
+                            {selectedTransactionType === "expense" ? "支出" : "収入"}
                         </Typography>
                     </Box>
 
@@ -156,12 +153,12 @@ function MonthlyCategoryDetailPage({
                         </Typography>
                     </Box>
 
-                    {/* このカテゴリーの今月支出が1件もない場合 */}
+                    {/* このカテゴリーの選択した月の支出が1件もない場合 */}
 
                     {groupedExpensesByDate.length === 0 ? (
                         <Typography color="text.secondary">
-                            今月の
-                            {transactionType === "expense"
+                            {selectedMonthLabel}の
+                            {selectedTransactionType === "expense"
                                 ? "支出"
                                 : "収入"
                             }

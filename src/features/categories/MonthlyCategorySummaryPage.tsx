@@ -1,19 +1,27 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CategoryIcon from "@mui/icons-material/Category";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import {
     Box,
     Button,
-    Container,
-    Stack,
-    Typography,
     Card,
     CardContent,
+    Container,
+    Dialog,
+    Stack,
+    Typography
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import type { Expense } from "../../types/expense";
-import dayjs from "../../lib/dayjs";
-import CategoryIcon from "@mui/icons-material/Category";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import type { Dayjs } from "dayjs";
 import { useState } from "react";
+import {
+    useNavigate,
+    useSearchParams,
+} from "react-router-dom";
+import dayjs from "../../lib/dayjs";
+import type { Expense } from "../../types/expense";
 
 type MonthlyCategorySummaryPageProps = {
     expenses: Expense[];
@@ -35,8 +43,45 @@ function MonthlyCategorySummaryPage({
     expenses,
 }: MonthlyCategorySummaryPageProps) {
     const navigate = useNavigate();
-    //今日が含まれる年月を"2026-06"のような形式で取得する
-    const currentMonth = dayjs().format("YYYY-MM");
+
+    const [searchParams] = useSearchParams();
+
+    const initialMonth =
+        searchParams.get("month") ?? dayjs().format("YYYY-MM");
+
+    // 表示する月を管理する
+    // 初期値は現在の月
+    const [selectedMonth, setSelectedMonth] = useState(initialMonth);
+
+    // 月選択ダイアログが開いているかどうかを管理する
+    const [isMonthDialogOpen, setIsMonthDialogOpen] = useState(false);
+
+    // 画面に「2026年7月」のように表示するための文字列
+    const selectedMonthLabel = dayjs(selectedMonth).format("YYYY年M月");
+
+    // 表示する月を1カ月前に変更する
+    function goToPreviousMonth() {
+        setSelectedMonth((currentMonth) =>
+            dayjs(currentMonth).subtract(1, "month").format("YYYY-MM")
+        );
+    }
+
+    // 表示する月を1か月後に変更する
+    function goToNextMonth() {
+        setSelectedMonth((currentMonth) =>
+            dayjs(currentMonth).add(1, "month").format("YYYY-MM")
+        );
+    }
+
+    // 月選択ダイアログで選んだ年月を表示対象に設定する
+    function handleMonthChange(newMonth: Dayjs | null) {
+        if (newMonth === null) {
+            return;
+        }
+
+        setSelectedMonth(newMonth.format("YYYY-MM"));
+        setIsMonthDialogOpen(false);
+    }
 
     // 表示するデータの種類を管理する
     // 初期表示は支出
@@ -44,14 +89,14 @@ function MonthlyCategorySummaryPage({
         "expense" | "income"
     >("expense");
 
-    // 今月かつ、選択中の種類に一致するデータだけを取り出す
+    // 選択した月かつ、選択中の種類に一致するデータだけを取り出す
     // 支出タブなら支出だけ、収入タブなら収入だけを集計対象にする
     const monthlyExpenses = expenses.filter(
         (expense) =>
-            expense.date.startsWith(currentMonth) &&
+            expense.date.startsWith(selectedMonth) &&
             expense.type === transactionType
     );
-    //今月の選択中データを、カテゴリーごとの合計金額にまとめる
+    //選択した月の選択中データを、カテゴリーごとの合計金額にまとめる
     const monthlyCategorySummaries = monthlyExpenses.reduce<CategorySummary[]>(
         (summaries, expense) => {
             //すでに同じカテゴリーの集計データがあるか探す
@@ -166,6 +211,66 @@ function MonthlyCategorySummaryPage({
                         ホームへ戻る
                     </Button>
 
+                    {/* 表示する月の選択 */}
+                    <Box
+                        sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            borderBottom: "1px solid #e0e0e0",
+                            py: 1.5,
+                        }}
+                    >
+
+                        <Button
+                            onClick={goToPreviousMonth}
+                            sx={{
+                                minWidth: 40,
+                                fontSize: 24,
+                                color: "#f59e0b",
+                                "&:hover": {
+                                    backgroundColor: "#fbd4a7",
+                                },
+                            }}
+                        >
+                            ＜
+                        </Button>
+
+                        <Button
+                            onClick={() => setIsMonthDialogOpen(true)}
+                            sx={{
+                                flex: 1,
+                                backgroundColor: "#fde7cd",
+                                borderRadius: 2,
+                                py: 1,
+                                textAlign: "center",
+                                color: "text.secondary",
+                                fontsize: 18,
+                                fontWeight: "bold",
+                                textTransform: "none",
+                                "&:hover": {
+                                    backgroundColor: "#fbd4a7",
+                                },
+                            }}
+                        >
+                            {selectedMonthLabel}
+                        </Button>
+
+                        <Button
+                            onClick={goToNextMonth}
+                            sx={{
+                                minWidth: 40,
+                                fontSize: 24,
+                                color: "#f59e0b",
+                                "&:hover": {
+                                    backgroundColor: "#fbd4a7",
+                                },
+                            }}
+                        >
+                            ＞
+                        </Button>
+                    </Box>
+
                     {/* ヘッダー */}
                     <Box>
                         <Typography
@@ -176,7 +281,7 @@ function MonthlyCategorySummaryPage({
                                 color: "#333333",
                             }}
                         >
-                            今月のカテゴリー別内訳
+                            {selectedMonthLabel}のカテゴリー別内訳
                         </Typography>
 
                         <Typography
@@ -184,7 +289,7 @@ function MonthlyCategorySummaryPage({
                             sx={{
                                 mt: 0.5,
                             }}>
-                            今月の
+                            {selectedMonthLabel}の
                             {transactionType === "expense"
                                 ? "支出"
                                 : "収入"
@@ -358,7 +463,7 @@ function MonthlyCategorySummaryPage({
                         )}
                     </Box>
 
-                    {/* 今月合計カード */}
+                    {/* 選択した月の合計カード */}
                     <Box
                         sx={{
                             backgroundColor: "#fde7cd",
@@ -373,7 +478,7 @@ function MonthlyCategorySummaryPage({
                                 fontWeight: "bold",
                             }}
                         >
-                            今月の
+                            {selectedMonthLabel}の
                             {transactionType === "expense"
                                 ? "支出"
                                 : "収入"
@@ -394,7 +499,7 @@ function MonthlyCategorySummaryPage({
                     </Box>
 
 
-                    {/* 今月の支出が1件もない場合の表示 */}
+                    {/* 選択した月の支出が1件もない場合の表示 */}
 
                     {sortedMonthlyCategorySummaries.length === 0 ? (
                         <Box
@@ -406,7 +511,7 @@ function MonthlyCategorySummaryPage({
                             }}
                         >
                             <Typography color="text.secondary">
-                                今月の
+                                {selectedMonthLabel}の
                                 {transactionType === "expense"
                                     ? "支出"
                                     : "収入"
@@ -415,14 +520,18 @@ function MonthlyCategorySummaryPage({
                             </Typography>
                         </Box>
                     ) : (
-                        //今月の支出がある場合は、カテゴリー別の合計を一覧表示する
+                        //選択した月の支出がある場合は、カテゴリー別の合計を一覧表示する
                         <Stack spacing={1.5}>
                             {sortedMonthlyCategorySummaries.map((summary) => (
                                 <Card
                                     key={summary.id}
                                     elevation={0}
-                                    //カテゴリーカードを押したら、そのカテゴリーカードの今月詳細ページへ移動する。
-                                    onClick={() => navigate(`/categories/monthly/${transactionType}/${summary.id}`)}
+                                    //カテゴリーカードを押したら、そのカテゴリーカードの選択した月の詳細ページへ移動する。
+                                    onClick={() =>
+                                        navigate(
+                                            `/categories/monthly/${transactionType}/${summary.id}?month=${selectedMonth}`
+                                        )
+                                    }
                                     sx={{
                                         borderRadius: 3,
                                         backgroundColor: "#ffffff",
@@ -499,6 +608,24 @@ function MonthlyCategorySummaryPage({
                     )}
                 </Stack>
             </Container>
+
+            {/* 中央の年月を押したときに表示する月選択ダイアログ */}
+            <Dialog
+                open={isMonthDialogOpen}
+                onClose={() => setIsMonthDialogOpen(false)}
+            >
+                <LocalizationProvider
+                    dateAdapter={AdapterDayjs}
+                    adapterLocale="ja"
+                >
+                    <DateCalendar
+                        value={dayjs(selectedMonth)}
+                        views={["year", "month"]}
+                        openTo="month"
+                        onChange={handleMonthChange}
+                    />
+                </LocalizationProvider>
+            </Dialog>
         </Box >
     );
 }
