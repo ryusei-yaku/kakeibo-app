@@ -315,7 +315,7 @@ function HomePage({ expenses, profile }: HomePageProps) {
                                     width: "100%",
                                 }}
                             >
-                                <div>今月の内訳をカテゴリー別で見る</div>
+                                <div>カテゴリー別で内訳を見る</div>
                                 <ChevronRightIcon sx={{ color: "#f59e0b" }} />
                             </Box>
                         </Button>
@@ -398,7 +398,7 @@ function HomePage({ expenses, profile }: HomePageProps) {
                     color: "text.secondary",
                     fontsize: 10,
                 }}>
-                v1.1.1
+                v1.2.0
                 <br />
                 © 2026 Ryusei Yakushimaru
             </Typography>
