@@ -196,80 +196,100 @@ function MonthlyCategorySummaryPage({
                 .join(", ");
 
     return (
-        <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef", py: 3 }}>
-            <Container maxWidth="sm">
-                <Stack spacing={2.5}>
-                    <Button
-                        onClick={() => navigate("/")}
-                        startIcon={<ArrowBackIcon sx={{ color: "text.secondary" }} />}
-                        sx={{
-                            alignSelf: "flex-start",
-                            color: "text.secondary",
-                            fontWeight: "bold",
-                        }}
-                    >
-                        ホームへ戻る
-                    </Button>
-
-                    {/* 表示する月の選択 */}
-                    <Box
-                        sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
-                            borderBottom: "1px solid #e0e0e0",
-                            py: 1.5,
-                        }}
-                    >
-
+        <Box sx={{ minHeight: "100vh", backgroundColor: "#f6f4ef" }}>
+            {/* スクロールしても画面上部に固定する操作エリア */}
+            <Box
+                sx={{
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 10,
+                    backgroundColor: "#f6f4ef",
+                    borderBottom: "1px solid rgba(0, 0, 0, 0.08)",
+                }}
+            >
+                <Container maxWidth="sm">
+                    <Stack spacing={0.5} sx={{ py: 0.5 }}>
                         <Button
-                            onClick={goToPreviousMonth}
+                            onClick={() => navigate("/")}
+                            startIcon={
+                                <ArrowBackIcon sx={{ color: "text.secondary" }} />
+                            }
                             sx={{
-                                minWidth: 40,
-                                fontSize: 24,
-                                color: "#f59e0b",
-                                "&:hover": {
-                                    backgroundColor: "#fbd4a7",
-                                },
-                            }}
-                        >
-                            ＜
-                        </Button>
-
-                        <Button
-                            onClick={() => setIsMonthDialogOpen(true)}
-                            sx={{
-                                flex: 1,
-                                backgroundColor: "#fde7cd",
-                                borderRadius: 2,
-                                py: 1,
-                                textAlign: "center",
+                                alignSelf: "flex-start",
                                 color: "text.secondary",
-                                fontsize: 18,
                                 fontWeight: "bold",
-                                textTransform: "none",
-                                "&:hover": {
-                                    backgroundColor: "#fbd4a7",
-                                },
+                                py: 0.5,
                             }}
                         >
-                            {selectedMonthLabel}
+                            ホームへ戻る
                         </Button>
 
-                        <Button
-                            onClick={goToNextMonth}
+                        {/* 表示する月の選択 */}
+                        <Box
                             sx={{
-                                minWidth: 40,
-                                fontSize: 24,
-                                color: "#f59e0b",
-                                "&:hover": {
-                                    backgroundColor: "#fbd4a7",
-                                },
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                                pb: 0.75,
                             }}
                         >
-                            ＞
-                        </Button>
-                    </Box>
+                            <Button
+                                onClick={goToPreviousMonth}
+                                aria-label="前の月を表示"
+                                sx={{
+                                    minWidth: 40,
+                                    fontSize: 24,
+                                    color: "#f59e0b",
+                                    "&:hover": {
+                                        backgroundColor: "#fbd4a7",
+                                    },
+                                }}
+                            >
+                                ＜
+                            </Button>
+
+                            <Button
+                                onClick={() => setIsMonthDialogOpen(true)}
+                                fullWidth
+                                sx={{
+                                    flex: 1,
+                                    backgroundColor: "#fde7cd",
+                                    borderRadius: 2,
+                                    py: 1,
+                                    textAlign: "center",
+                                    color: "text.primary",
+                                    fontSize: 18,
+                                    fontWeight: "bold",
+                                    textTransform: "none",
+                                    "&:hover": {
+                                        backgroundColor: "#fbd4a7",
+                                    },
+                                }}
+                            >
+                                {selectedMonthLabel}
+                            </Button>
+
+                            <Button
+                                onClick={goToNextMonth}
+                                aria-label="次の月を表示"
+                                sx={{
+                                    minWidth: 40,
+                                    fontSize: 24,
+                                    color: "#f59e0b",
+                                    "&:hover": {
+                                        backgroundColor: "#fbd4a7",
+                                    },
+                                }}
+                            >
+                                ＞
+                            </Button>
+                        </Box>
+                    </Stack>
+                </Container>
+            </Box>
+
+            <Container maxWidth="sm" sx={{ py: 2 }}>
+                <Stack spacing={2.5}>
 
                     {/* ヘッダー */}
                     <Box>
