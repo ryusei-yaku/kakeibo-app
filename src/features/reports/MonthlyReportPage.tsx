@@ -1,4 +1,5 @@
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import PrintIcon from "@mui/icons-material/Print";
 import {
     Box,
@@ -9,10 +10,13 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
+import { pdf } from "@react-pdf/renderer";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "../../lib/dayjs";
 import type { Expense } from "../../types/expense";
+import MonthlyReportPdfDocument from "./pdf/MonthlyReportPdfDocument";
+import type { MonthlyReportPdfData } from "./pdf/monthlyReportPdfTypes";
 
 
 type MonthlyReportPageProps = {
@@ -34,6 +38,10 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
 
     // 印刷対象の月を管理する
     const [selectedMonth, setSelectedMonth] = useState(dayjs().format("YYYY-MM"));
+
+    // PDFを生成している最中かどうか管理する
+    // 連続してボタンが押されることを防ぐために使用する
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
     // 画面や印刷用タイトルに表示する年月
     const selectedMonthLabel = dayjs(selectedMonth).format("YYYY年M月");
@@ -119,6 +127,61 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
         };
     });
 
+    // 画面上で計算した月次レポートのデータをPDFへ渡す
+    // 画面側とPDF側で集計処理を重複させないようにする
+    const monthlyReportPdfData: MonthlyReportPdfData = {
+        selectedMonthLabel,
+        categoryRows: categorySummaryRows,
+        detailRows: reportRows,
+    };
+
+    async function handleDownloadPdf() {
+        if (isGeneratingPdf) {
+            return;
+        }
+
+        try {
+            setIsGeneratingPdf(true);
+
+            // 現在表示している月次レポートからPDFデータを生成する
+            const pdfBlob = await pdf(
+                <MonthlyReportPdfDocument data={monthlyReportPdfData} />
+            ).toBlob();
+
+            // 生成したPDFを一時的なURLへ変換する
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+
+            // 選択中の月をファイル名に使う
+            const fileName = `${selectedMonthLabel}_月次家計簿レポート.pdf`;
+
+            // ダウンロード用リンクを一時的に作成する
+            const downloadLink = document.createElement("a");
+
+            downloadLink.href = pdfUrl;
+            downloadLink.download = fileName;
+
+            // Safariを含むブラウザで動作しやすいように、
+            // DOMへ追加してからクリックする
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+
+            // ダウンロード開始後に一時URLを破棄する
+            window.setTimeout(() => {
+                URL.revokeObjectURL(pdfUrl);
+            }, 1000);
+        } catch (error) {
+            console.error("PDFの保存に失敗しました。", error);
+
+            alert(
+                "PDFの保存に失敗しました。時間を置いて、もう一度お試しください。"
+            );
+        } finally {
+            setIsGeneratingPdf(false);
+        }
+    }
+
+
     return (
         <Box
             className="print-page"
@@ -180,6 +243,24 @@ function MonthlyReportPage({ expenses }: MonthlyReportPageProps) {
                             }}
                         >
                             印刷する
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            startIcon={<PictureAsPdfIcon />}
+                            onClick={handleDownloadPdf}
+                            disabled={isGeneratingPdf}
+                            sx={{
+                                width: { xs: "100%", sm: "auto" },
+                                fontWeight: "bold",
+                                color: "#333333",
+                                borderColor: "#333333",
+                                "&:hover": {
+                                    borderColor: "#000000",
+                                    backgroundColor: "#f5f5f5",
+                                },
+                            }}
+                        >
+                            {isGeneratingPdf ? "PDF作成中..." : "PDFを保存する"}
                         </Button>
                     </Stack>
                 </Container>
