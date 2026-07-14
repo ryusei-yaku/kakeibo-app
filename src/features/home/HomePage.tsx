@@ -398,7 +398,7 @@ function HomePage({ expenses, profile }: HomePageProps) {
                     color: "text.secondary",
                     fontsize: 10,
                 }}>
-                v1.2.0
+                v{import.meta.env.VITE_APP_VERSION}
                 <br />
                 © 2026 Ryusei Yakushimaru
             </Typography>
