@@ -1,28 +1,19 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import AppRoutes from "./AppRoutes";
 import ErrorDialog from "./components/ErrorDialog";
 import LoadingScreen from "./components/LoadingScreen";
+import { useInitialDataLoading } from "./features/app/useInitialDataLoading";
 import AuthRoutes from "./features/auth/AuthRoutes";
 import { useAuthState } from "./features/auth/useAuthState";
-import { initialCategories } from "./features/categories/categories";
 import { useCategories } from "./features/categories/useCategories";
 import { useExpenses } from "./features/expenses/useExpenses";
 import { logout } from "./lib/auth";
-import {
-  loadCategoriesFromFirestore,
-  loadExpensesFromFirestore,
-  loadProfileFromFirestore,
-  saveCategoriesToFirestore,
-  saveProfileToFirestore,
-} from "./lib/firestoreStorage";
+import { saveProfileToFirestore } from "./lib/firestoreStorage";
 import type { Profile } from "./types/profile";
 
 function App() {
 
   const { currentUser, isAuthChecking } = useAuthState();
-
-  // Firestoreから家計簿データを読み込み中かどうかを管理する
-  const [isFirestoreLoading, setIsFirestoreLoading] = useState(false);
 
   // ユーザーに表示するエラーメッセージを管理する
   const [errorMessage, setErrorMessage] = useState("");
@@ -65,54 +56,17 @@ function App() {
     onError: showError,
   });
 
-  async function loadDataFromFirestore() {
-    // ログイン中のユーザーがまだ取得できていない場合は読み込まない
-    if (currentUser === null) {
-      return;
-    }
-
-    // 前回のエラー表示を消す
-    setErrorMessage("");
-
-    // Firestoreの読み込みを開始する
-    setIsFirestoreLoading(true);
-
-    try {
-      // ログイン中ユーザー専用のFirestoreデータを読み込む
-      const firestoreExpenses = await loadExpensesFromFirestore(currentUser.uid);
-      const firestoreCategories = await loadCategoriesFromFirestore(currentUser.uid);
-      // ログイン中ユーザー専用のプロフィール情報を読み込む
-      const firestoreProfile = await loadProfileFromFirestore(currentUser.uid);
-
-      // Firestoreの支出・収入データを画面に反映する
-      setExpenses(firestoreExpenses);
-
-      // Firestoreにカテゴリーがない場合は、初期カテゴリーを保存して使う
-      if (firestoreCategories.length === 0) {
-        setCategories(initialCategories);
-        await saveCategoriesToFirestore(currentUser.uid, initialCategories);
-      } else {
-        // Firestoreのカテゴリーデータを画面に反映する
-        setCategories(firestoreCategories);
-      }
-
-      // Firestoreのプロフィール情報を画面に反映する
-      setProfile(firestoreProfile);
-    } catch (error) {
-      console.error("Firestoreからのデータ読み込みに失敗しました", error);
-
-      setErrorMessage(
-        "家計簿データの読み込みに失敗しました。通信環境を確認して、もう一度お試しください。"
-      );
-    } finally {
-      setIsFirestoreLoading(false);
-    }
-  }
-
-  // アプリ起動時にFirestoreから支出データとカテゴリーデータを読み込む
-  useEffect(() => {
-    loadDataFromFirestore();
-  }, [currentUser]);
+  // ログイン中ユーザーの家計簿データをFirestoreから読み込む
+  const {
+    isFirestoreLoading,
+    loadDataFromFirestore,
+  } = useInitialDataLoading({
+    currentUser,
+    setExpenses,
+    setCategories,
+    setProfile,
+    onError: showError,
+  });
 
   async function saveDisplayName(displayName: string) {
     // ログイン中のユーザーがいない場合は、Firestoreに保存できないため何もしない
