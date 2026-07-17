@@ -5,6 +5,7 @@ import LoadingScreen from "./components/LoadingScreen";
 import AuthRoutes from "./features/auth/AuthRoutes";
 import { useAuthState } from "./features/auth/useAuthState";
 import { initialCategories } from "./features/categories/categories";
+import { useCategories } from "./features/categories/useCategories";
 import { useExpenses } from "./features/expenses/useExpenses";
 import { logout } from "./lib/auth";
 import {
@@ -12,15 +13,9 @@ import {
   loadExpensesFromFirestore,
   loadProfileFromFirestore,
   saveCategoriesToFirestore,
-  saveCategoryToFirestore,
   saveProfileToFirestore,
-  softDeleteCategoryToFirestore,
-  updateCategoryToFirestore,
-  updateExpenseCategoryNameToFirestore,
 } from "./lib/firestoreStorage";
-import type { Category } from "./types/category";
 import type { Profile } from "./types/profile";
-import { sortCategories } from "./utils/sortCategories";
 
 function App() {
 
@@ -31,9 +26,6 @@ function App() {
 
   // ユーザーに表示するエラーメッセージを管理する
   const [errorMessage, setErrorMessage] = useState("");
-
-  // Firestoreから読み込むまでは、初期カテゴリーを表示する
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
 
   // ログイン中ユーザーのプロフィール情報を管理する
   const [profile, setProfile] = useState<Profile>({
@@ -54,6 +46,22 @@ function App() {
     deleteExpense,
   } = useExpenses({
     currentUser,
+    onError: showError,
+  });
+
+  // カテゴリーデータと、その追加・更新・削除処理を管理する
+  const {
+    categories,
+    setCategories,
+    activeCategories,
+    sortedCategories,
+    addCategory,
+    updateCategory,
+    deleteCategory
+  } = useCategories({
+    currentUser,
+    expenses,
+    setExpenses,
     onError: showError,
   });
 
@@ -107,221 +115,6 @@ function App() {
     loadDataFromFirestore();
   }, [currentUser]);
 
-  function createNextCategoryDisplayOrder(categoryType: "expense" | "income") {
-    // 同じ種類のカテゴリーを取り出す
-    const sameTypeCategories = categories.filter(
-      (category) =>
-        category.type === categoryType &&
-        !category.isDeleted
-    );
-
-    // 「その他」は、displayOrder:99にしているため
-    // 追加カテゴリーはその他の前に入るように99未満だけを見る
-    const normalCategories = sameTypeCategories.filter(
-      (category) => category.displayOrder < 99
-    );
-
-    // まだ通常カテゴリーがない場合は1から始める
-    if (normalCategories.length === 0) {
-      return 1;
-    }
-
-    //既存カテゴリーの最大displayOrderの次の番号を返す
-    const maxDisplayOrder = Math.max(
-      ...normalCategories.map((category) => category.displayOrder)
-    );
-
-    return maxDisplayOrder + 1;
-  }
-
-  async function addCategory(
-    categoryName: string,
-    categoryType: "expense" | "income",
-  ) {
-    // ログイン中のユーザーがいない場合は、Firestoreに保存できないため何もしない
-    if (currentUser === null) {
-      return;
-    }
-
-    // 同じ名前の削除済みカテゴリーがあるか確認する
-    // ある場合は、新規追加ではなく復活させる
-    const deletedCategory = categories.find(
-      (category) =>
-        category.name === categoryName &&
-        category.type === categoryType &&
-        category.isDeleted
-    );
-
-    if (deletedCategory) {
-      // Firestore保存に失敗したときに元へ戻せるよう、変更前のカテゴリー一覧を保存する
-      const previousCategories = categories;
-
-      // 復活させるカテゴリーを作る
-      const restoredCategory: Category = {
-        ...deletedCategory,
-        isDeleted: false,
-      };
-
-      // 先に画面上のカテゴリー一覧を更新する
-      setCategories((currentCategories) =>
-        currentCategories.map((category) =>
-          category.id === restoredCategory.id ? restoredCategory : category
-        )
-      );
-
-      try {
-        // ログイン中ユーザー専用のFirestoreに、復活したカテゴリーを保存する
-        await saveCategoryToFirestore(currentUser.uid, restoredCategory);
-      } catch (error) {
-        console.error("Firestoreへのカテゴリー復活保存に失敗しました", error);
-
-        // Firestore保存に失敗した場合は、画面上のカテゴリー一覧を元に戻す
-        setCategories(previousCategories);
-
-        showError("カテゴリーの保存に失敗しました。通信環境を確認して、もう一度お試しください。");
-      }
-
-      return;
-    }
-
-    // Firestore保存に失敗したときに元へ戻せるよう、追加前のカテゴリー一覧を保存する
-    const previousCategories = categories;
-
-    // 新しく追加するカテゴリーを作る
-    const newCategory: Category = {
-      id: crypto.randomUUID(),
-      name: categoryName,
-      type: categoryType,
-      displayOrder: createNextCategoryDisplayOrder(categoryType),
-      isDeleted: false,
-    };
-
-    // 先に画面上のカテゴリー一覧を更新する
-    setCategories((currentCategories) => [
-      ...currentCategories,
-      newCategory,
-    ]);
-
-    try {
-      // ログイン中ユーザー専用のFirestoreに、新しいカテゴリーを保存する
-      await saveCategoryToFirestore(currentUser.uid, newCategory);
-    } catch (error) {
-      console.error("Firestoreへのカテゴリー保存に失敗しました", error);
-
-      // Firestore保存に失敗した場合は、画面上のカテゴリー一覧を追加前に戻す
-      setCategories(previousCategories);
-
-      showError("カテゴリーの保存に失敗しました。通信環境を確認して、もう一度お試しください。");
-    }
-  }
-
-  async function updateCategory(categoryId: string, categoryName: string) {
-    // ログイン中のユーザーがいない場合は、Firestoreに保存できないため何もしない
-    if (currentUser === null) {
-      return;
-    }
-
-    // Firestore更新に失敗したときに元へ戻せるよう、変更前の一覧を保存する
-    const previousCategories = categories;
-    const previousExpenses = expenses;
-
-    // Firestoreにも保存するため、更新対象のカテゴリーを先に探す
-    const updatedCategory = categories.find(
-      (category) => category.id === categoryId
-    );
-
-    // 対象カテゴリーが見つからない場合は、何もしない
-    if (!updatedCategory) {
-      return;
-    }
-
-    const renamedCategory: Category = {
-      ...updatedCategory,
-      name: categoryName,
-    };
-
-    // 先に画面上のカテゴリー名を更新する
-    setCategories((currentCategories) =>
-      currentCategories.map((category) =>
-        category.id === categoryId ? renamedCategory : category
-      )
-    );
-
-    // 過去に登録した支出・収入データの categoryName も更新する
-    setExpenses((currentExpenses) =>
-      currentExpenses.map((expense) =>
-        expense.categoryId === categoryId
-          ? { ...expense, categoryName }
-          : expense
-      )
-    );
-
-    try {
-      // ログイン中ユーザー専用のFirestore上のカテゴリー名を更新する
-      await updateCategoryToFirestore(currentUser.uid, renamedCategory);
-
-      // ログイン中ユーザー専用のFirestore上の過去データの categoryName も更新する
-      await updateExpenseCategoryNameToFirestore(
-        currentUser.uid,
-        categoryId,
-        categoryName
-      );
-    } catch (error) {
-      console.error("Firestoreへのカテゴリー更新に失敗しました", error);
-
-      // Firestore更新に失敗した場合は、画面上のデータを更新前に戻す
-      setCategories(previousCategories);
-      setExpenses(previousExpenses);
-
-      showError("カテゴリーの更新に失敗しました。通信環境を確認して、もう一度お試しください。");
-    }
-  }
-
-  async function deleteCategory(categoryId: string) {
-    // ログイン中のユーザーがいない場合は、Firestoreに保存できないため何もしない
-    if (currentUser === null) {
-      return;
-    }
-
-    // Firestore更新に失敗したときに元へ戻せるよう、変更前のカテゴリー一覧を保存する
-    const previousCategories = categories;
-
-    // Firestoreにも保存するため、削除対象のカテゴリーを取得する
-    const deleteTargetCategory = categories.find(
-      (category) => category.id === categoryId
-    );
-
-    // 対象カテゴリーが見つからない場合は、何もしない
-    if (!deleteTargetCategory) {
-      return;
-    }
-
-    // 削除済みにしたカテゴリーを作る
-    const deletedCategory: Category = {
-      ...deleteTargetCategory,
-      isDeleted: true,
-    };
-
-    // 先に画面上のカテゴリーを削除済みにする
-    setCategories((currentCategories) =>
-      currentCategories.map((category) =>
-        category.id === categoryId ? deletedCategory : category
-      )
-    );
-
-    try {
-      // ログイン中ユーザー専用のFirestore上のカテゴリーを削除済みにする
-      await softDeleteCategoryToFirestore(currentUser.uid, deletedCategory);
-    } catch (error) {
-      console.error("Firestoreへのカテゴリー削除反映に失敗しました", error);
-
-      // Firestore更新に失敗した場合は、画面上のカテゴリー一覧を更新前に戻す
-      setCategories(previousCategories);
-
-      showError("カテゴリーの削除に失敗しました。通信環境を確認して、もう一度お試しください。");
-    }
-  }
-
   async function saveDisplayName(displayName: string) {
     // ログイン中のユーザーがいない場合は、Firestoreに保存できないため何もしない
     if (currentUser === null) {
@@ -362,14 +155,6 @@ function App() {
       showError("ログアウトに失敗しました。通信環境を確認して、もう一度お試しください。");
     }
   }
-
-  const activeCategories = sortCategories(
-    categories.filter((category) => !category.isDeleted)
-  );
-
-  // 画面表示用にカテゴリーを並び替える
-  // 「その他」は最後に表示する
-  const sortedCategories = sortCategories(categories);
 
   if (isAuthChecking) {
     return <LoadingScreen />;
