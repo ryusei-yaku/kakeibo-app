@@ -91,11 +91,10 @@ function App() {
       if (firestoreCategories.length === 0) {
         setCategories(initialCategories);
         await saveCategoriesToFirestore(currentUser.uid, initialCategories);
-        return;
+      } else {
+        // Firestoreのカテゴリーデータを画面に反映する
+        setCategories(firestoreCategories);
       }
-
-      // Firestoreのカテゴリーデータを画面に反映する
-      setCategories(firestoreCategories);
 
       // Firestoreのプロフィール情報を画面に反映する
       setProfile(firestoreProfile);
