@@ -7,9 +7,8 @@ import AuthRoutes from "./features/auth/AuthRoutes";
 import { useAuthState } from "./features/auth/useAuthState";
 import { useCategories } from "./features/categories/useCategories";
 import { useExpenses } from "./features/expenses/useExpenses";
+import { useProfile } from "./features/profile/useProfile";
 import { logout } from "./lib/auth";
-import { saveProfileToFirestore } from "./lib/firestoreStorage";
-import type { Profile } from "./types/profile";
 
 function App() {
 
@@ -17,11 +16,6 @@ function App() {
 
   // ユーザーに表示するエラーメッセージを管理する
   const [errorMessage, setErrorMessage] = useState("");
-
-  // ログイン中ユーザーのプロフィール情報を管理する
-  const [profile, setProfile] = useState<Profile>({
-    displayName: "",
-  });
 
   function showError(message: string) {
     // ユーザーに表示するエラーメッセージをセットする
@@ -56,6 +50,17 @@ function App() {
     onError: showError,
   });
 
+  // ログイン中ユーザーのプロフィール情報を管理する
+  const {
+    profile,
+    setProfile,
+    saveDisplayName,
+  } = useProfile({
+    currentUser,
+    onError: showError,
+  });
+
+
   // ログイン中ユーザーの家計簿データをFirestoreから読み込む
   const {
     isFirestoreLoading,
@@ -67,35 +72,6 @@ function App() {
     setProfile,
     onError: showError,
   });
-
-  async function saveDisplayName(displayName: string) {
-    // ログイン中のユーザーがいない場合は、Firestoreに保存できないため何もしない
-    if (currentUser === null) {
-      return;
-    }
-
-    // Firestore保存に失敗したときに元へ戻せるよう、変更前のプロフィールを保存する
-    const previousProfile = profile;
-
-    const updatedProfile: Profile = {
-      displayName,
-    };
-
-    // 先に画面上のプロフィール情報を更新する
-    setProfile(updatedProfile);
-
-    try {
-      // ログイン中ユーザー専用のFirestoreにプロフィール情報を保存する
-      await saveProfileToFirestore(currentUser.uid, updatedProfile);
-    } catch (error) {
-      console.error("Firestoreへのプロフィール保存に失敗しました", error);
-
-      // Firestore保存に失敗した場合は、画面上のプロフィールを保存前に戻す
-      setProfile(previousProfile);
-
-      showError("プロフィールの保存に失敗しました。通信環境を確認して、もう一度お試しください。");
-    }
-  }
 
   async function handleLogout() {
     try {
