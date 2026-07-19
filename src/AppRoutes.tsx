@@ -13,24 +13,54 @@ import type { Category } from "./types/category";
 import type { Expense } from "./types/expense";
 import type { Profile } from "./types/profile";
 
+type ExpenseActions = {
+    // 支出・収入データを追加する
+    addExpense: (expense: Expense) => Promise<void>;
+
+    // 支出・収入データを更新する
+    updateExpense: (expense: Expense) => Promise<void>;
+
+    // 支出・収入データを削除する
+    deleteExpense: (expenseId: string) => Promise<void>;
+};
+
+type CategoryActions = {
+    // カテゴリーを追加する
+    addCategory: (
+        categoryName: string,
+        categoryType: "expense" | "income"
+    ) => Promise<void>;
+
+    // カテゴリー名を更新する
+    updateCategory: (
+        categoryId: string,
+        categoryName: string,
+    ) => Promise<void>;
+
+    // カテゴリーを削除する
+    deleteCategory: (categoryId: string) => Promise<void>;
+
+};
+
 type AppRoutesProps = {
     expenses: Expense[];
     categories: Category[];
     activeCategories: Category[];
     sortedCategories: Category[];
-    onLogout: () => void;
-    onAddExpense: (expense: Expense) => void;
-    onUpdateExpense: (expense: Expense) => void;
-    onDeleteExpense: (expenseId: string) => void;
-    onAddCategory: (
-        categoryName: string,
-        categoryType: "expense" | "income"
-    ) => void;
-    onUpdateCategory: (categoryId: string, categoryName: string) => void;
-    onDeleteCategory: (categoryId: string) => void;
     currentUser: User;
     profile: Profile;
+
+    // 支出・収入に関する操作
+    expenseActions: ExpenseActions;
+
+    // カテゴリーに関する操作
+    categoryActions: CategoryActions;
+
+    // プロフィール名を保存する
     onSaveDisplayName: (displayName: string) => Promise<void>;
+
+    // ログアウトする
+    onLogout: () => void;
 };
 
 function AppRoutes({
@@ -40,14 +70,10 @@ function AppRoutes({
     sortedCategories,
     currentUser,
     profile,
+    expenseActions,
+    categoryActions,
     onSaveDisplayName,
     onLogout,
-    onAddExpense,
-    onUpdateExpense,
-    onDeleteExpense,
-    onAddCategory,
-    onUpdateCategory,
-    onDeleteCategory,
 }: AppRoutesProps) {
     return (
         <BrowserRouter>
@@ -63,7 +89,7 @@ function AppRoutes({
                         <ExpenseFormPage
                             expenses={expenses}
                             categories={activeCategories}
-                            onAddExpense={onAddExpense}
+                            onAddExpense={expenseActions.addExpense}
                         />
                     }
                 />
@@ -86,8 +112,8 @@ function AppRoutes({
                         <ExpenseEditPage
                             expenses={expenses}
                             categories={categories}
-                            onUpdateExpense={onUpdateExpense}
-                            onDeleteExpense={onDeleteExpense}
+                            onUpdateExpense={expenseActions.updateExpense}
+                            onDeleteExpense={expenseActions.deleteExpense}
                         />
                     }
                 />
@@ -97,9 +123,9 @@ function AppRoutes({
                     element={
                         <CategoryManagementPage
                             categories={sortedCategories}
-                            onAddCategory={onAddCategory}
-                            onUpdateCategory={onUpdateCategory}
-                            onDeleteCategory={onDeleteCategory}
+                            onAddCategory={categoryActions.addCategory}
+                            onUpdateCategory={categoryActions.updateCategory}
+                            onDeleteCategory={categoryActions.deleteCategory}
                         />
                     }
                 />
