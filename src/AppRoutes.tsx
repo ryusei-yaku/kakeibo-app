@@ -1,14 +1,7 @@
 import type { User } from "firebase/auth";
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import CalendarPage from "./features/calendar/CalendarPage";
-import CategoryManagementPage from "./features/categories/CategoryManagementPage";
-import MonthlyCategoryDetailPage from "./features/categories/MonthlyCategoryDetailPage";
-import MonthlyCategorySummaryPage from "./features/categories/MonthlyCategorySummaryPage";
-import ExpenseEditPage from "./features/expenses/ExpenseEditPage";
-import ExpenseFormPage from "./features/expenses/ExpenseFormPage";
-import HomePage from "./features/home/HomePage";
-import ProfilePage from "./features/profile/ProfilePage";
-import MonthlyReportPage from "./features/reports/MonthlyReportPage";
+import LoadingScreen from "./components/LoadingScreen";
 import type { Category } from "./types/category";
 import type { Expense } from "./types/expense";
 import type { Profile } from "./types/profile";
@@ -63,6 +56,44 @@ type AppRoutesProps = {
     onLogout: () => void;
 };
 
+// 各画面は、その画面が必要になったタイミングで読み込む
+const CalendarPage = lazy(
+    () => import("./features/calendar/CalendarPage")
+);
+
+const CategoryManagementPage = lazy(
+    () => import("./features/categories/CategoryManagementPage")
+);
+
+const MonthlyCategoryDetailPage = lazy(
+    () => import("./features/categories/MonthlyCategoryDetailPage")
+);
+
+const MonthlyCategorySummaryPage = lazy(
+    () => import("./features/categories/MonthlyCategorySummaryPage")
+);
+
+
+const ExpenseEditPage = lazy(
+    () => import("./features/expenses/ExpenseEditPage")
+);
+
+const ExpenseFormPage = lazy(
+    () => import("./features/expenses/ExpenseFormPage")
+);
+
+const HomePage = lazy(
+    () => import("./features/home/HomePage")
+);
+
+const ProfilePage = lazy(
+    () => import("./features/profile/ProfilePage")
+);
+
+const MonthlyReportPage = lazy(
+    () => import("./features/reports/MonthlyReportPage")
+);
+
 function AppRoutes({
     expenses,
     categories,
@@ -77,77 +108,79 @@ function AppRoutes({
 }: AppRoutesProps) {
     return (
         <BrowserRouter>
-            <Routes>
-                <Route
-                    path="/"
-                    element={<HomePage expenses={expenses} profile={profile} />}
-                />
+            <Suspense fallback={<LoadingScreen />}>
+                <Routes>
+                    <Route
+                        path="/"
+                        element={<HomePage expenses={expenses} profile={profile} />}
+                    />
 
-                <Route
-                    path="/expenses/new"
-                    element={
-                        <ExpenseFormPage
-                            expenses={expenses}
-                            categories={activeCategories}
-                            onAddExpense={expenseActions.addExpense}
-                        />
-                    }
-                />
+                    <Route
+                        path="/expenses/new"
+                        element={
+                            <ExpenseFormPage
+                                expenses={expenses}
+                                categories={activeCategories}
+                                onAddExpense={expenseActions.addExpense}
+                            />
+                        }
+                    />
 
-                <Route
-                    path="/categories/monthly"
-                    element={<MonthlyCategorySummaryPage expenses={expenses} />}
-                />
+                    <Route
+                        path="/categories/monthly"
+                        element={<MonthlyCategorySummaryPage expenses={expenses} />}
+                    />
 
-                <Route
-                    path="/categories/monthly/:transactionType/:categoryId"
-                    element={<MonthlyCategoryDetailPage expenses={expenses} />}
-                />
+                    <Route
+                        path="/categories/monthly/:transactionType/:categoryId"
+                        element={<MonthlyCategoryDetailPage expenses={expenses} />}
+                    />
 
-                <Route path="/calendar" element={<CalendarPage expenses={expenses} />} />
+                    <Route path="/calendar" element={<CalendarPage expenses={expenses} />} />
 
-                <Route
-                    path="/expenses/edit/:expenseId"
-                    element={
-                        <ExpenseEditPage
-                            expenses={expenses}
-                            categories={categories}
-                            onUpdateExpense={expenseActions.updateExpense}
-                            onDeleteExpense={expenseActions.deleteExpense}
-                        />
-                    }
-                />
+                    <Route
+                        path="/expenses/edit/:expenseId"
+                        element={
+                            <ExpenseEditPage
+                                expenses={expenses}
+                                categories={categories}
+                                onUpdateExpense={expenseActions.updateExpense}
+                                onDeleteExpense={expenseActions.deleteExpense}
+                            />
+                        }
+                    />
 
-                <Route
-                    path="/categories/manage"
-                    element={
-                        <CategoryManagementPage
-                            categories={sortedCategories}
-                            onAddCategory={categoryActions.addCategory}
-                            onUpdateCategory={categoryActions.updateCategory}
-                            onDeleteCategory={categoryActions.deleteCategory}
-                        />
-                    }
-                />
-                {/* ログイン済み状態で /signup や /login などに残っていた場合はホームへ戻す */}
-                <Route path="*" element={<Navigate to="/" replace />} />
+                    <Route
+                        path="/categories/manage"
+                        element={
+                            <CategoryManagementPage
+                                categories={sortedCategories}
+                                onAddCategory={categoryActions.addCategory}
+                                onUpdateCategory={categoryActions.updateCategory}
+                                onDeleteCategory={categoryActions.deleteCategory}
+                            />
+                        }
+                    />
+                    {/* ログイン済み状態で /signup や /login などに残っていた場合はホームへ戻す */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
 
-                <Route
-                    path="/profile"
-                    element={
-                        <ProfilePage
-                            currentUser={currentUser}
-                            displayName={profile.displayName}
-                            onSaveDisplayName={onSaveDisplayName}
-                            onLogout={onLogout}
-                        />
-                    }
-                />
-                <Route
-                    path="/reports/monthly"
-                    element={<MonthlyReportPage expenses={expenses} />}
-                />
-            </Routes>
+                    <Route
+                        path="/profile"
+                        element={
+                            <ProfilePage
+                                currentUser={currentUser}
+                                displayName={profile.displayName}
+                                onSaveDisplayName={onSaveDisplayName}
+                                onLogout={onLogout}
+                            />
+                        }
+                    />
+                    <Route
+                        path="/reports/monthly"
+                        element={<MonthlyReportPage expenses={expenses} />}
+                    />
+                </Routes>
+            </Suspense>
         </BrowserRouter>
     );
 }
