@@ -106,16 +106,20 @@ function App() {
         categories={categories}
         activeCategories={activeCategories}
         sortedCategories={sortedCategories}
-        onLogout={handleLogout}
-        onAddExpense={addExpense}
-        onUpdateExpense={updateExpense}
-        onDeleteExpense={deleteExpense}
-        onAddCategory={addCategory}
-        onUpdateCategory={updateCategory}
-        onDeleteCategory={deleteCategory}
         currentUser={currentUser}
         profile={profile}
+        expenseActions={{
+          addExpense,
+          updateExpense,
+          deleteExpense
+        }}
+        categoryActions={{
+          addCategory,
+          updateCategory,
+          deleteCategory,
+        }}
         onSaveDisplayName={saveDisplayName}
+        onLogout={handleLogout}
       />
 
       <ErrorDialog
